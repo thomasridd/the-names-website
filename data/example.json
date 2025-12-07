@@ -1,0 +1,13 @@
+[
+    {
+        "name": "Example",
+        "rank": 10, // rank from 2024
+        "count": 106, // count from 2024
+        "rankFrom1996": ["100", "120", "x", ... ], // array using rank from 1996 to 2024
+        "countFrom1996": ["100", "120", "x", ... ], // array using count from 1996 to 2024
+        "rankHistoric": ["100", "120", "x", ... ] // array from Historic Top 100
+    },
+    {
+        ...
+    }
+]
