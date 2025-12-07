@@ -3,7 +3,7 @@ pagination:
   data: allNames
   size: 1
   alias: nameData
-permalink: /names/{{ nameData.gender | lower }}/{{ nameData.name | slugify }}-{{ pagination.pageNumber }}/
+permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 layout: base.njk
 ---
 
