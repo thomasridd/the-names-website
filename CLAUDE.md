@@ -39,7 +39,11 @@ The-names-website is a **static website generator** for exploring and working wi
 - ✅ Thousands of generated pages
 
 ### Current Status
-🚀 **EARLY STAGE INITIALIZATION** - This repository is in its earliest stages. Only the README.md and CLAUDE.md exist. No technology stack has been chosen, no source code exists, and no build system is configured.
+✅ **INITIAL SETUP COMPLETE** - 11ty static site generator configured with:
+- CSV data processing (10 sample names)
+- Template-based page generation
+- Basic styling and search placeholder
+- Working build system
 
 ### Repository Information
 - **Repository:** thomasridd/the-names-website
@@ -56,26 +60,34 @@ The-names-website is a **static website generator** for exploring and working wi
 - ✅ README.md with basic project description
 - ✅ Remote repository connection configured
 
+### What Now Exists
+- ✅ Package manager configured (package.json with npm scripts)
+- ✅ 11ty static site generator configured (.eleventy.js)
+- ✅ Project directory structure (data/, src/templates/, src/styles/, src/scripts/)
+- ✅ Sample CSV data (10 names in data/names.csv)
+- ✅ Site configuration (data/config.yaml)
+- ✅ Nunjucks templates (base layout, name pages, homepage, names listing)
+- ✅ Basic CSS styling (src/styles/main.css)
+- ✅ Basic search JavaScript (src/scripts/search.js)
+- ✅ Working build system (generates 12 static HTML pages)
+- ✅ .gitignore file
+
 ### What Doesn't Exist Yet
-- ❌ Source code directories
-- ❌ Data directories (CSV, YAML, MD files)
-- ❌ Package manager configuration (package.json)
-- ❌ Static site generator configuration
-- ❌ Page templates
-- ❌ Search functionality
-- ❌ Build system
+- ❌ Production CSV data (thousands of names)
+- ❌ Advanced search (Fuse.js, Lunr.js, or Pagefind)
+- ❌ Search index generation
 - ❌ CI/CD pipelines
-- ❌ Technology stack selection
+- ❌ Deployment configuration
 
 ### Next Steps for Development
-1. **Choose Static Site Generator** - Select SSG tool (11ty, Astro, Hugo, etc.)
-2. **Initialize Package Manager** - Create package.json and install dependencies
-3. **Create Project Structure** - Set up data, templates, and output directories
-4. **Set Up Data Sources** - Organize CSV files and YAML/MD configuration
-5. **Create Page Templates** - Design templates for individual name pages
-6. **Implement Build Process** - Configure SSG to generate pages from data
-7. **Add Search Functionality** - Implement client-side JavaScript search
-8. **Configure Development Environment** - Local dev server with hot reloading
+1. **Add Production Data** - Replace sample CSV with full names dataset
+2. **Enhance Search** - Integrate Fuse.js or Lunr.js for better search
+3. **Generate Search Index** - Build JSON index during compilation
+4. **Improve Styling** - Enhance CSS or add Tailwind CSS
+5. **Add Features** - Filters, sorting, categories, related names
+6. **Set Up CI/CD** - GitHub Actions for automated builds
+7. **Configure Deployment** - Deploy to Netlify, Vercel, or GitHub Pages
+8. **Optimize Performance** - Minify CSS/JS, optimize images
 
 ---
 
@@ -347,9 +359,16 @@ When implementing new features:
 
 ## Technology Stack
 
-### Status: NOT YET DETERMINED
+### Status: ✅ SELECTED AND CONFIGURED
 
-The technology stack has not been chosen. When selecting technologies, consider:
+**Chosen Stack:**
+- **SSG:** 11ty (Eleventy) v3.1.2
+- **Templates:** Nunjucks
+- **CSV Parsing:** csv-parse v6.1.0
+- **Styling:** Plain CSS
+- **Search:** Basic JavaScript (to be enhanced with Fuse.js later)
+
+### Alternative Options Considered
 
 #### Static Site Generator (SSG) Options
 
@@ -817,6 +836,7 @@ This CLAUDE.md should be updated when:
 
 ### Version History
 
+- **v1.2** - December 7, 2025 - Updated with selected technology stack (11ty + Nunjucks + csv-parse)
 - **v1.1** - December 7, 2025 - Updated with SSG-specific guidance, CSV data handling, and search functionality
 - **v1.0** - December 7, 2025 - Initial creation for early-stage project
 

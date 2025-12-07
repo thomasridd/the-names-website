@@ -1,0 +1,45 @@
+---
+pagination:
+  data: names
+  size: 1
+  alias: nameData
+permalink: "/names/{{ nameData.name | lower | replace(' ', '-') }}/"
+layout: base.njk
+---
+
+{% block title %}{{ nameData.name }} - {{ siteConfig.title }}{% endblock %}
+{% block description %}Learn about the name {{ nameData.name }}: origin, meaning, and more.{% endblock %}
+
+{% block content %}
+<article class="name-page">
+  <h1>{{ nameData.name }}</h1>
+
+  <div class="name-details">
+    <dl>
+      {% if nameData.origin %}
+      <dt>Origin:</dt>
+      <dd>{{ nameData.origin }}</dd>
+      {% endif %}
+
+      {% if nameData.meaning %}
+      <dt>Meaning:</dt>
+      <dd>{{ nameData.meaning }}</dd>
+      {% endif %}
+
+      {% if nameData.gender %}
+      <dt>Gender:</dt>
+      <dd>{{ nameData.gender }}</dd>
+      {% endif %}
+
+      {% if nameData.popularity %}
+      <dt>Popularity:</dt>
+      <dd>{{ nameData.popularity }}</dd>
+      {% endif %}
+    </dl>
+  </div>
+
+  <nav class="name-navigation">
+    <a href="/names/">&larr; Back to all names</a>
+  </nav>
+</article>
+{% endblock %}

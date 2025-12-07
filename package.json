@@ -1,0 +1,22 @@
+{
+  "name": "the-names-website",
+  "version": "1.0.0",
+  "description": "a website for thinking about names",
+  "main": "index.js",
+  "scripts": {
+    "dev": "eleventy --serve",
+    "build": "eleventy",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:63521/git/thomasridd/the-names-website"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@11ty/eleventy": "^3.1.2",
+    "csv-parse": "^6.1.0"
+  }
+}

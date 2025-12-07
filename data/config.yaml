@@ -1,0 +1,14 @@
+title: The Names Website
+description: A website for thinking about names
+url: https://example.com
+author: Tom Ridd
+
+navigation:
+  - label: Home
+    url: /
+  - label: All Names
+    url: /names/
+
+features:
+  search: true
+  filters: true

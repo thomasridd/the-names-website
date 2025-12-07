@@ -1,0 +1,33 @@
+---
+layout: base.njk
+title: Home
+permalink: /
+---
+
+{% block content %}
+<section class="hero">
+  <h2>Welcome to The Names Website</h2>
+  <p>Explore the origins, meanings, and stories behind names from around the world.</p>
+</section>
+
+<section class="featured-names">
+  <h3>Featured Names</h3>
+  <div class="name-grid">
+    {% for nameData in names | slice(0, 6) %}
+    <div class="name-card">
+      <h4><a href="/names/{{ nameData.name | lower | replace(' ', '-') }}/">{{ nameData.name }}</a></h4>
+      <p class="origin">{{ nameData.origin }}</p>
+      <p class="meaning">{{ nameData.meaning }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  <p class="view-all">
+    <a href="/names/">View all {{ names | length }} names &rarr;</a>
+  </p>
+</section>
+
+<section class="about">
+  <h3>About</h3>
+  <p>This website is dedicated to exploring the fascinating world of names. Each name has a unique history, cultural significance, and meaning worth discovering.</p>
+</section>
+{% endblock %}
