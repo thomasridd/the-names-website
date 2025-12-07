@@ -11,22 +11,35 @@
 1. [Project Overview](#project-overview)
 2. [Current Project State](#current-project-state)
 3. [Repository Structure](#repository-structure)
-4. [Development Workflows](#development-workflows)
-5. [Key Conventions](#key-conventions)
-6. [Technology Stack](#technology-stack)
-7. [Common Tasks](#common-tasks)
-8. [Git Workflow](#git-workflow)
-9. [AI Assistant Guidelines](#ai-assistant-guidelines)
+4. [Data Sources](#data-sources)
+5. [Development Workflows](#development-workflows)
+6. [Key Conventions](#key-conventions)
+7. [Technology Stack](#technology-stack)
+8. [Common Tasks](#common-tasks)
+9. [Git Workflow](#git-workflow)
+10. [AI Assistant Guidelines](#ai-assistant-guidelines)
 
 ---
 
 ## Project Overview
 
 ### Purpose
-The-names-website is a web application designed for thinking about, exploring, and working with names. The specific functionality and features are to be determined as the project develops.
+The-names-website is a **static website generator** for exploring and working with names. It will:
+- Compile content from configuration files (YAML, Markdown)
+- Generate templated pages from CSV data sources (thousands of individual name pages)
+- Provide client-side JavaScript search functionality
+- Output a fully static website optimized for deployment
+
+### Project Type
+**Static Site Generator (SSG)** - Data-driven static website with:
+- ✅ YAML/Markdown configuration
+- ✅ CSV-based page generation (one page per name)
+- ✅ Template-based rendering
+- ✅ JavaScript search functionality
+- ✅ Thousands of generated pages
 
 ### Current Status
-🚀 **EARLY STAGE INITIALIZATION** - This repository is in its earliest stages. Only the README.md exists. No technology stack has been chosen, no source code exists, and no build system is configured.
+🚀 **EARLY STAGE INITIALIZATION** - This repository is in its earliest stages. Only the README.md and CLAUDE.md exist. No technology stack has been chosen, no source code exists, and no build system is configured.
 
 ### Repository Information
 - **Repository:** thomasridd/the-names-website
@@ -45,20 +58,24 @@ The-names-website is a web application designed for thinking about, exploring, a
 
 ### What Doesn't Exist Yet
 - ❌ Source code directories
+- ❌ Data directories (CSV, YAML, MD files)
 - ❌ Package manager configuration (package.json)
+- ❌ Static site generator configuration
+- ❌ Page templates
+- ❌ Search functionality
 - ❌ Build system
-- ❌ Testing framework
 - ❌ CI/CD pipelines
-- ❌ Development environment setup
 - ❌ Technology stack selection
 
 ### Next Steps for Development
-1. **Choose Technology Stack** - Select frontend framework, build tools, and dependencies
+1. **Choose Static Site Generator** - Select SSG tool (11ty, Astro, Hugo, etc.)
 2. **Initialize Package Manager** - Create package.json and install dependencies
-3. **Create Project Structure** - Set up source directories and file organization
-4. **Configure Build Tools** - Set up bundler/compiler (Vite, Webpack, etc.)
-5. **Establish Code Conventions** - Linting, formatting, and style guidelines
-6. **Set Up Development Environment** - Local dev server and hot reloading
+3. **Create Project Structure** - Set up data, templates, and output directories
+4. **Set Up Data Sources** - Organize CSV files and YAML/MD configuration
+5. **Create Page Templates** - Design templates for individual name pages
+6. **Implement Build Process** - Configure SSG to generate pages from data
+7. **Add Search Functionality** - Implement client-side JavaScript search
+8. **Configure Development Environment** - Local dev server with hot reloading
 
 ---
 
@@ -66,36 +83,42 @@ The-names-website is a web application designed for thinking about, exploring, a
 
 ### Recommended Future Structure
 
-Once development begins, consider this conventional structure for a modern web application:
+Once development begins, consider this structure for a static site generator:
 
 ```
 the-names-website/
 ├── .git/                   # Git version control
 ├── .github/                # GitHub-specific files
-│   └── workflows/          # CI/CD workflows
-├── public/                 # Static assets
-│   ├── favicon.ico
-│   └── images/
-├── src/                    # Source code
-│   ├── assets/            # Images, fonts, etc.
-│   ├── components/        # Reusable UI components
-│   ├── pages/             # Page components/routes
+│   └── workflows/          # CI/CD workflows (build and deploy)
+├── data/                   # Data source files
+│   ├── names.csv          # Name data (thousands of rows)
+│   ├── config.yaml        # Site configuration
+│   └── content/           # Markdown content files
+├── src/                    # Source templates and assets
+│   ├── templates/         # Page templates
+│   │   ├── name.html      # Template for individual name pages
+│   │   ├── index.html     # Homepage template
+│   │   └── layout.html    # Base layout template
 │   ├── styles/            # CSS/styling files
-│   ├── utils/             # Utility functions
-│   ├── hooks/             # Custom React hooks (if using React)
-│   ├── services/          # API services and data fetching
-│   ├── types/             # TypeScript type definitions
-│   ├── App.tsx            # Main application component
-│   └── main.tsx           # Application entry point
-├── tests/                  # Test files
-│   ├── unit/
-│   ├── integration/
-│   └── e2e/
+│   │   └── main.css
+│   ├── scripts/           # JavaScript files
+│   │   └── search.js      # Client-side search functionality
+│   └── assets/            # Images, fonts, etc.
+├── _site/                  # Generated static output (gitignored)
+│   ├── index.html
+│   ├── names/
+│   │   ├── alice/
+│   │   ├── bob/
+│   │   └── ... (thousands more)
+│   ├── assets/
+│   └── search.json        # Search index
 ├── .gitignore             # Git ignore rules
-├── .env.example           # Environment variable template
+├── .eleventy.js           # SSG configuration (if using 11ty)
+│   # OR
+├── astro.config.mjs       # SSG configuration (if using Astro)
+│   # OR
+├── config.toml            # SSG configuration (if using Hugo)
 ├── package.json           # Node.js dependencies and scripts
-├── tsconfig.json          # TypeScript configuration (if using TS)
-├── vite.config.ts         # Build tool configuration
 ├── README.md              # Project documentation
 └── CLAUDE.md              # This file - AI assistant guide
 ```
@@ -111,17 +134,75 @@ the-names-website/
 
 ---
 
+## Data Sources
+
+### CSV Data Files
+
+The primary data source will be **CSV files** containing name information:
+
+**Expected Format:**
+- One row per name (thousands of rows expected)
+- Each row generates one static page
+- Columns may include: name, origin, meaning, popularity, etc.
+
+**Location:**
+- `data/names.csv` or multiple CSV files in `data/` directory
+- Should be version controlled (unless files are too large)
+- Consider using `.gitattributes` for proper line ending handling
+
+**Processing:**
+- CSV data will be read during build time
+- Each row is passed to a template to generate a page
+- URL structure: `/names/[name-slug]/index.html`
+
+### YAML Configuration
+
+**Site Configuration:**
+- `data/config.yaml` - Global site settings
+- Site title, description, navigation, etc.
+- Build options and output settings
+
+**Content Configuration:**
+- YAML front matter in Markdown files
+- Page-specific metadata and configuration
+
+### Markdown Content
+
+**Static Pages:**
+- `data/content/*.md` - Static content pages
+- Homepage content, about pages, etc.
+- Supports YAML front matter for metadata
+
+### Search Index
+
+**Generated at Build Time:**
+- Create searchable JSON index from CSV data
+- Output to `_site/search.json` or similar
+- Format optimized for client-side JavaScript search
+- Consider search libraries: Lunr.js, Fuse.js, FlexSearch
+
+### Data Management Guidelines
+
+1. **CSV Structure** - Keep consistent column names and data types
+2. **Data Validation** - Validate CSV data during build (check for required fields)
+3. **Performance** - For thousands of pages, optimize build performance
+4. **Encoding** - Use UTF-8 encoding for international name support
+5. **Version Control** - Commit data files unless they're too large (>100MB)
+6. **Sample Data** - Consider including a small sample CSV for development
+
+---
+
 ## Development Workflows
 
 ### Initial Setup Workflow
 
-When setting up the project for the first time:
+When setting up the static site generator for the first time:
 
 1. **Consult with User** - Always confirm technology choices before initializing
-   - Frontend framework (React, Vue, Svelte, etc.)
-   - Build tool (Vite, Webpack, Parcel, etc.)
-   - Language (TypeScript recommended vs JavaScript)
-   - Styling approach (CSS Modules, Tailwind, styled-components, etc.)
+   - Static Site Generator (11ty, Astro, Hugo, etc.)
+   - Template language (Nunjucks, Liquid, JSX, Go templates, etc.)
+   - Styling approach (plain CSS, Tailwind, SCSS, etc.)
+   - Search implementation (Lunr.js, Fuse.js, FlexSearch, etc.)
 
 2. **Initialize Package Manager**
    ```bash
@@ -132,25 +213,39 @@ When setting up the project for the first time:
    pnpm init
    ```
 
-3. **Install Dependencies**
-   - Install chosen framework and build tools
+3. **Install Static Site Generator and Dependencies**
+   - Install chosen SSG (e.g., `npm install --save-dev @11ty/eleventy`)
+   - Install CSV parsing library (e.g., `csv-parse`, `papaparse`)
+   - Install search library for client-side search
    - Set up development dependencies (linters, formatters)
-   - Configure testing framework
 
 4. **Create Project Structure**
-   - Create src/ directory and subdirectories
-   - Set up public/ for static assets
-   - Initialize configuration files
+   - Create `data/` directory for CSV and YAML files
+   - Create `src/templates/` for page templates
+   - Create `src/styles/` and `src/scripts/` directories
+   - Create `_site/` or equivalent output directory (add to .gitignore)
 
-5. **Configure Tooling**
-   - Set up linting (ESLint)
-   - Configure formatting (Prettier)
-   - Set up pre-commit hooks if needed
+5. **Configure SSG**
+   - Set up configuration file (`.eleventy.js`, `astro.config.mjs`, etc.)
+   - Configure data file paths and output directory
+   - Set up template processing for CSV data
+   - Configure pass-through copy for static assets
 
-6. **Verify Setup**
-   - Ensure dev server runs
-   - Create a simple "Hello World" component
-   - Verify build process works
+6. **Create Sample Data**
+   - Create sample `names.csv` with a few rows for testing
+   - Create `config.yaml` with basic site settings
+   - Add sample Markdown content if needed
+
+7. **Create Basic Templates**
+   - Create base layout template
+   - Create name page template
+   - Create homepage template
+
+8. **Verify Setup**
+   - Ensure build process runs successfully
+   - Verify pages are generated from CSV data
+   - Check dev server with live reloading
+   - Test output in `_site/` directory
 
 ### Feature Development Workflow
 
@@ -219,11 +314,12 @@ When implementing new features:
 - Avoid `any` type - use `unknown` if type is truly unknown
 - Use type inference where possible
 
-#### Component Guidelines (for React/Vue/Svelte)
-- Prefer functional components over class components
-- Keep components small and focused
-- Extract complex logic to custom hooks/composables
-- Use meaningful prop names
+#### Template Guidelines
+- Keep templates focused and single-purpose
+- Extract reusable template partials/includes
+- Use meaningful variable names in templates
+- Separate layout templates from content templates
+- Keep template logic simple (complex logic in data processing)
 
 #### Error Handling
 - Only validate at system boundaries (user input, external APIs)
@@ -255,45 +351,139 @@ When implementing new features:
 
 The technology stack has not been chosen. When selecting technologies, consider:
 
-#### Frontend Framework Options
-- **React** - Most popular, large ecosystem, good for complex applications
-- **Vue** - Progressive framework, easier learning curve, flexible
-- **Svelte** - Compiled framework, less boilerplate, excellent performance
-- **Solid** - Reactive framework, excellent performance, smaller ecosystem
-- **Vanilla JavaScript/TypeScript** - For simpler projects, no framework overhead
+#### Static Site Generator (SSG) Options
 
-#### Build Tools Options
-- **Vite** - Modern, fast, great developer experience (recommended)
-- **Webpack** - Mature, extensive plugin ecosystem
-- **Parcel** - Zero-config bundler, good for smaller projects
-- **esbuild** - Extremely fast, minimal configuration
+**11ty (Eleventy)** - Highly Recommended for this project
+- ✅ Excellent for data-driven sites (CSV, JSON, YAML)
+- ✅ Multiple template languages (Nunjucks, Liquid, EJS, etc.)
+- ✅ Simple and flexible
+- ✅ Great performance with thousands of pages
+- ✅ Easy to set up CSV → page generation
+- ✅ Active community and good documentation
+- 📦 `npm install --save-dev @11ty/eleventy`
 
-#### Language
-- **TypeScript** - Recommended for type safety and better developer experience
-- **JavaScript** - Simpler, faster to write for small projects
+**Astro** - Modern Alternative
+- ✅ Modern, component-based approach
+- ✅ Excellent performance (partial hydration)
+- ✅ Can use React/Vue/Svelte components if needed
+- ✅ Built-in TypeScript support
+- ✅ Good for mixing static and interactive content
+- ⚠️ Slightly more complex setup than 11ty
+- 📦 `npm create astro@latest`
+
+**Hugo** - High Performance Option
+- ✅ Extremely fast build times (important for thousands of pages)
+- ✅ Go templates (different syntax than JavaScript)
+- ✅ Built-in CSV/JSON data handling
+- ✅ Single binary, no dependencies
+- ⚠️ Go-based (not Node.js) - different ecosystem
+- ⚠️ Template syntax learning curve
+- 📦 Binary download or `brew install hugo`
+
+**Jekyll** - Ruby-Based Classic
+- ✅ Mature and stable
+- ✅ GitHub Pages native support
+- ✅ Good Markdown and YAML support
+- ⚠️ Ruby-based (different ecosystem)
+- ⚠️ Slower builds with thousands of pages
+- ⚠️ CSV handling requires plugins
+- 📦 `gem install jekyll`
+
+#### CSV Parsing Libraries (Node.js)
+
+- **csv-parse** - Fast, streaming CSV parser
+- **papaparse** - Popular, works in browser and Node.js
+- **node-csv** - Complete CSV toolset
+
+#### Template Languages
+
+Depends on chosen SSG:
+- **Nunjucks** (11ty) - Powerful, similar to Jinja2
+- **Liquid** (11ty, Jekyll) - Simple, safe templating
+- **JSX/TSX** (Astro) - Component-based, familiar to React devs
+- **Go Templates** (Hugo) - Powerful but different syntax
+- **EJS** (11ty) - Simple JavaScript templating
+
+#### Client-Side Search Libraries
+
+**Lunr.js**
+- ✅ Full-text search in the browser
+- ✅ Small footprint (~8KB)
+- ✅ No external dependencies
+- ✅ Works well with static sites
+
+**Fuse.js**
+- ✅ Fuzzy search (typo-tolerant)
+- ✅ Simple API
+- ✅ Good for name searching
+- ✅ Lightweight (~12KB)
+
+**FlexSearch**
+- ✅ Very fast
+- ✅ Memory efficient
+- ✅ Advanced search features
+- ✅ Good for large datasets
+
+**Pagefind** (by Cloudflare)
+- ✅ Specifically designed for static sites
+- ✅ Indexes during build
+- ✅ Excellent performance
+- ✅ UI components included
 
 #### Styling Options
-- **CSS Modules** - Scoped CSS, works with any framework
-- **Tailwind CSS** - Utility-first CSS framework, rapid development
-- **styled-components** - CSS-in-JS for React
-- **Sass/SCSS** - CSS preprocessor with variables and mixins
-- **Vanilla CSS** - Simple, no dependencies
 
-#### Testing (when needed)
-- **Vitest** - Fast, Vite-native testing framework
-- **Jest** - Popular, comprehensive testing framework
-- **Testing Library** - User-centric component testing
-- **Playwright/Cypress** - E2E testing
+- **Plain CSS** - Simple, no dependencies (recommended for static sites)
+- **Tailwind CSS** - Utility-first CSS, rapid development
+- **Sass/SCSS** - CSS preprocessor with variables and mixins
+- **CSS-in-JS** - Only if using Astro with components
+
+#### Deployment Options
+
+- **GitHub Pages** - Free, easy, good for static sites
+- **Netlify** - Free tier, continuous deployment, forms, redirects
+- **Vercel** - Free tier, excellent performance
+- **Cloudflare Pages** - Free, fast global CDN
+- **AWS S3 + CloudFront** - Scalable, pay-as-you-go
+
+### Recommended Stack
+
+For this project's requirements (CSV data, thousands of pages, search):
+
+**Option 1: Simple and Effective (Recommended)**
+- **SSG:** 11ty (Eleventy)
+- **Templates:** Nunjucks
+- **CSV Parsing:** csv-parse or papaparse
+- **Search:** Fuse.js or Lunr.js
+- **Styling:** Plain CSS or Tailwind
+- **Deployment:** Netlify or GitHub Pages
+
+**Option 2: Modern and Fast**
+- **SSG:** Astro
+- **Templates:** Astro components (JSX-like)
+- **CSV Parsing:** papaparse
+- **Search:** Pagefind
+- **Styling:** Tailwind CSS
+- **Deployment:** Vercel or Cloudflare Pages
+
+**Option 3: Maximum Performance**
+- **SSG:** Hugo
+- **Templates:** Go templates
+- **CSV Parsing:** Built-in Hugo data
+- **Search:** Lunr.js or custom JavaScript
+- **Styling:** Plain CSS
+- **Deployment:** Cloudflare Pages
 
 ### Technology Decision Process
 
 When an AI assistant is asked to set up the project:
 
 1. **Ask the user** what technologies they prefer
-2. If user has no preference, recommend modern defaults:
-   - **Vite + React + TypeScript** (most popular)
-   - **Vite + Vue + TypeScript** (simpler alternative)
-   - **Vite + Svelte + TypeScript** (modern, performant)
+2. If user has no preference, recommend **11ty + Nunjucks + Fuse.js** for:
+   - Simplicity and flexibility
+   - Excellent CSV data handling
+   - Good performance with thousands of pages
+   - Easy template syntax
+   - Simple search implementation
 3. Document the decision in this file
 4. Proceed with setup
 
@@ -302,49 +492,117 @@ When an AI assistant is asked to set up the project:
 ## Common Tasks
 
 ### Starting Development Server
+
+**11ty:**
 ```bash
-# Once package.json exists
+npx @11ty/eleventy --serve
+# or with npm script
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+```
+
+**Astro:**
+```bash
+npm run dev
+```
+
+**Hugo:**
+```bash
+hugo server
+# or with live reload
+hugo server -D
 ```
 
 ### Building for Production
+
+**11ty:**
+```bash
+npx @11ty/eleventy
+# or with npm script
+npm run build
+```
+
+**Astro:**
 ```bash
 npm run build
-# or
-yarn build
-# or
-pnpm build
 ```
 
-### Running Tests
+**Hugo:**
 ```bash
-npm test
-# or
-yarn test
-# or
-pnpm test
+hugo
+# Output goes to public/ directory
 ```
 
-### Linting Code
+### Previewing Production Build
+
+**11ty:**
 ```bash
-npm run lint
-# or
-yarn lint
-# or
-pnpm lint
+# Serve the _site directory
+npx serve _site
+```
+
+**Astro:**
+```bash
+npm run preview
+```
+
+**Hugo:**
+```bash
+# Serve the public/ directory
+cd public && python -m http.server 8000
+```
+
+### Processing CSV Data
+
+**Example for 11ty (in .eleventy.js):**
+```javascript
+const fs = require('fs');
+const parse = require('csv-parse/sync');
+
+module.exports = function(eleventyConfig) {
+  // Read and parse CSV data
+  eleventyConfig.addGlobalData('names', () => {
+    const csvContent = fs.readFileSync('data/names.csv', 'utf-8');
+    return parse.parse(csvContent, { columns: true });
+  });
+};
+```
+
+### Building Search Index
+
+**Example script to generate search.json:**
+```javascript
+const fs = require('fs');
+const parse = require('csv-parse/sync');
+
+const csvContent = fs.readFileSync('data/names.csv', 'utf-8');
+const names = parse.parse(csvContent, { columns: true });
+
+const searchIndex = names.map(row => ({
+  name: row.name,
+  meaning: row.meaning,
+  origin: row.origin,
+  url: `/names/${row.name.toLowerCase()}/`
+}));
+
+fs.writeFileSync('_site/search.json', JSON.stringify(searchIndex));
 ```
 
 ### Installing Dependencies
+
 ```bash
 npm install <package-name>
 # or
 yarn add <package-name>
 # or
 pnpm add <package-name>
+```
+
+### Validating Data
+
+**Check CSV for required fields:**
+```bash
+# Create a validation script
+node scripts/validate-csv.js
 ```
 
 ---
@@ -484,7 +742,23 @@ EOF
 - Follow established project structure
 - Maintain consistency with chosen tech stack
 - Don't add features beyond what's requested
-- Keep components small and focused
+- Keep templates small and focused
+
+#### Static Site Generator Specific
+- **Data Processing** - Handle CSV parsing during build, not runtime
+- **Template Reuse** - Create reusable partials for repeated elements
+- **Build Performance** - Be mindful of build time with thousands of pages
+- **Search Index** - Generate search index during build process
+- **Static Output** - Remember all pages are pre-generated, no server-side logic
+- **Asset Optimization** - Minify CSS/JS, optimize images for static deployment
+- **URL Structure** - Use clean URLs (e.g., `/names/alice/` not `/names/alice.html`)
+
+#### Working with CSV Data
+- **Validation** - Always validate CSV structure before processing
+- **Encoding** - Ensure UTF-8 encoding for international names
+- **Edge Cases** - Handle names with special characters, commas, quotes
+- **Performance** - Use streaming parsers for large CSV files if needed
+- **Sample Data** - Test with small sample before processing thousands of rows
 
 #### When Reading Code
 - Use Read tool for specific files
@@ -520,6 +794,10 @@ EOF
 - ✅ All requested changes implemented
 - ✅ Code follows project conventions
 - ✅ No security vulnerabilities introduced
+- ✅ Build completes successfully (if SSG configured)
+- ✅ Generated pages look correct in _site/ output
+- ✅ Search functionality works (if implemented)
+- ✅ CSV data processes correctly (if data exists)
 - ✅ Tests pass (if tests exist)
 - ✅ Changes committed with clear message
 - ✅ Pushed to correct branch
@@ -539,6 +817,7 @@ This CLAUDE.md should be updated when:
 
 ### Version History
 
+- **v1.1** - December 7, 2025 - Updated with SSG-specific guidance, CSV data handling, and search functionality
 - **v1.0** - December 7, 2025 - Initial creation for early-stage project
 
 ---
