@@ -63,13 +63,15 @@ The-names-website is a **static website generator** for exploring and working wi
 ### What Now Exists
 - ✅ Package manager configured (package.json with npm scripts)
 - ✅ 11ty static site generator configured (.eleventy.js)
+- ✅ Tailwind CSS v4 integrated with PostCSS build pipeline
 - ✅ Project directory structure (data/, src/templates/, src/styles/, src/scripts/)
 - ✅ Sample CSV data (10 names in data/names.csv)
 - ✅ Site configuration (data/config.yaml)
-- ✅ Nunjucks templates (base layout, name pages, homepage, names listing)
-- ✅ Basic CSS styling (src/styles/main.css)
+- ✅ Nunjucks templates with Tailwind utility classes (base layout, name pages, homepage, names listing)
+- ✅ Tailwind CSS configuration (tailwind.config.js, postcss.config.js)
+- ✅ Responsive design with utility-first styling
 - ✅ Basic search JavaScript (src/scripts/search.js)
-- ✅ Working build system (generates 12 static HTML pages)
+- ✅ Working build system (generates 12 static HTML pages + compiled CSS)
 - ✅ .gitignore file
 
 ### What Doesn't Exist Yet
@@ -365,7 +367,9 @@ When implementing new features:
 - **SSG:** 11ty (Eleventy) v3.1.2
 - **Templates:** Nunjucks
 - **CSV Parsing:** csv-parse v6.1.0
-- **Styling:** Plain CSS
+- **Styling:** Tailwind CSS v4.1.17 with PostCSS
+- **CSS Processing:** @tailwindcss/postcss + autoprefixer
+- **Build Tools:** npm-run-all for parallel builds
 - **Search:** Basic JavaScript (to be enhanced with Fuse.js later)
 
 ### Alternative Options Considered
@@ -512,12 +516,13 @@ When an AI assistant is asked to set up the project:
 
 ### Starting Development Server
 
-**11ty:**
+**Current Project (11ty + Tailwind):**
 ```bash
-npx @11ty/eleventy --serve
-# or with npm script
 npm run dev
+# Builds CSS once, then runs 11ty and CSS watch in parallel
 ```
+
+**Other SSG Options:**
 
 **Astro:**
 ```bash
@@ -533,12 +538,14 @@ hugo server -D
 
 ### Building for Production
 
-**11ty:**
+**Current Project (11ty + Tailwind):**
 ```bash
-npx @11ty/eleventy
-# or with npm script
 npm run build
+# Builds 11ty HTML pages, then processes CSS with Tailwind/PostCSS
+# Output: _site/ directory with 12 HTML files + compiled CSS
 ```
+
+**Other SSG Options:**
 
 **Astro:**
 ```bash
@@ -836,6 +843,7 @@ This CLAUDE.md should be updated when:
 
 ### Version History
 
+- **v1.3** - December 7, 2025 - Integrated Tailwind CSS v4 with PostCSS build pipeline
 - **v1.2** - December 7, 2025 - Updated with selected technology stack (11ty + Nunjucks + csv-parse)
 - **v1.1** - December 7, 2025 - Updated with SSG-specific guidance, CSV data handling, and search functionality
 - **v1.0** - December 7, 2025 - Initial creation for early-stage project

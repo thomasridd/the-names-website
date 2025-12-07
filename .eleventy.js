@@ -4,7 +4,7 @@ const { parse } = require('csv-parse/sync');
 
 module.exports = function(eleventyConfig) {
   // Pass through static assets
-  eleventyConfig.addPassthroughCopy('src/styles');
+  // Note: CSS is processed separately with PostCSS/Tailwind
   eleventyConfig.addPassthroughCopy('src/scripts');
   eleventyConfig.addPassthroughCopy('src/assets');
 

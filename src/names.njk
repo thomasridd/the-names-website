@@ -5,25 +5,27 @@ permalink: /names/
 ---
 
 {% block content %}
-<section class="names-listing">
-  <h2>All Names</h2>
-  <p>Browse our collection of {{ names | length }} names.</p>
+<section>
+  <h2 class="text-4xl font-bold mb-4 text-gray-900">All Names</h2>
+  <p class="text-lg text-gray-600 mb-8">Browse our collection of {{ names | length }} names.</p>
 
-  <div class="search-box">
-    <input type="text" id="search-input" placeholder="Search names...">
+  <div class="mb-8">
+    <input type="text" id="search-input" class="search-input" placeholder="Search names...">
     <div id="search-results"></div>
   </div>
 
-  <div class="names-list">
+  <div class="bg-white rounded-lg divide-y divide-gray-200">
     {% for nameData in names | sort(false, false, 'name') %}
     <article class="name-item">
-      <h3><a href="/names/{{ nameData.name | lower | replace(' ', '-') }}/">{{ nameData.name }}</a></h3>
-      <p class="details">
-        <span class="origin">{{ nameData.origin }}</span>
-        {% if nameData.gender %} | <span class="gender">{{ nameData.gender }}</span>{% endif %}
-        {% if nameData.popularity %} | <span class="popularity">{{ nameData.popularity }}</span>{% endif %}
+      <h3 class="text-2xl font-semibold mb-2">
+        <a href="/names/{{ nameData.name | lower | replace(' ', '-') }}/" class="text-primary hover:text-blue-700">{{ nameData.name }}</a>
+      </h3>
+      <p class="text-sm text-gray-600 mb-2">
+        <span>{{ nameData.origin }}</span>
+        {% if nameData.gender %}<span class="mx-2">|</span><span>{{ nameData.gender }}</span>{% endif %}
+        {% if nameData.popularity %}<span class="mx-2">|</span><span>{{ nameData.popularity }}</span>{% endif %}
       </p>
-      <p class="meaning">{{ nameData.meaning }}</p>
+      <p class="text-gray-700">{{ nameData.meaning }}</p>
     </article>
     {% endfor %}
   </div>

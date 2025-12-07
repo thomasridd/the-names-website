@@ -11,35 +11,43 @@ layout: base.njk
 {% block description %}Learn about the name {{ nameData.name }}: origin, meaning, and more.{% endblock %}
 
 {% block content %}
-<article class="name-page">
-  <h1>{{ nameData.name }}</h1>
+<article class="bg-white rounded-lg p-8">
+  <h1 class="text-5xl font-bold mb-8 text-gray-900">{{ nameData.name }}</h1>
 
-  <div class="name-details">
-    <dl>
+  <div class="mb-8">
+    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-6">
       {% if nameData.origin %}
-      <dt>Origin:</dt>
-      <dd>{{ nameData.origin }}</dd>
+      <div>
+        <dt class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-1">Origin</dt>
+        <dd class="text-lg text-gray-900">{{ nameData.origin }}</dd>
+      </div>
       {% endif %}
 
       {% if nameData.meaning %}
-      <dt>Meaning:</dt>
-      <dd>{{ nameData.meaning }}</dd>
+      <div>
+        <dt class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-1">Meaning</dt>
+        <dd class="text-lg text-gray-900">{{ nameData.meaning }}</dd>
+      </div>
       {% endif %}
 
       {% if nameData.gender %}
-      <dt>Gender:</dt>
-      <dd>{{ nameData.gender }}</dd>
+      <div>
+        <dt class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-1">Gender</dt>
+        <dd class="text-lg text-gray-900">{{ nameData.gender }}</dd>
+      </div>
       {% endif %}
 
       {% if nameData.popularity %}
-      <dt>Popularity:</dt>
-      <dd>{{ nameData.popularity }}</dd>
+      <div>
+        <dt class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-1">Popularity</dt>
+        <dd class="text-lg text-gray-900">{{ nameData.popularity }}</dd>
+      </div>
       {% endif %}
     </dl>
   </div>
 
-  <nav class="name-navigation">
-    <a href="/names/">&larr; Back to all names</a>
+  <nav class="pt-6 border-t border-gray-200">
+    <a href="/names/" class="text-primary hover:text-blue-700 font-medium">&larr; Back to all names</a>
   </nav>
 </article>
 {% endblock %}
