@@ -86,6 +86,86 @@ module.exports = function(eleventyConfig) {
     return { recent: {}, historic: {} };
   });
 
+  // Generate classification pages data
+  eleventyConfig.addGlobalData('classifications', () => {
+    const boysPath = path.join(__dirname, 'data', 'boys.json');
+    const girlsPath = path.join(__dirname, 'data', 'girls.json');
+    const descriptionsPath = path.join(__dirname, 'data', 'classification-descriptions.json');
+
+    let allNames = [];
+
+    // Load boys names
+    if (fs.existsSync(boysPath)) {
+      const boysData = JSON.parse(fs.readFileSync(boysPath, 'utf-8'));
+      const boysWithGender = boysData.map(name => ({ ...name, gender: 'Boy' }));
+      allNames = allNames.concat(boysWithGender);
+    }
+
+    // Load girls names
+    if (fs.existsSync(girlsPath)) {
+      const girlsData = JSON.parse(fs.readFileSync(girlsPath, 'utf-8'));
+      const girlsWithGender = girlsData.map(name => ({ ...name, gender: 'Girl' }));
+      allNames = allNames.concat(girlsWithGender);
+    }
+
+    // Load descriptions
+    let descriptions = { recent: {}, historic: {} };
+    if (fs.existsSync(descriptionsPath)) {
+      descriptions = JSON.parse(fs.readFileSync(descriptionsPath, 'utf-8'));
+    }
+
+    const classifications = [];
+
+    // Process recent classifications
+    const recentGroups = {};
+    allNames.forEach(name => {
+      if (name.recentClassification) {
+        if (!recentGroups[name.recentClassification]) {
+          recentGroups[name.recentClassification] = [];
+        }
+        recentGroups[name.recentClassification].push(name);
+      }
+    });
+
+    Object.keys(recentGroups).forEach(classificationName => {
+      classifications.push({
+        name: classificationName,
+        slug: createSlug(classificationName),
+        type: 'recent',
+        period: '1996-2024',
+        description: descriptions.recent[classificationName] || '',
+        names: recentGroups[classificationName],
+        count: recentGroups[classificationName].length
+      });
+    });
+
+    // Process historic classifications
+    const historicGroups = {};
+    allNames.forEach(name => {
+      if (name.historicClassification) {
+        if (!historicGroups[name.historicClassification]) {
+          historicGroups[name.historicClassification] = [];
+        }
+        historicGroups[name.historicClassification].push(name);
+      }
+    });
+
+    Object.keys(historicGroups).forEach(classificationName => {
+      classifications.push({
+        name: classificationName,
+        slug: createSlug(classificationName),
+        type: 'historic',
+        period: '1904-2024',
+        description: descriptions.historic[classificationName] || '',
+        names: historicGroups[classificationName],
+        count: historicGroups[classificationName].length
+      });
+    });
+
+    console.log(`Generated ${classifications.length} classification pages`);
+    return classifications;
+  });
+
   return {
     dir: {
       input: 'src',

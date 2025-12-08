@@ -1,0 +1,68 @@
+---
+pagination:
+  data: classifications
+  size: 1
+  alias: classification
+permalink: /classifications/{{ classification.type }}/{{ classification.slug }}/
+---
+
+{% extends "base.njk" %}
+
+{% block title %}{{ classification.name }} Names - {{ siteConfig.title }}{% endblock %}
+{% block description %}Browse all {{ classification.name }} names: {{ classification.description }}{% endblock %}
+
+{% block content %}
+<article class="bg-white rounded-lg p-8 shadow-sm">
+  <div class="mb-8">
+    <div class="mb-2">
+      <a href="/classifications/" class="text-blue-600 hover:text-blue-700 text-sm">&larr; All Classifications</a>
+    </div>
+    <h1 class="text-4xl font-bold mb-2 text-gray-900">{{ classification.name }}</h1>
+    <p class="text-lg text-gray-600 mb-4">{{ classification.description }}</p>
+    <p class="text-sm text-gray-500">
+      {{ classification.type | capitalize }} classification ({{ classification.period }})
+    </p>
+  </div>
+
+  {% set boys = classification.names | selectattr('gender', 'equalto', 'Boy') | list %}
+  {% set girls = classification.names | selectattr('gender', 'equalto', 'Girl') | list %}
+
+  <div class="grid md:grid-cols-2 gap-8">
+    {% if boys.length > 0 %}
+    <div class="bg-blue-50 rounded-lg p-6">
+      <h2 class="text-2xl font-bold mb-4 text-blue-900">Boys' Names ({{ boys.length }})</h2>
+      <ul class="space-y-2">
+        {% for name in boys | sort(false, false, 'rank') %}
+        <li class="flex justify-between items-center">
+          <a href="/names/boy/{{ name.uniqueSlug }}/" class="text-blue-600 hover:text-blue-800 font-medium">
+            {{ name.name }}
+          </a>
+          {% if name.rank %}
+          <span class="text-sm text-gray-600">#{{ name.rank }}</span>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if girls.length > 0 %}
+    <div class="bg-pink-50 rounded-lg p-6">
+      <h2 class="text-2xl font-bold mb-4 text-pink-900">Girls' Names ({{ girls.length }})</h2>
+      <ul class="space-y-2">
+        {% for name in girls | sort(false, false, 'rank') %}
+        <li class="flex justify-between items-center">
+          <a href="/names/girl/{{ name.uniqueSlug }}/" class="text-pink-600 hover:text-pink-800 font-medium">
+            {{ name.name }}
+          </a>
+          {% if name.rank %}
+          <span class="text-sm text-gray-600">#{{ name.rank }}</span>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+</article>
+{% endblock %}
