@@ -1,0 +1,105 @@
+---
+layout: base.njk
+title: Home
+permalink: /
+---
+
+{% block content %}
+<section class="text-center py-16 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl mb-12 shadow-sm">
+  <h1 class="text-5xl sm:text-6xl font-bold mb-6 text-gray-900">The Names Website</h1>
+  <p class="text-xl sm:text-2xl text-gray-700 max-w-3xl mx-auto mb-8 leading-relaxed">
+    Discover the stories, meanings, and cultural heritage behind names from around the world
+  </p>
+  <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+    <a href="/names/" class="btn-primary px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+      Browse All Names
+    </a>
+    <a href="#search" class="btn-secondary px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold border-2 border-blue-600 hover:bg-blue-50 transition-colors">
+      Search Names
+    </a>
+  </div>
+</section>
+
+<section class="mb-12">
+  <div class="flex justify-between items-baseline mb-6">
+    <h2 class="text-3xl font-bold text-gray-900">Featured Names</h2>
+    <a href="/names/" class="text-blue-600 hover:text-blue-700 font-medium">View all →</a>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for nameData in names | slice(0, 6) %}
+    <div class="name-card bg-white hover:shadow-lg transition-shadow duration-200">
+      <h3 class="text-2xl font-bold mb-2">
+        <a href="/names/{{ nameData.name | lower | replace(' ', '-') }}/" class="text-blue-600 hover:text-blue-800 transition-colors">
+          {{ nameData.name }}
+        </a>
+      </h3>
+      <p class="text-sm text-gray-500 uppercase tracking-wide mb-3 font-medium">{{ nameData.origin }}</p>
+      <p class="text-gray-700 leading-relaxed">{{ nameData.meaning }}</p>
+      {% if nameData.popularity %}
+      <div class="mt-3 pt-3 border-t border-gray-100">
+        <span class="text-xs text-gray-500">Popularity: {{ nameData.popularity }}</span>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="grid md:grid-cols-2 gap-8 mb-12">
+  <div class="bg-white rounded-lg p-8 shadow-sm">
+    <div class="text-blue-600 text-3xl mb-4">📚</div>
+    <h2 class="text-2xl font-bold mb-4 text-gray-900">Rich Cultural Heritage</h2>
+    <p class="text-gray-700 leading-relaxed mb-4">
+      Every name carries with it centuries of history, tradition, and cultural significance. Explore names from dozens of cultures and discover the rich tapestry of human naming traditions.
+    </p>
+    <p class="text-gray-700 leading-relaxed">
+      From ancient Greek and Latin origins to modern multicultural influences, understand how names have evolved and what they reveal about our shared heritage.
+    </p>
+  </div>
+
+  <div class="bg-white rounded-lg p-8 shadow-sm">
+    <div class="text-blue-600 text-3xl mb-4">🔍</div>
+    <h2 class="text-2xl font-bold mb-4 text-gray-900">Discover Meanings</h2>
+    <p class="text-gray-700 leading-relaxed mb-4">
+      Names are more than just labels—they carry meanings, aspirations, and stories. Whether you're choosing a name for a new arrival or simply curious about your own name's origins, you'll find comprehensive information here.
+    </p>
+    <p class="text-gray-700 leading-relaxed">
+      Each name entry includes its etymological roots, historical usage, and cultural context to give you a complete understanding.
+    </p>
+  </div>
+</section>
+
+<section class="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-8 mb-12">
+  <h2 class="text-3xl font-bold mb-6 text-gray-900 text-center">Why Names Matter</h2>
+  <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+    <div class="text-center">
+      <div class="text-4xl mb-3">🌍</div>
+      <h3 class="font-bold text-lg mb-2 text-gray-900">Cultural Identity</h3>
+      <p class="text-gray-700 text-sm">Names connect us to our heritage and help preserve cultural traditions across generations.</p>
+    </div>
+    <div class="text-center">
+      <div class="text-4xl mb-3">👶</div>
+      <h3 class="font-bold text-lg mb-2 text-gray-900">Personal Significance</h3>
+      <p class="text-gray-700 text-sm">Choosing a name is one of the first meaningful decisions parents make for their children.</p>
+    </div>
+    <div class="text-center">
+      <div class="text-4xl mb-3">📖</div>
+      <h3 class="font-bold text-lg mb-2 text-gray-900">Historical Context</h3>
+      <p class="text-gray-700 text-sm">Names reflect historical events, religious beliefs, and social movements throughout time.</p>
+    </div>
+  </div>
+</section>
+
+<section class="bg-white rounded-lg p-8 shadow-sm">
+  <h2 class="text-2xl font-bold mb-4 text-gray-900">About This Website</h2>
+  <p class="text-gray-700 leading-relaxed mb-4">
+    The Names Website is a comprehensive resource for exploring the fascinating world of personal names. We've compiled information about names from cultures around the globe, providing insights into their origins, meanings, and historical significance.
+  </p>
+  <p class="text-gray-700 leading-relaxed mb-4">
+    Whether you're researching baby names, exploring your family history, or simply curious about the stories behind names, you'll find a wealth of information organized and accessible for easy discovery.
+  </p>
+  <p class="text-gray-700 leading-relaxed">
+    Browse our collection of {{ names | length }} names, each with detailed information about etymology, cultural background, and usage patterns across different time periods and regions.
+  </p>
+</section>
+{% endblock %}
