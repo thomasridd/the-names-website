@@ -8,6 +8,14 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.addPassthroughCopy('src/scripts');
   eleventyConfig.addPassthroughCopy('src/assets');
 
+  // Helper function to create URL-safe slugs
+  function createSlug(name) {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
   // Load JSON data for all names (boys + girls)
   eleventyConfig.addGlobalData('allNames', () => {
     const boysPath = path.join(__dirname, 'data', 'boys.json');
@@ -18,7 +26,9 @@ module.exports = function(eleventyConfig) {
     // Load boys names
     if (fs.existsSync(boysPath)) {
       const boysData = JSON.parse(fs.readFileSync(boysPath, 'utf-8'));
-      const boysWithGender = boysData.map(name => ({ ...name, gender: 'Boy' }));
+      const boysWithGender = boysData.map(name => {
+        return { ...name, gender: 'Boy' };
+      });
       allNames = allNames.concat(boysWithGender);
       console.log(`Loaded ${boysData.length} boys names`);
     }
@@ -26,7 +36,9 @@ module.exports = function(eleventyConfig) {
     // Load girls names
     if (fs.existsSync(girlsPath)) {
       const girlsData = JSON.parse(fs.readFileSync(girlsPath, 'utf-8'));
-      const girlsWithGender = girlsData.map(name => ({ ...name, gender: 'Girl' }));
+      const girlsWithGender = girlsData.map(name => {
+        return { ...name, gender: 'Girl' };
+      });
       allNames = allNames.concat(girlsWithGender);
       console.log(`Loaded ${girlsData.length} girls names`);
     }

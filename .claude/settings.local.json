@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(chmod:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(npm run build:*)",
+      "Bash(cat:*)",
+      "Bash(node scripts/add-historic-classifications.js:*)",
+      "Bash(node scripts/add-recent-classifications.js:*)",
+      "Bash(node -e:*)"
     ],
     "deny": [],
     "ask": []

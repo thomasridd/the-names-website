@@ -13,14 +13,16 @@ function generateUniqueSlugs(names, gender) {
   // First pass: count how many times each slug appears
   const slugCounts = {};
   names.forEach(name => {
-    const slug = slugify(name.name);
+    const modifiedName = name.name.endsWith('-') ? name.name + 'dash' : name.name
+    const slug = slugify(modifiedName);
     slugCounts[slug] = (slugCounts[slug] || 0) + 1;
   });
 
   // Second pass: assign unique slugs
   const slugCounters = {};
   const results = names.map(name => {
-    const baseSlug = slugify(name.name);
+    const modifiedName = name.name.endsWith('-') ? name.name + 'dash' : name.name
+    const baseSlug = slugify(modifiedName);
 
     // If this slug only appears once, use it as-is
     if (slugCounts[baseSlug] === 1) {

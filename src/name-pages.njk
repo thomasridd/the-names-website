@@ -4,8 +4,9 @@ pagination:
   size: 1
   alias: nameData
 permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
-layout: base.njk
 ---
+
+{% extends "base.njk" %}
 
 {% block title %}{{ nameData.name }} - {{ siteConfig.title }}{% endblock %}
 {% block description %}Discover {{ nameData.name }}: A {{ nameData.gender }}'s name ranked #{{ nameData.rank }} with detailed popularity trends and historical data.{% endblock %}
@@ -27,7 +28,7 @@ layout: base.njk
 
     <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-6">
       <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Babies Named</h2>
-      <p class="text-4xl font-bold text-green-600">{{ nameData.count | toLocaleString }}</p>
+      <p class="text-4xl font-bold text-green-600">{{ nameData.count }}</p>
       <p class="text-sm text-gray-600 mt-2">in 2024</p>
     </div>
   </div>
