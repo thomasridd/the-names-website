@@ -77,6 +77,15 @@ module.exports = function(eleventyConfig) {
     };
   });
 
+  // Load classification descriptions
+  eleventyConfig.addGlobalData('classificationDescriptions', () => {
+    const descriptionsPath = path.join(__dirname, 'data', 'classification-descriptions.json');
+    if (fs.existsSync(descriptionsPath)) {
+      return JSON.parse(fs.readFileSync(descriptionsPath, 'utf-8'));
+    }
+    return { recent: {}, historic: {} };
+  });
+
   return {
     dir: {
       input: 'src',
