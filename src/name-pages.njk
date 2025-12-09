@@ -110,14 +110,8 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     </div>
     {% endif %}
 
-    <div class="grid grid-cols-auto gap-2">
-      {% for rank in nameData.rankHistoric %}
-        {% if rank != 'x' %}
-        <span class="inline-block bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium">
-          #{{ rank }}
-        </span>
-        {% endif %}
-      {% endfor %}
+    <div class="bg-white rounded p-4">
+      <div id="historic-chart" class="w-full" style="height: 300px;"></div>
     </div>
 
     <details class="mt-4">
@@ -155,4 +149,127 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     <a href="/names/" class="text-blue-600 hover:text-blue-700 font-medium">&larr; Back to all names</a>
   </nav>
 </article>
+
+<script>
+  // Historic rankings chart
+  {% if nameData.rankHistoric and nameData.rankHistoric.length > 0 %}
+  (function() {
+    const data = {{ nameData.rankHistoric | dump | safe }};
+    const decades = data.map((rank, i) => ({
+      decade: (1900 + i * 10) + 's',
+      rank: rank === 'x' ? null : parseInt(rank),
+      index: i
+    }));
+
+    // Set up dimensions
+    const container = document.getElementById('historic-chart');
+    const margin = {top: 20, right: 40, bottom: 60, left: 60};
+
+    function drawChart() {
+      // Clear previous chart
+      d3.select('#historic-chart').selectAll('*').remove();
+
+      const containerWidth = container.clientWidth;
+      const width = containerWidth - margin.left - margin.right;
+      const height = 300 - margin.top - margin.bottom;
+
+      // Create SVG
+      const svg = d3.select('#historic-chart')
+        .append('svg')
+        .attr('width', containerWidth)
+        .attr('height', 300)
+        .append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+
+      // Create scales
+      const xScale = d3.scaleLinear()
+        .domain([100, 1])  // Inverted: 100 to 1
+        .range([0, width]);
+
+      const yScale = d3.scaleBand()
+        .domain(decades.map(d => d.decade))
+        .range([0, height])
+        .padding(0.2);
+
+      // Add X axis
+      svg.append('g')
+        .attr('transform', `translate(0,${height})`)
+        .call(d3.axisBottom(xScale).ticks(5))
+        .style('font-size', '12px');
+
+      // Add X axis label
+      svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', height + 50)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '14px')
+        .style('fill', '#6b7280')
+        .text('Rank (1 = Most Popular)');
+
+      // Add Y axis
+      svg.append('g')
+        .call(d3.axisLeft(yScale))
+        .style('font-size', '12px');
+
+      // Add Y axis label
+      svg.append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('x', -height / 2)
+        .attr('y', -45)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '14px')
+        .style('fill', '#6b7280')
+        .text('Decade');
+
+      // Add bars
+      svg.selectAll('.bar')
+        .data(decades)
+        .join('rect')
+        .attr('class', 'bar')
+        .attr('x', d => d.rank ? xScale(100) : xScale(100))
+        .attr('y', d => yScale(d.decade))
+        .attr('width', d => d.rank ? xScale(100) - xScale(d.rank) : 0)
+        .attr('height', yScale.bandwidth())
+        .attr('fill', d => d.rank ? '#f59e0b' : '#e5e7eb')
+        .attr('stroke', d => d.rank ? '#d97706' : '#d1d5db')
+        .attr('stroke-width', 1)
+        .style('cursor', d => d.rank ? 'pointer' : 'default')
+        .on('mouseover', function(event, d) {
+          if (d.rank) {
+            d3.select(this).attr('fill', '#d97706');
+          }
+        })
+        .on('mouseout', function(event, d) {
+          if (d.rank) {
+            d3.select(this).attr('fill', '#f59e0b');
+          }
+        });
+
+      // Add rank labels on bars
+      svg.selectAll('.label')
+        .data(decades.filter(d => d.rank))
+        .join('text')
+        .attr('class', 'label')
+        .attr('x', d => xScale(d.rank) - 5)
+        .attr('y', d => yScale(d.decade) + yScale.bandwidth() / 2)
+        .attr('dy', '0.35em')
+        .attr('text-anchor', 'end')
+        .style('font-size', '12px')
+        .style('font-weight', '600')
+        .style('fill', '#78350f')
+        .text(d => `#${d.rank}`);
+    }
+
+    // Initial draw
+    drawChart();
+
+    // Redraw on window resize
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(drawChart, 250);
+    });
+  })();
+  {% endif %}
+</script>
 {% endblock %}
