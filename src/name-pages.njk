@@ -141,7 +141,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 </article>
 
 <script>
-  // Modern rankings horizontal bar chart with inverted logarithmic scale
+  // Modern rankings dot plot with linear axis
   {% if nameData.rankFrom1996 and nameData.rankFrom1996.length > 0 %}
   (function() {
     const data = {{ nameData.rankFrom1996 | dump | safe }};
@@ -175,10 +175,9 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
-      // X scale - inverted logarithmic (rank 1 at left, higher ranks at right)
-      const maxRank = Math.max(...chartData.map(d => d.rank));
-      const xScale = d3.scaleLog()
-        .domain([1, Math.max(maxRank, 500)])
+      // X scale - linear from worst to best (left to right: high numbers to low numbers)
+      const xScale = d3.scaleLinear()
+        .domain([worstRank, bestRank])  // Reversed: worst (high) to best (low)
         .range([0, width]);
 
       // Y scale for years (vertical)
@@ -187,11 +186,11 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .range([0, height])
         .padding(0.2);
 
-      // Add X axis - logarithmic
+      // Add X axis - linear
       svg.append('g')
         .attr('transform', `translate(0,${height})`)
         .call(d3.axisBottom(xScale)
-          .tickValues([1, 5, 10, 50, 100, 500])
+          .ticks(8)
           .tickFormat(d => `#${d}`))
         .style('font-size', '12px');
 
@@ -202,7 +201,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .attr('text-anchor', 'middle')
         .style('font-size', '14px')
         .style('fill', '#6b7280')
-        .text('Rank (Logarithmic Scale)');
+        .text('Rank (Worst → Best)');
 
       // Add Y axis with 5-year intervals
       const fiveYearTicks = d3.range(1996, 2025, 5);
@@ -212,19 +211,20 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           .tickFormat(d3.format('d')))
         .style('font-size', '12px');
 
-      // Add bars (very thin, unlabelled) - horizontal
-      svg.selectAll('.bar')
+      // Add dots
+      svg.selectAll('.dot')
         .data(chartData)
-        .join('rect')
-        .attr('class', 'bar')
-        .attr('x', 0)
-        .attr('y', d => yScale(d.year))
-        .attr('width', d => xScale(d.rank))
-        .attr('height', yScale.bandwidth())
+        .join('circle')
+        .attr('class', 'dot')
+        .attr('cx', d => xScale(d.rank))
+        .attr('cy', d => yScale(d.year) + yScale.bandwidth() / 2)
+        .attr('r', 4)
         .attr('fill', '#3b82f6')
         .attr('opacity', 0.7)
         .on('mouseover', function(event, d) {
-          d3.select(this).attr('opacity', 1);
+          d3.select(this)
+            .attr('r', 6)
+            .attr('opacity', 1);
 
           // Show tooltip
           const tooltip = svg.append('g')
@@ -252,7 +252,9 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           text.raise();
         })
         .on('mouseout', function() {
-          d3.select(this).attr('opacity', 0.7);
+          d3.select(this)
+            .attr('r', 4)
+            .attr('opacity', 0.7);
           svg.selectAll('.tooltip').remove();
         });
 
@@ -262,15 +264,15 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         svg.append('circle')
           .attr('cx', xScale(bestRank))
           .attr('cy', yScale(bestData.year) + yScale.bandwidth() / 2)
-          .attr('r', 5)
+          .attr('r', 6)
           .attr('fill', '#10b981')
           .attr('stroke', 'white')
           .attr('stroke-width', 2);
 
         svg.append('text')
-          .attr('x', xScale(bestRank) - 12)
+          .attr('x', xScale(bestRank) + 12)
           .attr('y', yScale(bestData.year) + yScale.bandwidth() / 2)
-          .attr('text-anchor', 'end')
+          .attr('text-anchor', 'start')
           .attr('dy', '0.35em')
           .style('font-size', '11px')
           .style('font-weight', '700')
@@ -283,15 +285,15 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         svg.append('circle')
           .attr('cx', xScale(worstRank))
           .attr('cy', yScale(worstData.year) + yScale.bandwidth() / 2)
-          .attr('r', 5)
+          .attr('r', 6)
           .attr('fill', '#ef4444')
           .attr('stroke', 'white')
           .attr('stroke-width', 2);
 
         svg.append('text')
-          .attr('x', xScale(worstRank) + 12)
+          .attr('x', xScale(worstRank) - 12)
           .attr('y', yScale(worstData.year) + yScale.bandwidth() / 2)
-          .attr('text-anchor', 'start')
+          .attr('text-anchor', 'end')
           .attr('dy', '0.35em')
           .style('font-size', '11px')
           .style('font-weight', '700')
