@@ -146,7 +146,6 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
   (function() {
     const data = {{ nameData.rankFrom1996 | dump | safe }};
     const startYear = 1996;
-    const yearsPerRow = 5;
 
     // Prepare data for heatmap
     const heatmapData = data.map((rank, i) => ({
@@ -155,19 +154,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       yearIndex: i
     }));
 
-    // Group into rows of 5
-    const rows = [];
-    for (let i = 0; i < heatmapData.length; i += yearsPerRow) {
-      rows.push({
-        startYear: heatmapData[i].year,
-        data: heatmapData.slice(i, i + yearsPerRow)
-      });
-    }
-
     const container = d3.select('#modern-heatmap');
-    const cellSize = 80;
-    const cellPadding = 4;
-    const labelWidth = 60;
 
     // Color scale (darker blue for better ranks/lower numbers)
     const colorScale = d3.scaleSequential()
@@ -177,10 +164,27 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     function drawHeatmap() {
       container.selectAll('*').remove();
 
+      // Responsive configuration
+      const containerWidth = container.node().getBoundingClientRect().width;
+      const isMobile = containerWidth < 640;
+      const yearsPerRow = isMobile ? 3 : 5;
+      const cellSize = isMobile ? 70 : 80;
+      const cellPadding = 2;
+      const labelWidth = isMobile ? 50 : 60;
+
+      // Group into rows
+      const rows = [];
+      for (let i = 0; i < heatmapData.length; i += yearsPerRow) {
+        rows.push({
+          startYear: heatmapData[i].year,
+          data: heatmapData.slice(i, i + yearsPerRow)
+        });
+      }
+
       const svg = container
         .append('svg')
         .attr('width', '100%')
-        .attr('height', rows.length * (cellSize + cellPadding) + 20);
+        .attr('height', rows.length * (cellSize + cellPadding) + 10);
 
       rows.forEach((row, rowIndex) => {
         const rowGroup = svg.append('g')
@@ -191,7 +195,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           .attr('x', 5)
           .attr('y', cellSize / 2)
           .attr('dy', '0.35em')
-          .style('font-size', '14px')
+          .style('font-size', isMobile ? '12px' : '14px')
           .style('font-weight', '600')
           .style('fill', '#374151')
           .text(row.startYear);
@@ -225,25 +229,16 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
               }
             });
 
-          // Year label (last two digits)
+          // Rank label only (no # symbol, no year)
           cellGroup.append('text')
             .attr('x', cellSize / 2)
-            .attr('y', 20)
+            .attr('y', cellSize / 2)
+            .attr('dy', '0.35em')
             .attr('text-anchor', 'middle')
-            .style('font-size', '11px')
-            .style('font-weight', '500')
-            .style('fill', d.rank && d.rank <= 100 ? '#ffffff' : '#6b7280')
-            .text(`'${String(d.year).slice(-2)}`);
-
-          // Rank label
-          cellGroup.append('text')
-            .attr('x', cellSize / 2)
-            .attr('y', cellSize / 2 + 8)
-            .attr('text-anchor', 'middle')
-            .style('font-size', '18px')
+            .style('font-size', isMobile ? '16px' : '20px')
             .style('font-weight', '700')
             .style('fill', d.rank && d.rank <= 100 ? '#ffffff' : '#9ca3af')
-            .text(d.rank ? `#${d.rank}` : '—');
+            .text(d.rank ? d.rank : '—');
         });
       });
     }
