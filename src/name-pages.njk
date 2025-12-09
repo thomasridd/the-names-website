@@ -168,9 +168,9 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       const containerWidth = container.node().getBoundingClientRect().width;
       const isMobile = containerWidth < 640;
       const yearsPerRow = isMobile ? 3 : 5;
-      const cellSize = isMobile ? 70 : 80;
-      const cellPadding = 2;
-      const labelWidth = isMobile ? 50 : 60;
+      const cellSize = isMobile ? 50 : 80;
+      const cellPadding = isMobile ? 1 : 2;
+      const labelWidth = isMobile ? 35 : 60;
 
       // Group into rows
       const rows = [];
@@ -192,10 +192,10 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 
         // Row label
         rowGroup.append('text')
-          .attr('x', 5)
+          .attr('x', isMobile ? 2 : 5)
           .attr('y', cellSize / 2)
           .attr('dy', '0.35em')
-          .style('font-size', isMobile ? '12px' : '14px')
+          .style('font-size', isMobile ? '10px' : '14px')
           .style('font-weight', '600')
           .style('fill', '#374151')
           .text(row.startYear);
@@ -209,23 +209,17 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           cellGroup.append('rect')
             .attr('width', cellSize)
             .attr('height', cellSize)
-            .attr('rx', 4)
+            .attr('rx', isMobile ? 2 : 4)
             .attr('fill', d.rank ? colorScale(d.rank) : '#f3f4f6')
-            .attr('stroke', d.rank ? '#1e40af' : '#d1d5db')
-            .attr('stroke-width', 1)
             .style('cursor', d.rank ? 'pointer' : 'default')
             .on('mouseover', function() {
               if (d.rank) {
-                d3.select(this)
-                  .attr('stroke-width', 2)
-                  .attr('stroke', '#1e3a8a');
+                d3.select(this).attr('opacity', 0.8);
               }
             })
             .on('mouseout', function() {
               if (d.rank) {
-                d3.select(this)
-                  .attr('stroke-width', 1)
-                  .attr('stroke', '#1e40af');
+                d3.select(this).attr('opacity', 1);
               }
             });
 
@@ -235,7 +229,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
             .attr('y', cellSize / 2)
             .attr('dy', '0.35em')
             .attr('text-anchor', 'middle')
-            .style('font-size', isMobile ? '16px' : '20px')
+            .style('font-size', isMobile ? '12px' : '20px')
             .style('font-weight', '700')
             .style('fill', d.rank && d.rank <= 100 ? '#ffffff' : '#9ca3af')
             .text(d.rank ? d.rank : '—');
