@@ -175,49 +175,50 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
-      // X scale - linear from worst to best (left to right: high numbers to low numbers)
-      const xScale = d3.scaleLinear()
-        .domain([worstRank, bestRank])  // Reversed: worst (high) to best (low)
-        .range([0, width]);
-
-      // Y scale for years (vertical)
-      const yScale = d3.scaleBand()
+      // X scale for years (horizontal)
+      const xScale = d3.scaleBand()
         .domain(chartData.map(d => d.year))
-        .range([0, height])
+        .range([0, width])
         .padding(0.2);
 
-      // Add X axis - linear (only show min and max)
+      // Y scale - linear from worst to best (top to bottom: high numbers to low numbers)
+      const yScale = d3.scaleLinear()
+        .domain([worstRank, bestRank])  // Reversed: worst (high) to best (low)
+        .range([0, height]);
+
+      // Add X axis with 5-year intervals
+      const fiveYearTicks = d3.range(1996, 2025, 5);
       svg.append('g')
         .attr('transform', `translate(0,${height})`)
         .call(d3.axisBottom(xScale)
+          .tickValues(fiveYearTicks)
+          .tickFormat(d3.format('d')))
+        .style('font-size', '12px');
+
+      // Add Y axis - linear (only show min and max)
+      svg.append('g')
+        .call(d3.axisLeft(yScale)
           .tickValues([worstRank, bestRank])
           .tickFormat(d => `#${d}`))
         .style('font-size', '12px');
 
-      // Add X axis label
+      // Add Y axis label
       svg.append('text')
-        .attr('x', width / 2)
-        .attr('y', height + 50)
+        .attr('transform', 'rotate(-90)')
+        .attr('x', -height / 2)
+        .attr('y', -45)
         .attr('text-anchor', 'middle')
         .style('font-size', '14px')
         .style('fill', '#6b7280')
         .text('Rank (Worst → Best)');
-
-      // Add Y axis with 5-year intervals
-      const fiveYearTicks = d3.range(1996, 2025, 5);
-      svg.append('g')
-        .call(d3.axisLeft(yScale)
-          .tickValues(fiveYearTicks)
-          .tickFormat(d3.format('d')))
-        .style('font-size', '12px');
 
       // Add dots
       svg.selectAll('.dot')
         .data(chartData)
         .join('circle')
         .attr('class', 'dot')
-        .attr('cx', d => xScale(d.rank))
-        .attr('cy', d => yScale(d.year) + yScale.bandwidth() / 2)
+        .attr('cx', d => xScale(d.year) + xScale.bandwidth() / 2)
+        .attr('cy', d => yScale(d.rank))
         .attr('r', 4)
         .attr('fill', '#3b82f6')
         .attr('opacity', 0.7)
@@ -229,7 +230,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           // Show tooltip
           const tooltip = svg.append('g')
             .attr('class', 'tooltip')
-            .attr('transform', `translate(${xScale(d.rank) + 10},${yScale(d.year) + yScale.bandwidth()/2})`);
+            .attr('transform', `translate(${xScale(d.year) + xScale.bandwidth()/2 + 10},${yScale(d.rank)})`);
 
           const text = tooltip.append('text')
             .attr('text-anchor', 'start')
@@ -262,8 +263,8 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       if (bestRank !== null) {
         const bestData = chartData.find(d => d.rank === bestRank);
         svg.append('circle')
-          .attr('cx', xScale(bestRank))
-          .attr('cy', yScale(bestData.year) + yScale.bandwidth() / 2)
+          .attr('cx', xScale(bestData.year) + xScale.bandwidth() / 2)
+          .attr('cy', yScale(bestRank))
           .attr('r', 6)
           .attr('fill', '#10b981')
           .attr('stroke', 'white')
@@ -273,8 +274,8 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       if (worstRank !== null && worstRank !== bestRank) {
         const worstData = chartData.find(d => d.rank === worstRank);
         svg.append('circle')
-          .attr('cx', xScale(worstRank))
-          .attr('cy', yScale(worstData.year) + yScale.bandwidth() / 2)
+          .attr('cx', xScale(worstData.year) + xScale.bandwidth() / 2)
+          .attr('cy', yScale(worstRank))
           .attr('r', 6)
           .attr('fill', '#ef4444')
           .attr('stroke', 'white')
