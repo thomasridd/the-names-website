@@ -3,6 +3,13 @@ const path = require('path');
 const { parse } = require('csv-parse/sync');
 
 module.exports = function(eleventyConfig) {
+  // Determine which data files to use based on environment
+  const USE_DEV_DATA = process.env.USE_DEV_DATA === 'true';
+  const dataSuffix = USE_DEV_DATA ? '-dev.json' : '.json';
+
+  console.log(`\n🔧 Build mode: ${USE_DEV_DATA ? 'DEVELOPMENT (top 500 names)' : 'PRODUCTION (all names)'}`);
+  console.log(`📁 Data files: boys${dataSuffix} & girls${dataSuffix}\n`);
+
   // Pass through static assets
   // Note: CSS is processed separately with PostCSS/Tailwind
   eleventyConfig.addPassthroughCopy('src/scripts');
@@ -18,8 +25,8 @@ module.exports = function(eleventyConfig) {
 
   // Load JSON data for all names (boys + girls)
   eleventyConfig.addGlobalData('allNames', () => {
-    const boysPath = path.join(__dirname, 'data', 'boys.json');
-    const girlsPath = path.join(__dirname, 'data', 'girls.json');
+    const boysPath = path.join(__dirname, 'data', `boys${dataSuffix}`);
+    const girlsPath = path.join(__dirname, 'data', `girls${dataSuffix}`);
 
     let allNames = [];
 
@@ -88,8 +95,8 @@ module.exports = function(eleventyConfig) {
 
   // Generate classification pages data
   eleventyConfig.addGlobalData('classifications', () => {
-    const boysPath = path.join(__dirname, 'data', 'boys.json');
-    const girlsPath = path.join(__dirname, 'data', 'girls.json');
+    const boysPath = path.join(__dirname, 'data', `boys${dataSuffix}`);
+    const girlsPath = path.join(__dirname, 'data', `girls${dataSuffix}`);
     const descriptionsPath = path.join(__dirname, 'data', 'classification-descriptions.json');
 
     let allNames = [];
@@ -168,8 +175,8 @@ module.exports = function(eleventyConfig) {
 
   // Generate search index after build
   eleventyConfig.on('eleventy.after', async () => {
-    const boysPath = path.join(__dirname, 'data', 'boys.json');
-    const girlsPath = path.join(__dirname, 'data', 'girls.json');
+    const boysPath = path.join(__dirname, 'data', `boys${dataSuffix}`);
+    const girlsPath = path.join(__dirname, 'data', `girls${dataSuffix}`);
     const outputPath = path.join(__dirname, '_site', 'search-index.json');
 
     let searchIndex = [];
