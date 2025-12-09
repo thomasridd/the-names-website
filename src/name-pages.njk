@@ -50,7 +50,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     {% endif %}
 
     <div class="bg-white rounded p-4">
-      <div id="modern-heatmap" class="w-full"></div>
+      <div id="modern-chart" class="w-full" style="height: 400px;"></div>
     </div>
 
     <details class="mt-4">
@@ -141,109 +141,172 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 </article>
 
 <script>
-  // Modern rankings heatmap
+  // Modern rankings vertical bar chart with inverted logarithmic scale
   {% if nameData.rankFrom1996 and nameData.rankFrom1996.length > 0 %}
   (function() {
     const data = {{ nameData.rankFrom1996 | dump | safe }};
     const startYear = 1996;
 
-    // Prepare data for heatmap
-    const heatmapData = data.map((rank, i) => ({
+    // Prepare data
+    const chartData = data.map((rank, i) => ({
       year: startYear + i,
-      rank: rank === 'x' ? null : parseInt(rank),
-      yearIndex: i
-    }));
+      rank: rank === 'x' ? null : parseInt(rank)
+    })).filter(d => d.rank !== null);
 
-    const container = d3.select('#modern-heatmap');
+    // Find highest and lowest rankings
+    const rankedData = chartData.filter(d => d.rank !== null);
+    const bestRank = rankedData.length > 0 ? Math.min(...rankedData.map(d => d.rank)) : null;
+    const worstRank = rankedData.length > 0 ? Math.max(...rankedData.map(d => d.rank)) : null;
 
-    // Color scale (darker blue for better ranks/lower numbers)
-    const colorScale = d3.scaleSequential()
-      .domain([500, 1])  // Reversed: 500 to 1, so lower ranks get darker colors
-      .interpolator(d3.interpolateBlues);
+    const container = document.getElementById('modern-chart');
+    const margin = {top: 20, right: 40, bottom: 60, left: 60};
 
-    function drawHeatmap() {
-      container.selectAll('*').remove();
+    function drawChart() {
+      d3.select('#modern-chart').selectAll('*').remove();
 
-      // Responsive configuration
-      const containerWidth = container.node().getBoundingClientRect().width;
-      const isMobile = containerWidth < 640;
-      const yearsPerRow = isMobile ? 3 : 5;
-      const cellSize = isMobile ? 50 : 80;
-      const cellPadding = isMobile ? 1 : 2;
-      const labelWidth = isMobile ? 35 : 60;
+      const containerWidth = container.clientWidth;
+      const width = containerWidth - margin.left - margin.right;
+      const height = 400 - margin.top - margin.bottom;
 
-      // Group into rows
-      const rows = [];
-      for (let i = 0; i < heatmapData.length; i += yearsPerRow) {
-        rows.push({
-          startYear: heatmapData[i].year,
-          data: heatmapData.slice(i, i + yearsPerRow)
+      const svg = d3.select('#modern-chart')
+        .append('svg')
+        .attr('width', containerWidth)
+        .attr('height', 400)
+        .append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+
+      // X scale for years
+      const xScale = d3.scaleBand()
+        .domain(chartData.map(d => d.year))
+        .range([0, width])
+        .padding(0.8);
+
+      // Y scale - inverted logarithmic (rank 1 at top, higher ranks at bottom)
+      // Using a custom scale that inverts the logarithmic transformation
+      const maxRank = Math.max(...chartData.map(d => d.rank));
+      const yScale = d3.scaleLog()
+        .domain([1, Math.max(maxRank, 500)])
+        .range([0, height]);
+
+      // Add X axis with 5-year intervals
+      const fiveYearTicks = d3.range(1996, 2025, 5);
+      svg.append('g')
+        .attr('transform', `translate(0,${height})`)
+        .call(d3.axisBottom(xScale)
+          .tickValues(fiveYearTicks)
+          .tickFormat(d3.format('d')))
+        .style('font-size', '12px');
+
+      // Add Y axis - inverted
+      svg.append('g')
+        .call(d3.axisLeft(yScale)
+          .tickValues([1, 5, 10, 50, 100, 500])
+          .tickFormat(d => `#${d}`))
+        .style('font-size', '12px');
+
+      // Add Y axis label
+      svg.append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('x', -height / 2)
+        .attr('y', -45)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '14px')
+        .style('fill', '#6b7280')
+        .text('Rank (Logarithmic Scale)');
+
+      // Add bars (very thin, unlabelled)
+      svg.selectAll('.bar')
+        .data(chartData)
+        .join('rect')
+        .attr('class', 'bar')
+        .attr('x', d => xScale(d.year))
+        .attr('y', 0)
+        .attr('width', xScale.bandwidth())
+        .attr('height', d => yScale(d.rank))
+        .attr('fill', '#3b82f6')
+        .attr('opacity', 0.7)
+        .on('mouseover', function(event, d) {
+          d3.select(this).attr('opacity', 1);
+
+          // Show tooltip
+          const tooltip = svg.append('g')
+            .attr('class', 'tooltip')
+            .attr('transform', `translate(${xScale(d.year) + xScale.bandwidth()/2},${yScale(d.rank) - 10})`);
+
+          const text = tooltip.append('text')
+            .attr('text-anchor', 'middle')
+            .style('font-size', '11px')
+            .style('font-weight', '600')
+            .style('fill', '#1e40af')
+            .text(`${d.year}: #${d.rank}`);
+
+          const bbox = text.node().getBBox();
+          tooltip.insert('rect', 'text')
+            .attr('x', bbox.x - 4)
+            .attr('y', bbox.y - 2)
+            .attr('width', bbox.width + 8)
+            .attr('height', bbox.height + 4)
+            .attr('fill', 'white')
+            .attr('stroke', '#3b82f6')
+            .attr('stroke-width', 1)
+            .attr('rx', 3);
+
+          text.raise();
+        })
+        .on('mouseout', function() {
+          d3.select(this).attr('opacity', 0.7);
+          svg.selectAll('.tooltip').remove();
         });
+
+      // Add markers for highest and lowest rankings
+      if (bestRank !== null) {
+        const bestData = chartData.find(d => d.rank === bestRank);
+        svg.append('circle')
+          .attr('cx', xScale(bestData.year) + xScale.bandwidth() / 2)
+          .attr('cy', yScale(bestRank))
+          .attr('r', 5)
+          .attr('fill', '#10b981')
+          .attr('stroke', 'white')
+          .attr('stroke-width', 2);
+
+        svg.append('text')
+          .attr('x', xScale(bestData.year) + xScale.bandwidth() / 2)
+          .attr('y', yScale(bestRank) - 12)
+          .attr('text-anchor', 'middle')
+          .style('font-size', '11px')
+          .style('font-weight', '700')
+          .style('fill', '#10b981')
+          .text(`Best: #${bestRank}`);
       }
 
-      const svg = container
-        .append('svg')
-        .attr('width', '100%')
-        .attr('height', rows.length * (cellSize + cellPadding) + 10);
+      if (worstRank !== null && worstRank !== bestRank) {
+        const worstData = chartData.find(d => d.rank === worstRank);
+        svg.append('circle')
+          .attr('cx', xScale(worstData.year) + xScale.bandwidth() / 2)
+          .attr('cy', yScale(worstRank))
+          .attr('r', 5)
+          .attr('fill', '#ef4444')
+          .attr('stroke', 'white')
+          .attr('stroke-width', 2);
 
-      rows.forEach((row, rowIndex) => {
-        const rowGroup = svg.append('g')
-          .attr('transform', `translate(0, ${rowIndex * (cellSize + cellPadding)})`);
-
-        // Row label
-        rowGroup.append('text')
-          .attr('x', isMobile ? 2 : 5)
-          .attr('y', cellSize / 2)
-          .attr('dy', '0.35em')
-          .style('font-size', isMobile ? '10px' : '14px')
-          .style('font-weight', '600')
-          .style('fill', '#374151')
-          .text(row.startYear);
-
-        // Cells
-        row.data.forEach((d, cellIndex) => {
-          const cellGroup = rowGroup.append('g')
-            .attr('transform', `translate(${labelWidth + cellIndex * (cellSize + cellPadding)}, 0)`);
-
-          // Cell background
-          cellGroup.append('rect')
-            .attr('width', cellSize)
-            .attr('height', cellSize)
-            .attr('rx', isMobile ? 2 : 4)
-            .attr('fill', d.rank ? colorScale(d.rank) : '#f3f4f6')
-            .style('cursor', d.rank ? 'pointer' : 'default')
-            .on('mouseover', function() {
-              if (d.rank) {
-                d3.select(this).attr('opacity', 0.8);
-              }
-            })
-            .on('mouseout', function() {
-              if (d.rank) {
-                d3.select(this).attr('opacity', 1);
-              }
-            });
-
-          // Rank label only (no # symbol, no year)
-          cellGroup.append('text')
-            .attr('x', cellSize / 2)
-            .attr('y', cellSize / 2)
-            .attr('dy', '0.35em')
-            .attr('text-anchor', 'middle')
-            .style('font-size', isMobile ? '12px' : '20px')
-            .style('font-weight', '700')
-            .style('fill', d.rank && d.rank <= 100 ? '#ffffff' : '#9ca3af')
-            .text(d.rank ? d.rank : '—');
-        });
-      });
+        svg.append('text')
+          .attr('x', xScale(worstData.year) + xScale.bandwidth() / 2)
+          .attr('y', yScale(worstRank) + 20)
+          .attr('text-anchor', 'middle')
+          .style('font-size', '11px')
+          .style('font-weight', '700')
+          .style('fill', '#ef4444')
+          .text(`Worst: #${worstRank}`);
+      }
     }
 
-    drawHeatmap();
+    drawChart();
 
     // Redraw on window resize
     let resizeTimeout;
     window.addEventListener('resize', function() {
       clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(drawHeatmap, 250);
+      resizeTimeout = setTimeout(drawChart, 250);
     });
   })();
   {% endif %}
