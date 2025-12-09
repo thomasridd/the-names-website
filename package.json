@@ -7,9 +7,12 @@
     "build:css": "postcss src/styles/main.css -o _site/styles/main.css",
     "build:eleventy": "eleventy",
     "build": "npm run build:eleventy && npm run build:css",
+    "build:dev": "USE_DEV_DATA=true npm run build",
     "watch:css": "postcss src/styles/main.css -o _site/styles/main.css --watch",
     "watch:eleventy": "eleventy --serve",
+    "watch:eleventy:dev": "USE_DEV_DATA=true eleventy --serve",
     "dev": "npm run build:css && npm-run-all --parallel watch:*",
+    "dev:fast": "npm run dev:data && npm run build:css && USE_DEV_DATA=true npm-run-all --parallel watch:css watch:eleventy:dev",
     "dev:data": "node scripts/create-dev-data.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

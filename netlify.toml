@@ -4,6 +4,21 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  # Use dev data (top 500 names) for faster builds
+  # Uncomment the line below to enable dev mode on Netlify
+  # USE_DEV_DATA = "true"
+
+# Context-specific builds (optional)
+# Use dev data for deploy previews, full data for production
+[context.deploy-preview]
+  command = "npm run dev:data && npm run build"
+  [context.deploy-preview.environment]
+    USE_DEV_DATA = "true"
+
+[context.branch-deploy]
+  command = "npm run dev:data && npm run build"
+  [context.branch-deploy.environment]
+    USE_DEV_DATA = "true"
 
 # Redirect rules for clean URLs
 [[redirects]]
