@@ -10,6 +10,7 @@
     "watch:css": "postcss src/styles/main.css -o _site/styles/main.css --watch",
     "watch:eleventy": "eleventy --serve",
     "dev": "npm run build:css && npm-run-all --parallel watch:*",
+    "dev:data": "node scripts/create-dev-data.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
