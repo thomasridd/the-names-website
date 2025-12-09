@@ -6,7 +6,7 @@
   NODE_VERSION = "18"
   # Use dev data (top 500 names) for faster builds
   # Uncomment the line below to enable dev mode on Netlify
-  # USE_DEV_DATA = "true"
+ USE_DEV_DATA = "true"
 
 # Context-specific builds (optional)
 # Use dev data for deploy previews, full data for production
