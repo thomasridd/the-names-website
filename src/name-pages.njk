@@ -141,7 +141,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 </article>
 
 <script>
-  // Modern rankings vertical bar chart with inverted logarithmic scale
+  // Modern rankings horizontal bar chart with inverted logarithmic scale
   {% if nameData.rankFrom1996 and nameData.rankFrom1996.length > 0 %}
   (function() {
     const data = {{ nameData.rankFrom1996 | dump | safe }};
@@ -175,54 +175,52 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
-      // X scale for years
-      const xScale = d3.scaleBand()
-        .domain(chartData.map(d => d.year))
-        .range([0, width])
-        .padding(0.8);
-
-      // Y scale - inverted logarithmic (rank 1 at top, higher ranks at bottom)
-      // Using a custom scale that inverts the logarithmic transformation
+      // X scale - inverted logarithmic (rank 1 at left, higher ranks at right)
       const maxRank = Math.max(...chartData.map(d => d.rank));
-      const yScale = d3.scaleLog()
+      const xScale = d3.scaleLog()
         .domain([1, Math.max(maxRank, 500)])
-        .range([0, height]);
+        .range([0, width]);
 
-      // Add X axis with 5-year intervals
-      const fiveYearTicks = d3.range(1996, 2025, 5);
+      // Y scale for years (vertical)
+      const yScale = d3.scaleBand()
+        .domain(chartData.map(d => d.year))
+        .range([0, height])
+        .padding(0.2);
+
+      // Add X axis - logarithmic
       svg.append('g')
         .attr('transform', `translate(0,${height})`)
         .call(d3.axisBottom(xScale)
-          .tickValues(fiveYearTicks)
-          .tickFormat(d3.format('d')))
-        .style('font-size', '12px');
-
-      // Add Y axis - inverted
-      svg.append('g')
-        .call(d3.axisLeft(yScale)
           .tickValues([1, 5, 10, 50, 100, 500])
           .tickFormat(d => `#${d}`))
         .style('font-size', '12px');
 
-      // Add Y axis label
+      // Add X axis label
       svg.append('text')
-        .attr('transform', 'rotate(-90)')
-        .attr('x', -height / 2)
-        .attr('y', -45)
+        .attr('x', width / 2)
+        .attr('y', height + 50)
         .attr('text-anchor', 'middle')
         .style('font-size', '14px')
         .style('fill', '#6b7280')
         .text('Rank (Logarithmic Scale)');
 
-      // Add bars (very thin, unlabelled)
+      // Add Y axis with 5-year intervals
+      const fiveYearTicks = d3.range(1996, 2025, 5);
+      svg.append('g')
+        .call(d3.axisLeft(yScale)
+          .tickValues(fiveYearTicks)
+          .tickFormat(d3.format('d')))
+        .style('font-size', '12px');
+
+      // Add bars (very thin, unlabelled) - horizontal
       svg.selectAll('.bar')
         .data(chartData)
         .join('rect')
         .attr('class', 'bar')
-        .attr('x', d => xScale(d.year))
-        .attr('y', 0)
-        .attr('width', xScale.bandwidth())
-        .attr('height', d => yScale(d.rank))
+        .attr('x', 0)
+        .attr('y', d => yScale(d.year))
+        .attr('width', d => xScale(d.rank))
+        .attr('height', yScale.bandwidth())
         .attr('fill', '#3b82f6')
         .attr('opacity', 0.7)
         .on('mouseover', function(event, d) {
@@ -231,10 +229,10 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           // Show tooltip
           const tooltip = svg.append('g')
             .attr('class', 'tooltip')
-            .attr('transform', `translate(${xScale(d.year) + xScale.bandwidth()/2},${yScale(d.rank) - 10})`);
+            .attr('transform', `translate(${xScale(d.rank) + 10},${yScale(d.year) + yScale.bandwidth()/2})`);
 
           const text = tooltip.append('text')
-            .attr('text-anchor', 'middle')
+            .attr('text-anchor', 'start')
             .style('font-size', '11px')
             .style('font-weight', '600')
             .style('fill', '#1e40af')
@@ -262,17 +260,18 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       if (bestRank !== null) {
         const bestData = chartData.find(d => d.rank === bestRank);
         svg.append('circle')
-          .attr('cx', xScale(bestData.year) + xScale.bandwidth() / 2)
-          .attr('cy', yScale(bestRank))
+          .attr('cx', xScale(bestRank))
+          .attr('cy', yScale(bestData.year) + yScale.bandwidth() / 2)
           .attr('r', 5)
           .attr('fill', '#10b981')
           .attr('stroke', 'white')
           .attr('stroke-width', 2);
 
         svg.append('text')
-          .attr('x', xScale(bestData.year) + xScale.bandwidth() / 2)
-          .attr('y', yScale(bestRank) - 12)
-          .attr('text-anchor', 'middle')
+          .attr('x', xScale(bestRank) - 12)
+          .attr('y', yScale(bestData.year) + yScale.bandwidth() / 2)
+          .attr('text-anchor', 'end')
+          .attr('dy', '0.35em')
           .style('font-size', '11px')
           .style('font-weight', '700')
           .style('fill', '#10b981')
@@ -282,17 +281,18 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       if (worstRank !== null && worstRank !== bestRank) {
         const worstData = chartData.find(d => d.rank === worstRank);
         svg.append('circle')
-          .attr('cx', xScale(worstData.year) + xScale.bandwidth() / 2)
-          .attr('cy', yScale(worstRank))
+          .attr('cx', xScale(worstRank))
+          .attr('cy', yScale(worstData.year) + yScale.bandwidth() / 2)
           .attr('r', 5)
           .attr('fill', '#ef4444')
           .attr('stroke', 'white')
           .attr('stroke-width', 2);
 
         svg.append('text')
-          .attr('x', xScale(worstData.year) + xScale.bandwidth() / 2)
-          .attr('y', yScale(worstRank) + 20)
-          .attr('text-anchor', 'middle')
+          .attr('x', xScale(worstRank) + 12)
+          .attr('y', yScale(worstData.year) + yScale.bandwidth() / 2)
+          .attr('text-anchor', 'start')
+          .attr('dy', '0.35em')
           .style('font-size', '11px')
           .style('font-weight', '700')
           .style('fill', '#ef4444')
