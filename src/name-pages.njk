@@ -181,24 +181,66 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .range([0, width])
         .padding(0.2);
 
-      // Y scale - linear from worst to best (top to bottom: high numbers to low numbers)
+      // Y scale - linear from best to worst (top to bottom: low numbers to high numbers)
       const yScale = d3.scaleLinear()
-        .domain([worstRank, bestRank])  // Reversed: worst (high) to best (low)
+        .domain([bestRank, worstRank])  // best (low) at top to worst (high) at bottom
         .range([0, height]);
 
-      // Add X axis with 5-year intervals
-      const fiveYearTicks = d3.range(1996, 2025, 5);
+      // Calculate 5 significant tick values for Y-axis
+      const range = worstRank - bestRank;
+      let tickValues = [];
+
+      if (range <= 10) {
+        // Small range: show every 2-3 values
+        const step = Math.ceil(range / 4);
+        for (let i = 0; i < 5; i++) {
+          const val = bestRank + i * step;
+          if (val <= worstRank) tickValues.push(val);
+        }
+      } else if (range <= 50) {
+        // Medium range: use 10s
+        tickValues = [
+          bestRank,
+          Math.ceil(bestRank / 10) * 10,
+          Math.round((bestRank + worstRank) / 2 / 10) * 10,
+          Math.floor(worstRank / 10) * 10,
+          worstRank
+        ].filter((v, i, arr) => arr.indexOf(v) === i && v >= bestRank && v <= worstRank);
+      } else if (range <= 200) {
+        // Larger range: use 25s or 50s
+        const step = 50;
+        tickValues = [bestRank];
+        let current = Math.ceil(bestRank / step) * step;
+        while (current < worstRank && tickValues.length < 4) {
+          tickValues.push(current);
+          current += step;
+        }
+        tickValues.push(worstRank);
+      } else {
+        // Very large range: use 100s or more
+        const step = 100;
+        tickValues = [bestRank];
+        let current = Math.ceil(bestRank / step) * step;
+        while (current < worstRank && tickValues.length < 4) {
+          tickValues.push(current);
+          current += step;
+        }
+        tickValues.push(worstRank);
+      }
+
+      // Add X axis with specific year markers
+      const yearTicks = [1996, 2010, 2020, 2024];
       svg.append('g')
         .attr('transform', `translate(0,${height})`)
         .call(d3.axisBottom(xScale)
-          .tickValues(fiveYearTicks)
+          .tickValues(yearTicks)
           .tickFormat(d3.format('d')))
         .style('font-size', '12px');
 
-      // Add Y axis - linear (only show min and max)
+      // Add Y axis with significant points
       svg.append('g')
         .call(d3.axisLeft(yScale)
-          .tickValues([worstRank, bestRank])
+          .tickValues(tickValues)
           .tickFormat(d => `#${d}`))
         .style('font-size', '12px');
 
@@ -210,7 +252,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .attr('text-anchor', 'middle')
         .style('font-size', '14px')
         .style('fill', '#6b7280')
-        .text('Rank (Worst → Best)');
+        .text('Rank (Best → Worst)');
 
       // Add dots
       svg.selectAll('.dot')
