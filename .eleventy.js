@@ -166,6 +166,45 @@ module.exports = function(eleventyConfig) {
     return classifications;
   });
 
+  // Generate search index after build
+  eleventyConfig.on('eleventy.after', async () => {
+    const boysPath = path.join(__dirname, 'data', 'boys.json');
+    const girlsPath = path.join(__dirname, 'data', 'girls.json');
+    const outputPath = path.join(__dirname, '_site', 'search-index.json');
+
+    let searchIndex = [];
+
+    // Load boys names
+    if (fs.existsSync(boysPath)) {
+      const boysData = JSON.parse(fs.readFileSync(boysPath, 'utf-8'));
+      boysData.forEach(name => {
+        searchIndex.push({
+          name: name.name,
+          slug: name.uniqueSlug,
+          gender: 'boy',
+          rank: name.rank
+        });
+      });
+    }
+
+    // Load girls names
+    if (fs.existsSync(girlsPath)) {
+      const girlsData = JSON.parse(fs.readFileSync(girlsPath, 'utf-8'));
+      girlsData.forEach(name => {
+        searchIndex.push({
+          name: name.name,
+          slug: name.uniqueSlug,
+          gender: 'girl',
+          rank: name.rank
+        });
+      });
+    }
+
+    // Write search index to _site directory
+    fs.writeFileSync(outputPath, JSON.stringify(searchIndex), 'utf-8');
+    console.log(`Generated search index with ${searchIndex.length} names`);
+  });
+
   return {
     dir: {
       input: 'src',
