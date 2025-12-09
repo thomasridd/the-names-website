@@ -260,6 +260,11 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       index: i
     }));
 
+    // Color scale for bars (darker amber for better ranks)
+    const colorScale = d3.scaleSequential()
+      .domain([100, 1])  // Reversed: 100 to 1, so lower ranks get darker colors
+      .interpolator(d3.interpolateOranges);
+
     // Set up dimensions
     const container = document.getElementById('historic-chart');
     const margin = {top: 20, right: 40, bottom: 60, left: 60};
@@ -329,18 +334,18 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .attr('y', d => yScale(d.decade))
         .attr('width', d => d.rank ? xScale(100) - xScale(d.rank) : 0)
         .attr('height', yScale.bandwidth())
-        .attr('fill', d => d.rank ? '#f59e0b' : '#e5e7eb')
+        .attr('fill', d => d.rank ? colorScale(d.rank) : '#e5e7eb')
         .attr('stroke', d => d.rank ? '#d97706' : '#d1d5db')
         .attr('stroke-width', 1)
         .style('cursor', d => d.rank ? 'pointer' : 'default')
         .on('mouseover', function(event, d) {
           if (d.rank) {
-            d3.select(this).attr('fill', '#d97706');
+            d3.select(this).attr('opacity', 0.8);
           }
         })
         .on('mouseout', function(event, d) {
           if (d.rank) {
-            d3.select(this).attr('fill', '#f59e0b');
+            d3.select(this).attr('opacity', 1);
           }
         });
 
