@@ -1,6 +1,6 @@
 # CLAUDE.md - AI Assistant Guide for the-names-website
 
-**Last Updated:** December 7, 2025
+**Last Updated:** December 8, 2025
 **Project:** the-names-website
 **Description:** A website for thinking about names
 **Owner:** thomasridd
@@ -12,42 +12,45 @@
 2. [Current Project State](#current-project-state)
 3. [Repository Structure](#repository-structure)
 4. [Data Sources](#data-sources)
-5. [Development Workflows](#development-workflows)
-6. [Key Conventions](#key-conventions)
-7. [Technology Stack](#technology-stack)
-8. [Common Tasks](#common-tasks)
-9. [Git Workflow](#git-workflow)
-10. [AI Assistant Guidelines](#ai-assistant-guidelines)
+5. [Classification System](#classification-system)
+6. [Development Workflows](#development-workflows)
+7. [Key Conventions](#key-conventions)
+8. [Technology Stack](#technology-stack)
+9. [Common Tasks](#common-tasks)
+10. [Git Workflow](#git-workflow)
+11. [AI Assistant Guidelines](#ai-assistant-guidelines)
 
 ---
 
 ## Project Overview
 
 ### Purpose
-The-names-website is a **static website generator** for exploring and working with names. It will:
-- Compile content from configuration files (YAML, Markdown)
-- Generate templated pages from CSV data sources (thousands of individual name pages)
-- Provide client-side JavaScript search functionality
-- Output a fully static website optimized for deployment
+The-names-website is a **static website generator** for exploring baby name trends and popularity over time. It:
+- Generates thousands of individual name pages from JSON data sources
+- Classifies names by popularity trends (recent and historic patterns)
+- Provides a browsable classification system
+- Outputs a fully static website optimized for deployment
 
 ### Project Type
 **Static Site Generator (SSG)** - Data-driven static website with:
-- ✅ YAML/Markdown configuration
-- ✅ CSV-based page generation (one page per name)
-- ✅ Template-based rendering
-- ✅ JavaScript search functionality
+- ✅ JSON-based page generation (one page per name)
+- ✅ Template-based rendering with Nunjucks
+- ✅ Classification system (31 unique pattern types)
+- ✅ Clean URL structure with unique slugs
 - ✅ Thousands of generated pages
 
 ### Current Status
-✅ **INITIAL SETUP COMPLETE** - 11ty static site generator configured with:
-- CSV data processing (10 sample names)
-- Template-based page generation
-- Basic styling and search placeholder
-- Working build system
+✅ **PRODUCTION READY** - Full-featured static site with:
+- Production name data (thousands of boys' and girls' names)
+- Complete classification system (15 recent + 16 historic patterns)
+- Clean URL structure with unique slug handling
+- Responsive Tailwind CSS design
+- Multiple page types (homepage, listings, individual pages)
+- Working build system generating thousands of static pages
 
 ### Repository Information
 - **Repository:** thomasridd/the-names-website
-- **Git Remote:** Local Git proxy at http://127.0.0.1:64979/git/thomasridd/the-names-website
+- **Git Remote:** Local Git proxy
 - **Primary Contact:** Tom Ridd (twridd@gmail.com)
 - **Initial Commit:** December 7, 2025
 
@@ -56,210 +59,295 @@ The-names-website is a **static website generator** for exploring and working wi
 ## Current Project State
 
 ### What Exists
-- ✅ Git repository initialized
-- ✅ README.md with basic project description
-- ✅ Remote repository connection configured
 
-### What Now Exists
-- ✅ Package manager configured (package.json with npm scripts)
+#### Core Infrastructure
+- ✅ Git repository initialized with remote connection
 - ✅ 11ty static site generator configured (.eleventy.js)
 - ✅ Tailwind CSS v4 integrated with PostCSS build pipeline
-- ✅ Project directory structure (data/, src/templates/, src/styles/, src/scripts/)
-- ✅ Sample CSV data (10 names in data/names.csv)
-- ✅ Site configuration (data/config.yaml)
-- ✅ Nunjucks templates with Tailwind utility classes (base layout, name pages, homepage, names listing)
-- ✅ Tailwind CSS configuration (tailwind.config.js, postcss.config.js)
-- ✅ Responsive design with utility-first styling
-- ✅ Basic search JavaScript (src/scripts/search.js)
-- ✅ Working build system (generates 12 static HTML pages + compiled CSS)
-- ✅ .gitignore file
+- ✅ npm scripts for development and production builds
+- ✅ .gitignore file configured
+
+#### Data
+- ✅ Production JSON data files (data/boys.json, data/girls.json) - ~18.7MB total
+- ✅ Classification descriptions (data/classification-descriptions.json)
+- ✅ Sample CSV data (data/names.csv) - used for homepage features
+- ✅ Each name includes:
+  - Basic info: name, rank, count, gender
+  - 29 years of recent rankings (1996-2024)
+  - 13 decades of historic rankings (1904-2024)
+  - Recent and historic classifications
+  - Unique slug for clean URLs
+
+#### Templates & Pages
+- ✅ Base layout template (src/templates/base.njk)
+- ✅ Homepage (src/index.njk)
+- ✅ All names listing (src/names.njk)
+- ✅ Individual name pages (src/name-pages.njk) - thousands generated
+- ✅ Classifications overview (src/classifications.njk)
+- ✅ Individual classification pages (src/classification-pages.njk)
+- ✅ Responsive design with Tailwind utility classes
+
+#### Scripts
+- ✅ Python data generators (scripts/generate_boys_json.py, scripts/generate_girls_json.py)
+- ✅ Classification processors (scripts/add-recent-classifications.js, scripts/add-historic-classifications.js)
+- ✅ Unique slug generator (scripts/generate-unique-slugs.js)
+
+#### Features
+- ✅ Clean URL structure: `/names/boy/unique-slug/` and `/names/girl/unique-slug/`
+- ✅ Gender-separated name organization
+- ✅ Popularity trend visualization (grid display of rankings)
+- ✅ Classification badges on name pages
+- ✅ Browse by classification pages
+- ✅ Basic search placeholder (ready for enhancement)
 
 ### What Doesn't Exist Yet
-- ❌ Production CSV data (thousands of names)
 - ❌ Advanced search (Fuse.js, Lunr.js, or Pagefind)
 - ❌ Search index generation
 - ❌ CI/CD pipelines
 - ❌ Deployment configuration
+- ❌ Performance optimizations (minification, lazy loading)
 
 ### Next Steps for Development
-1. **Add Production Data** - Replace sample CSV with full names dataset
-2. **Enhance Search** - Integrate Fuse.js or Lunr.js for better search
-3. **Generate Search Index** - Build JSON index during compilation
-4. **Improve Styling** - Enhance CSS or add Tailwind CSS
-5. **Add Features** - Filters, sorting, categories, related names
-6. **Set Up CI/CD** - GitHub Actions for automated builds
-7. **Configure Deployment** - Deploy to Netlify, Vercel, or GitHub Pages
-8. **Optimize Performance** - Minify CSS/JS, optimize images
+1. **Enhance Search** - Integrate Fuse.js or Pagefind for client-side search
+2. **Generate Search Index** - Build JSON index during compilation
+3. **Set Up CI/CD** - GitHub Actions for automated builds
+4. **Configure Deployment** - Deploy to Netlify, Vercel, or Cloudflare Pages
+5. **Optimize Performance** - Minify CSS/JS, optimize build time
+6. **Add Analytics** - Track popular names and classifications
 
 ---
 
 ## Repository Structure
 
-### Recommended Future Structure
-
-Once development begins, consider this structure for a static site generator:
-
-```
-the-names-website/
-├── .git/                   # Git version control
-├── .github/                # GitHub-specific files
-│   └── workflows/          # CI/CD workflows (build and deploy)
-├── data/                   # Data source files
-│   ├── names.csv          # Name data (thousands of rows)
-│   ├── config.yaml        # Site configuration
-│   └── content/           # Markdown content files
-├── src/                    # Source templates and assets
-│   ├── templates/         # Page templates
-│   │   ├── name.html      # Template for individual name pages
-│   │   ├── index.html     # Homepage template
-│   │   └── layout.html    # Base layout template
-│   ├── styles/            # CSS/styling files
-│   │   └── main.css
-│   ├── scripts/           # JavaScript files
-│   │   └── search.js      # Client-side search functionality
-│   └── assets/            # Images, fonts, etc.
-├── _site/                  # Generated static output (gitignored)
-│   ├── index.html
-│   ├── names/
-│   │   ├── alice/
-│   │   ├── bob/
-│   │   └── ... (thousands more)
-│   ├── assets/
-│   └── search.json        # Search index
-├── .gitignore             # Git ignore rules
-├── .eleventy.js           # SSG configuration (if using 11ty)
-│   # OR
-├── astro.config.mjs       # SSG configuration (if using Astro)
-│   # OR
-├── config.toml            # SSG configuration (if using Hugo)
-├── package.json           # Node.js dependencies and scripts
-├── README.md              # Project documentation
-└── CLAUDE.md              # This file - AI assistant guide
-```
-
 ### Current Structure
 
 ```
 the-names-website/
-├── .git/                   # Git version control
-├── README.md              # Project documentation
-└── CLAUDE.md              # This file
+├── .git/                           # Git version control
+├── .claude/                        # Claude Code configuration
+│   └── settings.local.json
+├── data/                           # Data source files
+│   ├── boys.json                   # Boys names (~9.3MB, thousands of entries)
+│   ├── girls.json                  # Girls names (~9.4MB, thousands of entries)
+│   ├── classification-descriptions.json  # Descriptions for all classifications
+│   └── names.csv                   # Sample data for homepage
+├── scripts/                        # Data processing scripts
+│   ├── generate_boys_json.py       # Python script to generate boys.json
+│   ├── generate_girls_json.py      # Python script to generate girls.json
+│   ├── add-recent-classifications.js    # Add recent (1996-2024) classifications
+│   ├── add-historic-classifications.js  # Add historic (1904-2024) classifications
+│   └── generate-unique-slugs.js    # Generate unique slugs for duplicate names
+├── src/                            # Source templates and assets
+│   ├── templates/                  # Page templates
+│   │   └── base.njk                # Base layout template
+│   ├── styles/                     # CSS/styling files
+│   │   └── main.css                # Tailwind CSS entry point
+│   ├── scripts/                    # JavaScript files
+│   │   └── search.js               # Client-side search (placeholder)
+│   ├── index.njk                   # Homepage template
+│   ├── names.njk                   # All names listing template
+│   ├── name-pages.njk              # Individual name page template (pagination)
+│   ├── classifications.njk         # Classifications overview page
+│   └── classification-pages.njk    # Individual classification page template
+├── _site/                          # Generated static output (gitignored)
+│   ├── index.html
+│   ├── names/
+│   │   ├── boy/                    # Boys name pages
+│   │   │   ├── muhammad/
+│   │   │   ├── noah/
+│   │   │   └── ... (thousands more)
+│   │   ├── girl/                   # Girls name pages
+│   │   │   ├── olivia/
+│   │   │   ├── amelia/
+│   │   │   └── ... (thousands more)
+│   │   └── index.html
+│   ├── classifications/
+│   │   ├── recent/                 # Recent classification pages
+│   │   │   ├── timeless/
+│   │   │   ├── shooting-star/
+│   │   │   └── ...
+│   │   ├── historic/               # Historic classification pages
+│   │   │   ├── century-classic/
+│   │   │   ├── golden-age/
+│   │   │   └── ...
+│   │   └── index.html
+│   ├── styles/
+│   │   └── main.css                # Compiled Tailwind CSS
+│   └── scripts/
+│       └── search.js
+├── .gitignore                      # Git ignore rules
+├── .eleventy.js                    # 11ty configuration
+├── package.json                    # Node.js dependencies and scripts
+├── package-lock.json
+├── postcss.config.js               # PostCSS configuration
+├── tailwind.config.js              # Tailwind CSS configuration
+├── README.md                       # Project documentation
+└── CLAUDE.md                       # This file - AI assistant guide
 ```
 
 ---
 
 ## Data Sources
 
-### CSV Data Files
+### JSON Data Files
 
-The primary data source will be **CSV files** containing name information:
+The primary data source is **JSON files** containing comprehensive name information:
 
-**Expected Format:**
-- One row per name (thousands of rows expected)
-- Each row generates one static page
-- Columns may include: name, origin, meaning, popularity, etc.
+**Files:**
+- `data/boys.json` - ~9.3MB, thousands of boys' names
+- `data/girls.json` - ~9.4MB, thousands of girls' names
 
-**Location:**
-- `data/names.csv` or multiple CSV files in `data/` directory
-- Should be version controlled (unless files are too large)
-- Consider using `.gitattributes` for proper line ending handling
+**Data Structure:**
+Each name object contains:
+```json
+{
+  "name": "Muhammad",
+  "rank": 1,
+  "count": 5721,
+  "rankFrom1996": ["108", "95", "89", ...],  // 29 values (1996-2024)
+  "rankHistoric": ["x", "x", "46", ...],      // 13 values (1910s-2020s by decade)
+  "recentClassification": "Shooting Star",
+  "historicClassification": "Modern Era",
+  "uniqueSlug": "muhammad",
+  "gender": "Boy"  // Added during processing
+}
+```
 
-**Processing:**
-- CSV data will be read during build time
-- Each row is passed to a template to generate a page
-- URL structure: `/names/[name-slug]/index.html`
+**Rank Data:**
+- `rankFrom1996`: Array of 29 values (1996-2024), one per year
+- `rankHistoric`: Array of 13 values (1910s-2020s), one per decade
+- Values: Numeric rank (1-999+) or "x" (unranked)
 
-### YAML Configuration
+**Classifications:**
+- `recentClassification`: One of 15 pattern types (1996-2024)
+- `historicClassification`: One of 16 pattern types (1904-2024)
 
-**Site Configuration:**
-- `data/config.yaml` - Global site settings
-- Site title, description, navigation, etc.
-- Build options and output settings
+**URL Structure:**
+- Gender-separated: `/names/boy/unique-slug/` or `/names/girl/unique-slug/`
+- `uniqueSlug` handles duplicate names across genders (e.g., "jordan-1", "jordan-2")
 
-**Content Configuration:**
-- YAML front matter in Markdown files
-- Page-specific metadata and configuration
+### Classification Descriptions
 
-### Markdown Content
+**File:** `data/classification-descriptions.json`
 
-**Static Pages:**
-- `data/content/*.md` - Static content pages
-- Homepage content, about pages, etc.
-- Supports YAML front matter for metadata
+Contains human-readable descriptions for each classification type:
+```json
+{
+  "recent": {
+    "Timeless": "Maintains high popularity...",
+    "Shooting Star": "Dramatic rise of 300+ positions...",
+    ...
+  },
+  "historic": {
+    "Century Classic": "Appears in top 100 in 10+ decades...",
+    "Golden Age": "Dominated (top 20) for 3-5 consecutive decades...",
+    ...
+  }
+}
+```
 
-### Search Index
+### Sample CSV Data
 
-**Generated at Build Time:**
-- Create searchable JSON index from CSV data
-- Output to `_site/search.json` or similar
-- Format optimized for client-side JavaScript search
-- Consider search libraries: Lunr.js, Fuse.js, FlexSearch
+**File:** `data/names.csv`
 
-### Data Management Guidelines
+Small sample dataset used for homepage featured names. Kept for compatibility but main data is in JSON files.
 
-1. **CSV Structure** - Keep consistent column names and data types
-2. **Data Validation** - Validate CSV data during build (check for required fields)
-3. **Performance** - For thousands of pages, optimize build performance
-4. **Encoding** - Use UTF-8 encoding for international name support
-5. **Version Control** - Commit data files unless they're too large (>100MB)
-6. **Sample Data** - Consider including a small sample CSV for development
+### Data Generation Process
+
+1. **Python Scripts** (scripts/generate_*_json.py) - Generate initial JSON files from source data
+2. **Classification Scripts** (scripts/add-*-classifications.js) - Add classification properties
+3. **Slug Generator** (scripts/generate-unique-slugs.js) - Add unique slugs for URL generation
+
+**Important:** Data files are large (~18.7MB total) but version controlled for reproducibility.
+
+---
+
+## Classification System
+
+### Overview
+
+Names are classified into 31 distinct pattern types based on popularity trends over time:
+- **15 Recent Classifications** - Based on 29 years (1996-2024)
+- **16 Historic Classifications** - Based on 120+ years (1904-2024)
+
+### Recent Classifications (1996-2024)
+
+Analyze 29 years of annual ranking data to identify modern trends:
+
+1. **Timeless** - Maintains high popularity (top 100) consistently with minimal variation (±20 positions)
+2. **Steady Classic** - Remains in top 200 throughout, never dropping below top 300
+3. **Comeback** - Dropped significantly (fell out of top 500) mid-period, returned to top 200 recently
+4. **Shooting Star** - Dramatic rise of 300+ positions over past 5-7 years, currently in top 200
+5. **Slow Burn** - Gradual, consistent upward trajectory over 20+ years, gaining 200+ positions
+6. **Fading Glory** - Was top 100 for 10+ years, now ranked 500+ or unranked
+7. **Flash Trend** - Sudden spike to popularity (top 100) for 3-5 years, then declined rapidly
+8. **Cultural Moment** - Sharp popularity spike correlating with specific cultural events, followed by decline
+9. **Generational** - Peaked in specific decade, clearly associated with one generation
+10. **Sleeper** - Remained in 200-500 range consistently for 25+ years, never breaking through
+11. **Volatile** - Multiple significant swings (150+ position changes) with no clear pattern
+12. **New Entrant** - First appeared in rankings within past 10 years, currently gaining momentum
+13. **Vintage Revival** - Was unranked for 15+ years, recently re-entered top 500
+14. **Declining Classic** - Started in top 50, experiencing steady decline but still ranked in top 300
+15. **Uncategorized** - Does not fit clearly into any defined classification pattern
+
+### Historic Classifications (1904-2024)
+
+Analyze 13 decades of top 100 data to identify long-term patterns:
+
+1. **Century Classic** - Appears in top 100 in 10+ decades, never absent for more than one consecutive decade
+2. **Golden Age** - Dominated (top 20) for 3-5 consecutive decades, then faded from top 100
+3. **Early Century** - Top 100 from 1910s-1950s, largely disappeared by 1970s onwards
+4. **Mid-Century** - Peak popularity 1940s-1970s, minimal presence before or after
+5. **Late Century** - Emerged in top 100 during 1970s-1990s, maintaining or growing since
+6. **Modern Era** - First entered top 100 in 2000s or later
+7. **Pendulum** - Popular early (1910s-1930s), disappeared mid-century, returned in 2000s+
+8. **Lost Generation** - Top 100 in early decades (pre-1950s), hasn't returned since
+9. **Steady Decline** - Started in top 100 in 1910s, gradually declining each decade
+10. **Steady Rise** - Started outside/barely in top 100 early, consistently climbing, now firmly established
+11. **Peak and Fade** - Reached top 10 in at least one decade, then dropped out of top 100 within 3-4 decades
+12. **Brief Moment** - Appeared in top 100 for only 1-3 non-consecutive decades
+13. **Resilient** - Consistently appears in top 100 across 7-9 decades but never reaches top 20
+14. **Intermittent** - Appears in top 100 for 4-6 decades with significant gaps (2+ consecutive decades missing)
+15. **Revolutionary** - Sharp entry into top 100 coinciding with major cultural shifts (1960s, 1990s)
+16. **Uncategorized** - Does not fit clearly into any defined classification pattern
+
+### Classification Processing
+
+**Scripts:**
+- `scripts/add-recent-classifications.js` - Implements logic for 15 recent patterns
+- `scripts/add-historic-classifications.js` - Implements logic for 16 historic patterns
+
+**Usage:**
+```bash
+# Add recent classifications
+node scripts/add-recent-classifications.js
+
+# Add historic classifications
+node scripts/add-historic-classifications.js
+```
+
+Both scripts:
+- Read boys.json and girls.json
+- Apply classification algorithms
+- Add `recentClassification` or `historicClassification` properties
+- Write updated JSON back to files
+- Print statistics about classification distribution
+
+### Classification Pages
+
+Each classification gets its own page at:
+- `/classifications/recent/{slug}/` - Recent classification pages
+- `/classifications/historic/{slug}/` - Historic classification pages
+
+Pages display:
+- Classification name and description
+- Time period covered
+- All names matching that pattern (separated by gender)
+- Count of matching names
 
 ---
 
 ## Development Workflows
-
-### Initial Setup Workflow
-
-When setting up the static site generator for the first time:
-
-1. **Consult with User** - Always confirm technology choices before initializing
-   - Static Site Generator (11ty, Astro, Hugo, etc.)
-   - Template language (Nunjucks, Liquid, JSX, Go templates, etc.)
-   - Styling approach (plain CSS, Tailwind, SCSS, etc.)
-   - Search implementation (Lunr.js, Fuse.js, FlexSearch, etc.)
-
-2. **Initialize Package Manager**
-   ```bash
-   npm init -y
-   # or
-   yarn init -y
-   # or
-   pnpm init
-   ```
-
-3. **Install Static Site Generator and Dependencies**
-   - Install chosen SSG (e.g., `npm install --save-dev @11ty/eleventy`)
-   - Install CSV parsing library (e.g., `csv-parse`, `papaparse`)
-   - Install search library for client-side search
-   - Set up development dependencies (linters, formatters)
-
-4. **Create Project Structure**
-   - Create `data/` directory for CSV and YAML files
-   - Create `src/templates/` for page templates
-   - Create `src/styles/` and `src/scripts/` directories
-   - Create `_site/` or equivalent output directory (add to .gitignore)
-
-5. **Configure SSG**
-   - Set up configuration file (`.eleventy.js`, `astro.config.mjs`, etc.)
-   - Configure data file paths and output directory
-   - Set up template processing for CSV data
-   - Configure pass-through copy for static assets
-
-6. **Create Sample Data**
-   - Create sample `names.csv` with a few rows for testing
-   - Create `config.yaml` with basic site settings
-   - Add sample Markdown content if needed
-
-7. **Create Basic Templates**
-   - Create base layout template
-   - Create name page template
-   - Create homepage template
-
-8. **Verify Setup**
-   - Ensure build process runs successfully
-   - Verify pages are generated from CSV data
-   - Check dev server with live reloading
-   - Test output in `_site/` directory
 
 ### Feature Development Workflow
 
@@ -287,9 +375,9 @@ When implementing new features:
    - Avoid over-engineering
 
 5. **Test Changes**
-   - Run the development server
+   - Run the development server (`npm run dev`)
    - Test new functionality manually
-   - Run automated tests if they exist
+   - Check generated output in `_site/` directory
    - Fix any issues found
 
 6. **Commit and Push**
@@ -297,13 +385,42 @@ When implementing new features:
    - Follow git workflow (see below)
    - Push to feature branch
 
+### Data Processing Workflow
+
+When updating or regenerating data:
+
+1. **Generate Base JSON** (if needed)
+   ```bash
+   python scripts/generate_boys_json.py
+   python scripts/generate_girls_json.py
+   ```
+
+2. **Add Classifications**
+   ```bash
+   node scripts/add-recent-classifications.js
+   node scripts/add-historic-classifications.js
+   ```
+
+3. **Generate Unique Slugs**
+   ```bash
+   node scripts/generate-unique-slugs.js
+   ```
+
+4. **Build Site**
+   ```bash
+   npm run build
+   ```
+
+5. **Verify Output**
+   - Check `_site/` directory for generated pages
+   - Test navigation and links
+   - Verify classification pages
+
 ---
 
 ## Key Conventions
 
 ### Code Style Conventions
-
-**To Be Established** - These conventions should be set when the technology stack is chosen.
 
 #### General Principles
 - **Simplicity Over Complexity** - Don't over-engineer solutions
@@ -312,48 +429,46 @@ When implementing new features:
 - **Minimal Comments** - Only comment non-obvious logic
 
 #### File Naming
-- Use kebab-case for files: `user-profile.tsx`, `api-service.ts`
-- Component files should match component name
-- Test files: `component-name.test.ts` or `component-name.spec.ts`
+- Use kebab-case for files: `name-pages.njk`, `add-recent-classifications.js`
+- Template files use `.njk` extension (Nunjucks)
+- Scripts use `.js` extension (Node.js) or `.py` (Python)
 
 #### Code Organization
-- One component per file
+- One template per file
 - Group related functionality together
 - Keep files focused and single-purpose
-- Extract shared logic to utilities
-
-#### TypeScript Guidelines (if adopted)
-- Use TypeScript for type safety
-- Define interfaces for data structures
-- Avoid `any` type - use `unknown` if type is truly unknown
-- Use type inference where possible
+- Scripts in `scripts/` directory
+- Templates in `src/` or `src/templates/`
 
 #### Template Guidelines
 - Keep templates focused and single-purpose
-- Extract reusable template partials/includes
+- Use Nunjucks template syntax
 - Use meaningful variable names in templates
 - Separate layout templates from content templates
-- Keep template logic simple (complex logic in data processing)
+- Keep template logic simple (complex logic in .eleventy.js or scripts)
+
+#### Data Processing
+- Handle JSON parsing during build time (in .eleventy.js)
+- Classification logic in dedicated scripts
+- Use Node.js for JavaScript scripts
+- Use Python for data generation scripts
+- Always preserve data structure when adding properties
 
 #### Error Handling
-- Only validate at system boundaries (user input, external APIs)
+- Only validate at system boundaries (data input, file reading)
 - Trust internal code and framework guarantees
-- Don't add error handling for scenarios that can't happen
-- Handle errors gracefully with user-friendly messages
+- Handle missing/malformed data gracefully
+- Provide clear error messages during build
 
 ### Security Conventions
 - Never commit secrets, API keys, or credentials
-- Use environment variables for sensitive configuration
-- Validate and sanitize user input
-- Be aware of common vulnerabilities:
-  - XSS (Cross-Site Scripting)
-  - SQL Injection (if using database)
-  - CSRF (Cross-Site Request Forgery)
-  - Command Injection
+- Validate data structure during processing
+- Be aware of XSS risks in template rendering
+- Sanitize any user-generated content (if added in future)
 
 ### Documentation Conventions
 - Keep README.md up-to-date with setup instructions
-- Document non-obvious decisions in code comments
+- Document classification logic in script comments
 - Update this CLAUDE.md as the project evolves
 - Don't create unnecessary documentation files
 
@@ -361,154 +476,60 @@ When implementing new features:
 
 ## Technology Stack
 
-### Status: ✅ SELECTED AND CONFIGURED
+### Status: ✅ PRODUCTION STACK CONFIGURED
 
-**Chosen Stack:**
+**Current Stack:**
 - **SSG:** 11ty (Eleventy) v3.1.2
 - **Templates:** Nunjucks
-- **CSV Parsing:** csv-parse v6.1.0
+- **Data Format:** JSON (migrated from CSV)
 - **Styling:** Tailwind CSS v4.1.17 with PostCSS
 - **CSS Processing:** @tailwindcss/postcss + autoprefixer
 - **Build Tools:** npm-run-all for parallel builds
-- **Search:** Basic JavaScript (to be enhanced with Fuse.js later)
+- **Data Processing:** Node.js + Python scripts
+- **Search:** Basic JavaScript placeholder (ready for Fuse.js/Pagefind)
 
-### Alternative Options Considered
+### Key Dependencies
 
-#### Static Site Generator (SSG) Options
+**DevDependencies:**
+```json
+{
+  "@11ty/eleventy": "^3.1.2",
+  "@tailwindcss/postcss": "^4.1.17",
+  "autoprefixer": "^10.4.22",
+  "csv-parse": "^6.1.0",
+  "npm-run-all": "^4.1.5",
+  "postcss": "^8.5.6",
+  "postcss-cli": "^11.0.1",
+  "tailwindcss": "^4.1.17"
+}
+```
 
-**11ty (Eleventy)** - Highly Recommended for this project
-- ✅ Excellent for data-driven sites (CSV, JSON, YAML)
-- ✅ Multiple template languages (Nunjucks, Liquid, EJS, etc.)
-- ✅ Simple and flexible
-- ✅ Great performance with thousands of pages
-- ✅ Easy to set up CSV → page generation
-- ✅ Active community and good documentation
-- 📦 `npm install --save-dev @11ty/eleventy`
+### Why This Stack?
 
-**Astro** - Modern Alternative
-- ✅ Modern, component-based approach
-- ✅ Excellent performance (partial hydration)
-- ✅ Can use React/Vue/Svelte components if needed
-- ✅ Built-in TypeScript support
-- ✅ Good for mixing static and interactive content
-- ⚠️ Slightly more complex setup than 11ty
-- 📦 `npm create astro@latest`
+**11ty (Eleventy):**
+- Excellent for data-driven sites with thousands of pages
+- Flexible data sources (JSON, CSV, YAML)
+- Multiple template language support
+- Fast builds even with large datasets
+- Simple configuration
 
-**Hugo** - High Performance Option
-- ✅ Extremely fast build times (important for thousands of pages)
-- ✅ Go templates (different syntax than JavaScript)
-- ✅ Built-in CSV/JSON data handling
-- ✅ Single binary, no dependencies
-- ⚠️ Go-based (not Node.js) - different ecosystem
-- ⚠️ Template syntax learning curve
-- 📦 Binary download or `brew install hugo`
+**Nunjucks Templates:**
+- Powerful templating with filters and macros
+- Similar to Jinja2/Django templates
+- Good documentation and community support
+- Easy to learn and maintain
 
-**Jekyll** - Ruby-Based Classic
-- ✅ Mature and stable
-- ✅ GitHub Pages native support
-- ✅ Good Markdown and YAML support
-- ⚠️ Ruby-based (different ecosystem)
-- ⚠️ Slower builds with thousands of pages
-- ⚠️ CSV handling requires plugins
-- 📦 `gem install jekyll`
+**Tailwind CSS v4:**
+- Utility-first CSS for rapid development
+- Responsive design made easy
+- Minimal CSS output (only used utilities)
+- PostCSS integration for processing
 
-#### CSV Parsing Libraries (Node.js)
-
-- **csv-parse** - Fast, streaming CSV parser
-- **papaparse** - Popular, works in browser and Node.js
-- **node-csv** - Complete CSV toolset
-
-#### Template Languages
-
-Depends on chosen SSG:
-- **Nunjucks** (11ty) - Powerful, similar to Jinja2
-- **Liquid** (11ty, Jekyll) - Simple, safe templating
-- **JSX/TSX** (Astro) - Component-based, familiar to React devs
-- **Go Templates** (Hugo) - Powerful but different syntax
-- **EJS** (11ty) - Simple JavaScript templating
-
-#### Client-Side Search Libraries
-
-**Lunr.js**
-- ✅ Full-text search in the browser
-- ✅ Small footprint (~8KB)
-- ✅ No external dependencies
-- ✅ Works well with static sites
-
-**Fuse.js**
-- ✅ Fuzzy search (typo-tolerant)
-- ✅ Simple API
-- ✅ Good for name searching
-- ✅ Lightweight (~12KB)
-
-**FlexSearch**
-- ✅ Very fast
-- ✅ Memory efficient
-- ✅ Advanced search features
-- ✅ Good for large datasets
-
-**Pagefind** (by Cloudflare)
-- ✅ Specifically designed for static sites
-- ✅ Indexes during build
-- ✅ Excellent performance
-- ✅ UI components included
-
-#### Styling Options
-
-- **Plain CSS** - Simple, no dependencies (recommended for static sites)
-- **Tailwind CSS** - Utility-first CSS, rapid development
-- **Sass/SCSS** - CSS preprocessor with variables and mixins
-- **CSS-in-JS** - Only if using Astro with components
-
-#### Deployment Options
-
-- **GitHub Pages** - Free, easy, good for static sites
-- **Netlify** - Free tier, continuous deployment, forms, redirects
-- **Vercel** - Free tier, excellent performance
-- **Cloudflare Pages** - Free, fast global CDN
-- **AWS S3 + CloudFront** - Scalable, pay-as-you-go
-
-### Recommended Stack
-
-For this project's requirements (CSV data, thousands of pages, search):
-
-**Option 1: Simple and Effective (Recommended)**
-- **SSG:** 11ty (Eleventy)
-- **Templates:** Nunjucks
-- **CSV Parsing:** csv-parse or papaparse
-- **Search:** Fuse.js or Lunr.js
-- **Styling:** Plain CSS or Tailwind
-- **Deployment:** Netlify or GitHub Pages
-
-**Option 2: Modern and Fast**
-- **SSG:** Astro
-- **Templates:** Astro components (JSX-like)
-- **CSV Parsing:** papaparse
-- **Search:** Pagefind
-- **Styling:** Tailwind CSS
-- **Deployment:** Vercel or Cloudflare Pages
-
-**Option 3: Maximum Performance**
-- **SSG:** Hugo
-- **Templates:** Go templates
-- **CSV Parsing:** Built-in Hugo data
-- **Search:** Lunr.js or custom JavaScript
-- **Styling:** Plain CSS
-- **Deployment:** Cloudflare Pages
-
-### Technology Decision Process
-
-When an AI assistant is asked to set up the project:
-
-1. **Ask the user** what technologies they prefer
-2. If user has no preference, recommend **11ty + Nunjucks + Fuse.js** for:
-   - Simplicity and flexibility
-   - Excellent CSV data handling
-   - Good performance with thousands of pages
-   - Easy template syntax
-   - Simple search implementation
-3. Document the decision in this file
-4. Proceed with setup
+**JSON Data Format:**
+- Easier to work with in JavaScript than CSV
+- Preserves data types and structure
+- Supports nested arrays (rankings)
+- Efficient parsing in 11ty
 
 ---
 
@@ -516,119 +537,92 @@ When an AI assistant is asked to set up the project:
 
 ### Starting Development Server
 
-**Current Project (11ty + Tailwind):**
-```bash
-npm run dev
-# Builds CSS once, then runs 11ty and CSS watch in parallel
-```
-
-**Other SSG Options:**
-
-**Astro:**
 ```bash
 npm run dev
 ```
 
-**Hugo:**
-```bash
-hugo server
-# or with live reload
-hugo server -D
-```
+This command:
+1. Builds CSS once with Tailwind/PostCSS
+2. Starts 11ty dev server with live reload
+3. Watches CSS files for changes
+4. Runs both in parallel with npm-run-all
 
 ### Building for Production
 
-**Current Project (11ty + Tailwind):**
-```bash
-npm run build
-# Builds 11ty HTML pages, then processes CSS with Tailwind/PostCSS
-# Output: _site/ directory with 12 HTML files + compiled CSS
-```
-
-**Other SSG Options:**
-
-**Astro:**
 ```bash
 npm run build
 ```
 
-**Hugo:**
+This command:
+1. Runs `npm run build:eleventy` - Generates all HTML pages from templates and data
+2. Runs `npm run build:css` - Processes CSS with Tailwind/PostCSS
+
+**Output:** `_site/` directory with thousands of HTML files + compiled CSS
+
+### Processing Data
+
+**Generate initial JSON files:**
 ```bash
-hugo
-# Output goes to public/ directory
+python scripts/generate_boys_json.py
+python scripts/generate_girls_json.py
+```
+
+**Add recent classifications (1996-2024):**
+```bash
+node scripts/add-recent-classifications.js
+```
+
+**Add historic classifications (1904-2024):**
+```bash
+node scripts/add-historic-classifications.js
+```
+
+**Generate unique slugs:**
+```bash
+node scripts/generate-unique-slugs.js
+```
+
+**Complete data processing pipeline:**
+```bash
+# Run all processing steps in sequence
+python scripts/generate_boys_json.py && \
+python scripts/generate_girls_json.py && \
+node scripts/add-recent-classifications.js && \
+node scripts/add-historic-classifications.js && \
+node scripts/generate-unique-slugs.js
 ```
 
 ### Previewing Production Build
 
-**11ty:**
 ```bash
+# Install serve if needed
+npm install -g serve
+
 # Serve the _site directory
 npx serve _site
 ```
 
-**Astro:**
-```bash
-npm run preview
-```
-
-**Hugo:**
-```bash
-# Serve the public/ directory
-cd public && python -m http.server 8000
-```
-
-### Processing CSV Data
-
-**Example for 11ty (in .eleventy.js):**
-```javascript
-const fs = require('fs');
-const parse = require('csv-parse/sync');
-
-module.exports = function(eleventyConfig) {
-  // Read and parse CSV data
-  eleventyConfig.addGlobalData('names', () => {
-    const csvContent = fs.readFileSync('data/names.csv', 'utf-8');
-    return parse.parse(csvContent, { columns: true });
-  });
-};
-```
-
-### Building Search Index
-
-**Example script to generate search.json:**
-```javascript
-const fs = require('fs');
-const parse = require('csv-parse/sync');
-
-const csvContent = fs.readFileSync('data/names.csv', 'utf-8');
-const names = parse.parse(csvContent, { columns: true });
-
-const searchIndex = names.map(row => ({
-  name: row.name,
-  meaning: row.meaning,
-  origin: row.origin,
-  url: `/names/${row.name.toLowerCase()}/`
-}));
-
-fs.writeFileSync('_site/search.json', JSON.stringify(searchIndex));
-```
+Then visit http://localhost:3000
 
 ### Installing Dependencies
 
 ```bash
 npm install <package-name>
-# or
-yarn add <package-name>
-# or
-pnpm add <package-name>
 ```
 
-### Validating Data
+### Validating Build
 
-**Check CSV for required fields:**
 ```bash
-# Create a validation script
-node scripts/validate-csv.js
+# Build the site
+npm run build
+
+# Check for errors in output
+# Verify key pages exist
+ls _site/
+ls _site/names/boy/
+ls _site/names/girl/
+ls _site/classifications/recent/
+ls _site/classifications/historic/
 ```
 
 ---
@@ -638,7 +632,7 @@ node scripts/validate-csv.js
 ### Branch Strategy
 
 **Feature Branches** - All development happens on feature branches:
-- Branch naming: `claude/claude-md-<session-id>`
+- Branch naming: `claude/claude-md-<session-id>` or `claude/<feature-name>-<session-id>`
 - Never push directly to main/master
 - Create pull requests for code review
 
@@ -662,14 +656,14 @@ node scripts/validate-csv.js
 - `refactor:` - Code refactoring
 - `docs:` - Documentation changes
 - `style:` - Code style/formatting changes
-- `test:` - Adding or updating tests
+- `data:` - Data updates or processing changes
 - `chore:` - Maintenance tasks
 
 **Examples:**
 ```bash
-git commit -m "feat: add initial project structure with Vite and React"
-git commit -m "fix: resolve naming validation edge case"
-git commit -m "docs: update README with setup instructions"
+git commit -m "feat: add classification list pages"
+git commit -m "data: add historic classifications to name datasets"
+git commit -m "docs: update CLAUDE.md with current project state"
 ```
 
 ### Pushing Changes
@@ -677,7 +671,7 @@ git commit -m "docs: update README with setup instructions"
 Always push to the designated feature branch:
 
 ```bash
-git push -u origin claude/claude-md-<session-id>
+git push -u origin <branch-name>
 ```
 
 **Retry Logic:**
@@ -697,17 +691,17 @@ When creating a pull request:
 
 **Example:**
 ```bash
-gh pr create --title "Initial project setup with Vite and React" --body "$(cat <<'EOF'
+gh pr create --title "Add classification system for name trends" --body "$(cat <<'EOF'
 ## Summary
-- Set up Vite build system with React and TypeScript
-- Created initial project structure with src/ directory
-- Configured ESLint and Prettier for code quality
+- Implemented 31 classification types (15 recent + 16 historic)
+- Added classification processing scripts
+- Created classification listing and detail pages
 
 ## Test plan
-- [ ] Run `npm install` successfully
-- [ ] Start dev server with `npm run dev`
-- [ ] Build production bundle with `npm run build`
-- [ ] Verify application runs in browser
+- [ ] Build completes successfully
+- [ ] All classification pages generate correctly
+- [ ] Name pages display classification badges
+- [ ] Classification links work properly
 EOF
 )"
 ```
@@ -730,8 +724,8 @@ EOF
 
 3. **Ask When Uncertain**
    - If requirements are unclear, ask the user
-   - Don't make assumptions about technology preferences
-   - Clarify before making major architectural decisions
+   - Don't make assumptions about data structure
+   - Clarify before making major changes
 
 4. **Keep It Simple**
    - Don't over-engineer solutions
@@ -746,48 +740,49 @@ EOF
 
 6. **Security First**
    - Never commit secrets or credentials
-   - Validate user input at boundaries
-   - Be aware of OWASP Top 10 vulnerabilities
+   - Validate data structure during processing
    - Fix security issues immediately
 
 7. **Test Your Changes**
    - Run the dev server after changes
    - Verify functionality works
-   - Run tests if they exist
+   - Check generated output in _site/
    - Fix any errors before committing
 
 ### Project-Specific Guidelines
 
-#### Initial Setup Phase (Current)
-- **Always consult user** before choosing technologies
-- Don't install packages without explicit approval
-- Document all technology decisions in this file
-- Create minimal viable setup - don't add extras
+#### Working with Large Data Files
+- **boys.json and girls.json are ~18.7MB total** - Be mindful when reading
+- Use offset/limit parameters when reading large files
+- Don't try to read entire files in one operation
+- Use Grep for searching within large JSON files
+- Data files are version controlled despite size
 
-#### Development Phase (Future)
-- Follow established project structure
-- Maintain consistency with chosen tech stack
-- Don't add features beyond what's requested
-- Keep templates small and focused
+#### Working with Classifications
+- **31 classification types total** - 15 recent + 16 historic
+- Classifications are added by separate scripts, not during build
+- Classification logic is complex - read the scripts before modifying
+- Each classification has a description in classification-descriptions.json
+- Uncategorized is a valid classification for names that don't fit patterns
 
 #### Static Site Generator Specific
-- **Data Processing** - Handle CSV parsing during build, not runtime
-- **Template Reuse** - Create reusable partials for repeated elements
-- **Build Performance** - Be mindful of build time with thousands of pages
-- **Search Index** - Generate search index during build process
-- **Static Output** - Remember all pages are pre-generated, no server-side logic
-- **Asset Optimization** - Minify CSS/JS, optimize images for static deployment
-- **URL Structure** - Use clean URLs (e.g., `/names/alice/` not `/names/alice.html`)
+- **Data Processing** - Handle JSON parsing during build in .eleventy.js
+- **Template Reuse** - Base template in src/templates/base.njk
+- **Build Performance** - Build generates thousands of pages, can take time
+- **Pagination** - Name pages use 11ty pagination (size: 1)
+- **Static Output** - All pages are pre-generated, no server-side logic
+- **URL Structure** - Clean URLs with gender separation: `/names/boy/slug/` or `/names/girl/slug/`
 
-#### Working with CSV Data
-- **Validation** - Always validate CSV structure before processing
-- **Encoding** - Ensure UTF-8 encoding for international names
-- **Edge Cases** - Handle names with special characters, commas, quotes
-- **Performance** - Use streaming parsers for large CSV files if needed
-- **Sample Data** - Test with small sample before processing thousands of rows
+#### URL and Slug Handling
+- **Unique slugs** - Names can be duplicated across genders (e.g., Jordan)
+- Gender-separated URLs prevent conflicts
+- Slugs are generated by scripts/generate-unique-slugs.js
+- Never manually create slugs - use the script
+- Permalinks in templates use `{{ nameData.uniqueSlug }}`
 
 #### When Reading Code
 - Use Read tool for specific files
+- **For large data files** - Use Grep or read with offset/limit
 - Use Task tool with Explore agent for broader exploration
 - Read in parallel when files are independent
 - Understand context before suggesting changes
@@ -797,10 +792,11 @@ EOF
 - Use Write tool only for new files
 - Preserve exact indentation
 - Match existing code style
+- Follow Nunjucks template syntax
 
 #### When Using Tools
 - Glob for finding files by pattern
-- Grep for searching code content
+- Grep for searching code content (especially in large JSON files)
 - Bash for terminal operations only (not file operations)
 - Task tool for complex multi-step operations
 
@@ -820,11 +816,10 @@ EOF
 - ✅ All requested changes implemented
 - ✅ Code follows project conventions
 - ✅ No security vulnerabilities introduced
-- ✅ Build completes successfully (if SSG configured)
+- ✅ Build completes successfully
 - ✅ Generated pages look correct in _site/ output
-- ✅ Search functionality works (if implemented)
-- ✅ CSV data processes correctly (if data exists)
-- ✅ Tests pass (if tests exist)
+- ✅ Links and navigation work properly
+- ✅ Data structure preserved
 - ✅ Changes committed with clear message
 - ✅ Pushed to correct branch
 
@@ -835,14 +830,16 @@ EOF
 ### Updating This Document
 
 This CLAUDE.md should be updated when:
-- Technology stack is chosen
-- Project structure is established
-- New conventions are adopted
+- New features are added
+- Data structure changes
 - Build processes change
-- New tools or workflows are added
+- New scripts are added
+- Classification system is modified
+- New page types are created
 
 ### Version History
 
+- **v2.0** - December 8, 2025 - Complete refresh: production data, classification system, unique slugs, thousands of pages
 - **v1.3** - December 7, 2025 - Integrated Tailwind CSS v4 with PostCSS build pipeline
 - **v1.2** - December 7, 2025 - Updated with selected technology stack (11ty + Nunjucks + csv-parse)
 - **v1.1** - December 7, 2025 - Updated with SSG-specific guidance, CSV data handling, and search functionality
@@ -855,9 +852,10 @@ This CLAUDE.md should be updated when:
 If you're an AI assistant working on this project and encounter situations not covered in this guide:
 1. Review the existing codebase for patterns
 2. Consult the user for clarification
-3. Make conservative choices that are easy to change later
-4. Update this document with new learnings
+3. Check data/classification-descriptions.json for classification details
+4. Review scripts/ directory for data processing logic
+5. Update this document with new learnings
 
 ---
 
-**Remember:** This project is in its earliest stages. Most decisions haven't been made yet. When in doubt, ask the user before making significant changes or choosing technologies.
+**Remember:** This project now has production data and a complete classification system. Always test changes with the build system to ensure thousands of pages generate correctly. The data files are large - use appropriate tools and techniques when working with them.
