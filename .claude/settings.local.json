@@ -7,7 +7,10 @@
       "Bash(cat:*)",
       "Bash(node scripts/add-historic-classifications.js:*)",
       "Bash(node scripts/add-recent-classifications.js:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(npm run build:eleventy:*)",
+      "Bash(USE_DEV_DATA=true npm run build:eleventy:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

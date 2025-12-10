@@ -33,57 +33,6 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     </div>
   </div>
 
-  {% if nameData.rankFrom1996 and nameData.rankFrom1996.length > 0 %}
-  <div class="mb-8 bg-gray-50 rounded-lg p-6">
-    <h2 class="text-2xl font-bold mb-4 text-gray-900">Modern Rankings</h2>
-    <p class="text-gray-700 mb-4">Rankings from 1996 to 2024 (29 years)</p>
-
-    {% if nameData.recentClassification %}
-    <div class="mb-4 bg-white rounded-lg p-4 border-l-4 border-blue-500">
-      <p class="text-sm font-semibold text-gray-700 mb-1">
-        Classification: <span class="text-blue-600">{{ nameData.recentClassification }}</span>
-      </p>
-      {% if classificationDescriptions.recent[nameData.recentClassification] %}
-      <p class="text-sm text-gray-600">{{ classificationDescriptions.recent[nameData.recentClassification] }}</p>
-      {% endif %}
-    </div>
-    {% endif %}
-
-    <div class="bg-white rounded p-4">
-      <div id="modern-chart" class="w-full" style="height: 400px;"></div>
-    </div>
-
-    <details class="mt-4">
-      <summary class="cursor-pointer bg-white rounded-lg p-4 hover:bg-gray-50 font-semibold text-gray-700 select-none">
-        View Data Table
-      </summary>
-      <div class="mt-2 bg-white rounded-lg overflow-hidden border border-gray-200">
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              {% set startYear = 1996 %}
-              {% for rank in nameData.rankFrom1996 %}
-              <tr class="{% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-gray-50{% endif %} hover:bg-blue-50">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ startYear + loop.index0 }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm {% if rank != 'x' %}text-blue-600 font-semibold{% else %}text-gray-400{% endif %}">
-                  {% if rank != 'x' %}#{{ rank }}{% else %}Unranked{% endif %}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </details>
-  </div>
-  {% endif %}
-
   {% if nameData.rankHistoric and nameData.rankHistoric.length > 0 %}
   <div class="mb-8 bg-gray-50 rounded-lg p-6">
     <h2 class="text-2xl font-bold mb-4 text-gray-900">Historic Rankings</h2>
@@ -135,28 +84,83 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
   </div>
   {% endif %}
 
+  {% if nameData.rankFrom1996 and nameData.rankFrom1996.length > 0 %}
+  <div class="mb-8 bg-gray-50 rounded-lg p-6">
+    <h2 class="text-2xl font-bold mb-4 text-gray-900">Modern Rankings</h2>
+    <p class="text-gray-700 mb-4">Rankings from 1996 to 2024 (29 years)</p>
+
+    {% if nameData.recentClassification %}
+    <div class="mb-4 bg-white rounded-lg p-4 border-l-4 border-blue-500">
+      <p class="text-sm font-semibold text-gray-700 mb-1">
+        Classification: <span class="text-blue-600">{{ nameData.recentClassification }}</span>
+      </p>
+      {% if classificationDescriptions.recent[nameData.recentClassification] %}
+      <p class="text-sm text-gray-600">{{ classificationDescriptions.recent[nameData.recentClassification] }}</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="bg-white rounded p-4">
+      <div id="modern-chart" class="w-full" style="height: 400px;"></div>
+    </div>
+
+    <details class="mt-4">
+      <summary class="cursor-pointer bg-white rounded-lg p-4 hover:bg-gray-50 font-semibold text-gray-700 select-none">
+        View Data Table
+      </summary>
+      <div class="mt-2 bg-white rounded-lg overflow-hidden border border-gray-200">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Count</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              {% set startYear = 1996 %}
+              {% for rank in nameData.rankFrom1996 %}
+              {% set count = nameData.countFrom1996[loop.index0] %}
+              <tr class="{% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-gray-50{% endif %} hover:bg-blue-50">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ startYear + loop.index0 }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {% if count != 'x' %}{{ count }}{% else %}—{% endif %}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm {% if rank != 'x' %}text-blue-600 font-semibold{% else %}text-gray-400{% endif %}">
+                  {% if rank != 'x' %}#{{ rank }}{% else %}Unranked{% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+  </div>
+  {% endif %}
+
   <nav class="pt-6 border-t border-gray-200">
     <a href="/names/" class="text-blue-600 hover:text-blue-700 font-medium">&larr; Back to all names</a>
   </nav>
 </article>
 
 <script>
-  // Modern rankings dot plot with linear axis
-  {% if nameData.rankFrom1996 and nameData.rankFrom1996.length > 0 %}
+  // Modern rankings dot plot with count on y-axis
+  {% if nameData.countFrom1996 and nameData.countFrom1996.length > 0 %}
   (function() {
-    const data = {{ nameData.rankFrom1996 | dump | safe }};
+    const countData = {{ nameData.countFrom1996 | dump | safe }};
     const startYear = 1996;
 
     // Prepare data
-    const chartData = data.map((rank, i) => ({
+    const chartData = countData.map((count, i) => ({
       year: startYear + i,
-      rank: rank === 'x' ? null : parseInt(rank)
-    })).filter(d => d.rank !== null);
+      count: count === 'x' ? null : parseInt(count)
+    })).filter(d => d.count !== null);
 
-    // Find highest and lowest rankings
-    const rankedData = chartData.filter(d => d.rank !== null);
-    const bestRank = rankedData.length > 0 ? Math.min(...rankedData.map(d => d.rank)) : null;
-    const worstRank = rankedData.length > 0 ? Math.max(...rankedData.map(d => d.rank)) : null;
+    // Find min and max counts
+    const minCount = chartData.length > 0 ? Math.min(...chartData.map(d => d.count)) : 0;
+    const maxCount = chartData.length > 0 ? Math.max(...chartData.map(d => d.count)) : 0;
 
     const container = document.getElementById('modern-chart');
     const margin = {top: 20, right: 40, bottom: 60, left: 60};
@@ -176,72 +180,37 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
       // X scale for years (horizontal)
-      const xScale = d3.scaleBand()
-        .domain(chartData.map(d => d.year))
-        .range([0, width])
-        .padding(0.2);
+      const xScale = d3.scaleLinear()
+        .domain([1996, 2024])
+        .range([0, width]);
 
-      // Y scale - linear from best to worst (top to bottom: low numbers to high numbers)
+      // Y scale for count (vertical)
       const yScale = d3.scaleLinear()
-        .domain([bestRank, worstRank])  // best (low) at top to worst (high) at bottom
-        .range([0, height]);
+        .domain([0, maxCount])
+        .range([height, 0]);
 
-      // Calculate 5 significant tick values for Y-axis
-      const range = worstRank - bestRank;
-      let tickValues = [];
-
-      if (range <= 10) {
-        // Small range: show every 2-3 values
-        const step = Math.ceil(range / 4);
-        for (let i = 0; i < 5; i++) {
-          const val = bestRank + i * step;
-          if (val <= worstRank) tickValues.push(val);
-        }
-      } else if (range <= 50) {
-        // Medium range: use 10s
-        tickValues = [
-          bestRank,
-          Math.ceil(bestRank / 10) * 10,
-          Math.round((bestRank + worstRank) / 2 / 10) * 10,
-          Math.floor(worstRank / 10) * 10,
-          worstRank
-        ].filter((v, i, arr) => arr.indexOf(v) === i && v >= bestRank && v <= worstRank);
-      } else if (range <= 200) {
-        // Larger range: use 25s or 50s
-        const step = 50;
-        tickValues = [bestRank];
-        let current = Math.ceil(bestRank / step) * step;
-        while (current < worstRank && tickValues.length < 4) {
-          tickValues.push(current);
-          current += step;
-        }
-        tickValues.push(worstRank);
-      } else {
-        // Very large range: use 100s or more
-        const step = 100;
-        tickValues = [bestRank];
-        let current = Math.ceil(bestRank / step) * step;
-        while (current < worstRank && tickValues.length < 4) {
-          tickValues.push(current);
-          current += step;
-        }
-        tickValues.push(worstRank);
-      }
-
-      // Add X axis with specific year markers
-      const yearTicks = [1996, 2010, 2020, 2024];
+      // Add X axis
       svg.append('g')
         .attr('transform', `translate(0,${height})`)
         .call(d3.axisBottom(xScale)
-          .tickValues(yearTicks)
+          .ticks(7)
           .tickFormat(d3.format('d')))
         .style('font-size', '12px');
 
-      // Add Y axis with significant points
+      // Add X axis label
+      svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', height + 50)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '14px')
+        .style('fill', '#6b7280')
+        .text('Year');
+
+      // Add Y axis
       svg.append('g')
         .call(d3.axisLeft(yScale)
-          .tickValues(tickValues)
-          .tickFormat(d => `#${d}`))
+          .ticks(5)
+          .tickFormat(d3.format(',d')))
         .style('font-size', '12px');
 
       // Add Y axis label
@@ -252,15 +221,15 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .attr('text-anchor', 'middle')
         .style('font-size', '14px')
         .style('fill', '#6b7280')
-        .text('Rank (Best → Worst)');
+        .text('Number of Babies');
 
       // Add dots
       svg.selectAll('.dot')
         .data(chartData)
         .join('circle')
         .attr('class', 'dot')
-        .attr('cx', d => xScale(d.year) + xScale.bandwidth() / 2)
-        .attr('cy', d => yScale(d.rank))
+        .attr('cx', d => xScale(d.year))
+        .attr('cy', d => yScale(d.count))
         .attr('r', 4)
         .attr('fill', '#3b82f6')
         .attr('opacity', 0.7)
@@ -272,14 +241,14 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           // Show tooltip
           const tooltip = svg.append('g')
             .attr('class', 'tooltip')
-            .attr('transform', `translate(${xScale(d.year) + xScale.bandwidth()/2 + 10},${yScale(d.rank)})`);
+            .attr('transform', `translate(${xScale(d.year) + 10},${yScale(d.count)})`);
 
           const text = tooltip.append('text')
             .attr('text-anchor', 'start')
             .style('font-size', '11px')
             .style('font-weight', '600')
             .style('fill', '#1e40af')
-            .text(`${d.year}: #${d.rank}`);
+            .text(`${d.year}: ${d.count.toLocaleString()} babies`);
 
           const bbox = text.node().getBBox();
           tooltip.insert('rect', 'text')
@@ -301,27 +270,31 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           svg.selectAll('.tooltip').remove();
         });
 
-      // Add markers for highest and lowest rankings
-      if (bestRank !== null) {
-        const bestData = chartData.find(d => d.rank === bestRank);
-        svg.append('circle')
-          .attr('cx', xScale(bestData.year) + xScale.bandwidth() / 2)
-          .attr('cy', yScale(bestRank))
-          .attr('r', 6)
-          .attr('fill', '#10b981')
-          .attr('stroke', 'white')
-          .attr('stroke-width', 2);
+      // Add markers for highest and lowest counts
+      if (maxCount > 0) {
+        const maxData = chartData.find(d => d.count === maxCount);
+        if (maxData) {
+          svg.append('circle')
+            .attr('cx', xScale(maxData.year))
+            .attr('cy', yScale(maxData.count))
+            .attr('r', 6)
+            .attr('fill', '#10b981')
+            .attr('stroke', 'white')
+            .attr('stroke-width', 2);
+        }
       }
 
-      if (worstRank !== null && worstRank !== bestRank) {
-        const worstData = chartData.find(d => d.rank === worstRank);
-        svg.append('circle')
-          .attr('cx', xScale(worstData.year) + xScale.bandwidth() / 2)
-          .attr('cy', yScale(worstRank))
-          .attr('r', 6)
-          .attr('fill', '#ef4444')
-          .attr('stroke', 'white')
-          .attr('stroke-width', 2);
+      if (minCount > 0 && minCount !== maxCount) {
+        const minData = chartData.find(d => d.count === minCount);
+        if (minData) {
+          svg.append('circle')
+            .attr('cx', xScale(minData.year))
+            .attr('cy', yScale(minData.count))
+            .attr('r', 6)
+            .attr('fill', '#ef4444')
+            .attr('stroke', 'white')
+            .attr('stroke-width', 2);
+        }
       }
     }
 
@@ -418,12 +391,13 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .data(decades)
         .join('rect')
         .attr('class', 'bar')
-        .attr('x', d => d.rank ? xScale(100) : xScale(100))
+        .attr('x', 0)
         .attr('y', d => yScale(d.decade))
-        .attr('width', d => d.rank ? xScale(100) - xScale(d.rank) : 0)
+        .attr('width', d => d.rank ? xScale(d.rank) : 0)
         .attr('height', yScale.bandwidth())
-        .attr('fill', d => d.rank ? colorScale(d.rank) : '#e5e7eb')
-        .attr('stroke', d => d.rank ? '#d97706' : '#d1d5db')
+        .attr('fill', d => d.rank ? '#93c5fd' : '#e5e7eb')
+        .attr('opacity', 1)
+        .attr('stroke', d => d.rank ? '#3b82f6' : '#d1d5db')
         .attr('stroke-width', 1)
         .style('cursor', d => d.rank ? 'pointer' : 'default')
         .on('mouseover', function(event, d) {
@@ -448,7 +422,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .attr('text-anchor', 'end')
         .style('font-size', '12px')
         .style('font-weight', '600')
-        .style('fill', '#78350f')
+        .style('fill', '#1e40af')
         .text(d => `#${d.rank}`);
     }
 

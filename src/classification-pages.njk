@@ -24,8 +24,8 @@ permalink: /classifications/{{ classification.type }}/{{ classification.slug }}/
     </p>
   </div>
 
-  {% set boys = classification.names | selectattr('gender', 'equalto', 'Boy') | list %}
-  {% set girls = classification.names | selectattr('gender', 'equalto', 'Girl') | list %}
+  {% set boys = classification.names | filterByGender('Boy') %}
+  {% set girls = classification.names | filterByGender('Girl') %}
 
   <div class="grid md:grid-cols-2 gap-8">
     {% if boys.length > 0 %}
