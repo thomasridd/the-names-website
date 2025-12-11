@@ -23,6 +23,11 @@ module.exports = function(eleventyConfig) {
       .replace(/^-+|-+$/g, '');
   }
 
+  // Add custom filter to filter arrays by property
+  eleventyConfig.addFilter('filterByGender', function(array, gender) {
+    return array.filter(item => item.gender === gender);
+  });
+
   // Load JSON data for all names (boys + girls)
   eleventyConfig.addGlobalData('allNames', () => {
     const boysPath = path.join(__dirname, 'data', `boys${dataSuffix}`);
