@@ -16,7 +16,13 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
   <h1 class="text-5xl font-bold mb-2 text-gray-900">{{ nameData.name }}</h1>
 
   {% if nameData.gender %}
-  <p class="text-xl text-gray-600 mb-8">{{ nameData.gender }}'s Name</p>
+  <p class="text-xl text-gray-600 mb-4">{{ nameData.gender }}'s Name</p>
+  {% endif %}
+
+  {% if nameData.relatedNames and nameData.relatedNames.length > 0 %}
+  <p class="text-base text-gray-700 mb-8">
+    <span class="font-semibold">Related names:</span> {{ nameData.relatedNames | join(', ') }}
+  </p>
   {% endif %}
 
   <div class="grid md:grid-cols-2 gap-8 mb-8">
