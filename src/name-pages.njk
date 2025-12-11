@@ -16,13 +16,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
   <h1 class="text-5xl font-bold mb-2 text-gray-900">{{ nameData.name }}</h1>
 
   {% if nameData.gender %}
-  <p class="text-xl text-gray-600 mb-4">{{ nameData.gender }}'s Name</p>
-  {% endif %}
-
-  {% if nameData.relatedNames and nameData.relatedNames.length > 0 %}
-  <p class="text-base text-gray-700 mb-8">
-    <span class="font-semibold">Related names:</span> {{ nameData.relatedNames | join(', ') }}
-  </p>
+  <p class="text-xl text-gray-600 mb-8">{{ nameData.gender }}'s Name</p>
   {% endif %}
 
   <div class="mb-8">
@@ -45,6 +39,21 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         {% endif %}
       </tbody>
     </table>
+
+    {% if nameData.relatedNamesWithRank and nameData.relatedNamesWithRank.length > 0 %}
+    {% set sortedRelated = nameData.relatedNamesWithRank | sort(false, false, 'rank') %}
+    <p class="text-base text-gray-700 mt-4">
+      <span class="font-semibold">Related names:</span>
+      {%- for relName in sortedRelated -%}
+        {%- if relName.rank -%}
+          {{ relName.name }} (#{{ relName.rank }})
+        {%- else -%}
+          {{ relName.name }}
+        {%- endif -%}
+        {%- if not loop.last %}, {% endif -%}
+      {%- endfor -%}
+    </p>
+    {% endif %}
   </div>
 
   {% if nameData.rankHistoric and nameData.rankHistoric.length > 0 %}
