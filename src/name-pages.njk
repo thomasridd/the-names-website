@@ -25,27 +25,26 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
   </p>
   {% endif %}
 
-  <div class="grid md:grid-cols-{{ '3' if (nameData.relatedNames and nameData.relatedNames.length > 0) else '2' }} gap-8 mb-8">
-    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Current Rank</h2>
-      <p class="text-4xl font-bold text-blue-600">#{{ nameData.rank }}</p>
-      <p class="text-sm text-gray-600 mt-2">2024 popularity ranking</p>
-    </div>
-
-    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-6">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Babies Named</h2>
-      <p class="text-4xl font-bold text-green-600">{{ nameData.count }}</p>
-      <p class="text-sm text-gray-600 mt-2">in 2024</p>
-    </div>
-
-    {% if nameData.relatedNames and nameData.relatedNames.length > 0 %}
-    {% set relatedCount2024 = nameData.relatedTotalCountFrom1996[28] %}
-    <div class="bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg p-6">
-      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Related Names</h2>
-      <p class="text-4xl font-bold text-purple-600">{% if relatedCount2024 != 'x' %}{{ relatedCount2024 }}{% else %}—{% endif %}</p>
-      <p class="text-sm text-gray-600 mt-2">babies in 2024</p>
-    </div>
-    {% endif %}
+  <div class="mb-8">
+    <table class="min-w-full">
+      <tbody class="border-t border-gray-300">
+        <tr class="border-b border-gray-300">
+          <th scope="row" class="py-3 pr-4 text-left font-normal text-gray-900">Current rank</th>
+          <td class="py-3 text-right font-bold text-gray-900">#{{ nameData.rank }}</td>
+        </tr>
+        <tr class="border-b border-gray-300">
+          <th scope="row" class="py-3 pr-4 text-left font-normal text-gray-900">Babies named {{ nameData.name }}</th>
+          <td class="py-3 text-right font-bold text-gray-900">{{ nameData.count }}</td>
+        </tr>
+        {% if nameData.relatedNames and nameData.relatedNames.length > 0 %}
+        {% set relatedCount2024 = nameData.relatedTotalCountFrom1996[28] %}
+        <tr class="border-b border-gray-300">
+          <th scope="row" class="py-3 pr-4 text-left font-normal text-gray-900">Babies named related names</th>
+          <td class="py-3 text-right font-bold text-gray-900">{% if relatedCount2024 != 'x' %}{{ relatedCount2024 }}{% else %}—{% endif %}</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
   </div>
 
   {% if nameData.rankHistoric and nameData.rankHistoric.length > 0 %}
