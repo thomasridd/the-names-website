@@ -25,7 +25,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
   </p>
   {% endif %}
 
-  <div class="grid md:grid-cols-2 gap-8 mb-8">
+  <div class="grid md:grid-cols-{{ '3' if (nameData.relatedNames and nameData.relatedNames.length > 0) else '2' }} gap-8 mb-8">
     <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6">
       <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Current Rank</h2>
       <p class="text-4xl font-bold text-blue-600">#{{ nameData.rank }}</p>
@@ -37,6 +37,15 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       <p class="text-4xl font-bold text-green-600">{{ nameData.count }}</p>
       <p class="text-sm text-gray-600 mt-2">in 2024</p>
     </div>
+
+    {% if nameData.relatedNames and nameData.relatedNames.length > 0 %}
+    {% set relatedCount2024 = nameData.relatedTotalCountFrom1996[28] %}
+    <div class="bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg p-6">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Related Names</h2>
+      <p class="text-4xl font-bold text-purple-600">{% if relatedCount2024 != 'x' %}{{ relatedCount2024 }}{% else %}—{% endif %}</p>
+      <p class="text-sm text-gray-600 mt-2">babies in 2024</p>
+    </div>
+    {% endif %}
   </div>
 
   {% if nameData.rankHistoric and nameData.rankHistoric.length > 0 %}
