@@ -121,6 +121,9 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
               <tr>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Count</th>
+                {% if nameData.relatedNames and nameData.relatedNames.length > 0 %}
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">With Related</th>
+                {% endif %}
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
               </tr>
             </thead>
@@ -128,11 +131,17 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
               {% set startYear = 1996 %}
               {% for rank in nameData.rankFrom1996 %}
               {% set count = nameData.countFrom1996[loop.index0] %}
+              {% set relatedCount = nameData.relatedTotalCountFrom1996[loop.index0] %}
               <tr class="{% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-gray-50{% endif %} hover:bg-blue-50">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ startYear + loop.index0 }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {% if count != 'x' %}{{ count }}{% else %}—{% endif %}
                 </td>
+                {% if nameData.relatedNames and nameData.relatedNames.length > 0 %}
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-purple-600 font-semibold">
+                  {% if count != 'x' and relatedCount != 'x' %}{{ (count | int) + (relatedCount | int) }}{% elif count != 'x' %}{{ count }}{% else %}—{% endif %}
+                </td>
+                {% endif %}
                 <td class="px-6 py-4 whitespace-nowrap text-sm {% if rank != 'x' %}text-blue-600 font-semibold{% else %}text-gray-400{% endif %}">
                   {% if rank != 'x' %}#{{ rank }}{% else %}Unranked{% endif %}
                 </td>
@@ -156,17 +165,33 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
   {% if nameData.countFrom1996 and nameData.countFrom1996.length > 0 %}
   (function() {
     const countData = {{ nameData.countFrom1996 | dump | safe }};
+    const relatedCountData = {{ nameData.relatedTotalCountFrom1996 | dump | safe }};
+    const hasRelated = {{ (nameData.relatedNames and nameData.relatedNames.length > 0) | dump | safe }};
     const startYear = 1996;
 
-    // Prepare data
+    // Prepare main data (name's own count)
     const chartData = countData.map((count, i) => ({
       year: startYear + i,
       count: count === 'x' ? null : parseInt(count)
     })).filter(d => d.count !== null);
 
-    // Find min and max counts
-    const minCount = chartData.length > 0 ? Math.min(...chartData.map(d => d.count)) : 0;
-    const maxCount = chartData.length > 0 ? Math.max(...chartData.map(d => d.count)) : 0;
+    // Prepare combined data (name + related counts)
+    const combinedData = hasRelated ? countData.map((count, i) => {
+      const relCount = relatedCountData[i];
+      const nameCount = count === 'x' ? 0 : parseInt(count);
+      const relatedTotal = relCount === 'x' ? 0 : parseInt(relCount);
+      return {
+        year: startYear + i,
+        count: nameCount > 0 || relatedTotal > 0 ? nameCount + relatedTotal : null,
+        nameCount: nameCount > 0 ? nameCount : null,
+        relatedCount: relatedTotal > 0 ? relatedTotal : null
+      };
+    }).filter(d => d.count !== null) : [];
+
+    // Find min and max counts (considering both series)
+    const allCounts = [...chartData.map(d => d.count), ...combinedData.map(d => d.count)];
+    const minCount = allCounts.length > 0 ? Math.min(...allCounts) : 0;
+    const maxCount = allCounts.length > 0 ? Math.max(...allCounts) : 0;
 
     const container = document.getElementById('modern-chart');
     const margin = {top: 20, right: 40, bottom: 60, left: 60};
@@ -229,7 +254,56 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .style('fill', '#6b7280')
         .text('Number of Babies');
 
-      // Add dots
+      // Add combined series dots (if related names exist) - draw first so main series is on top
+      if (hasRelated && combinedData.length > 0) {
+        svg.selectAll('.dot-combined')
+          .data(combinedData)
+          .join('circle')
+          .attr('class', 'dot-combined')
+          .attr('cx', d => xScale(d.year))
+          .attr('cy', d => yScale(d.count))
+          .attr('r', 4)
+          .attr('fill', '#9333ea')
+          .attr('opacity', 0.6)
+          .on('mouseover', function(event, d) {
+            d3.select(this)
+              .attr('r', 6)
+              .attr('opacity', 1);
+
+            // Show tooltip
+            const tooltip = svg.append('g')
+              .attr('class', 'tooltip')
+              .attr('transform', `translate(${xScale(d.year) + 10},${yScale(d.count)})`);
+
+            const text = tooltip.append('text')
+              .attr('text-anchor', 'start')
+              .style('font-size', '11px')
+              .style('font-weight', '600')
+              .style('fill', '#7e22ce')
+              .text(`${d.year}: ${d.count.toLocaleString()} total (${d.nameCount ? d.nameCount.toLocaleString() : 0} + ${d.relatedCount ? d.relatedCount.toLocaleString() : 0})`);
+
+            const bbox = text.node().getBBox();
+            tooltip.insert('rect', 'text')
+              .attr('x', bbox.x - 4)
+              .attr('y', bbox.y - 2)
+              .attr('width', bbox.width + 8)
+              .attr('height', bbox.height + 4)
+              .attr('fill', 'white')
+              .attr('stroke', '#9333ea')
+              .attr('stroke-width', 1)
+              .attr('rx', 3);
+
+            text.raise();
+          })
+          .on('mouseout', function() {
+            d3.select(this)
+              .attr('r', 4)
+              .attr('opacity', 0.6);
+            svg.selectAll('.tooltip').remove();
+          });
+      }
+
+      // Add main series dots
       svg.selectAll('.dot')
         .data(chartData)
         .join('circle')
@@ -301,6 +375,45 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
             .attr('stroke', 'white')
             .attr('stroke-width', 2);
         }
+      }
+
+      // Add legend
+      const legend = svg.append('g')
+        .attr('class', 'legend')
+        .attr('transform', `translate(${width - 180}, 10)`);
+
+      // Main series legend item
+      legend.append('circle')
+        .attr('cx', 0)
+        .attr('cy', 0)
+        .attr('r', 4)
+        .attr('fill', '#3b82f6')
+        .attr('opacity', 0.7);
+
+      legend.append('text')
+        .attr('x', 10)
+        .attr('y', 0)
+        .attr('dy', '0.32em')
+        .style('font-size', '12px')
+        .style('fill', '#374151')
+        .text('This name');
+
+      // Combined series legend item (only if has related names)
+      if (hasRelated && combinedData.length > 0) {
+        legend.append('circle')
+          .attr('cx', 0)
+          .attr('cy', 20)
+          .attr('r', 4)
+          .attr('fill', '#9333ea')
+          .attr('opacity', 0.6);
+
+        legend.append('text')
+          .attr('x', 10)
+          .attr('y', 20)
+          .attr('dy', '0.32em')
+          .style('font-size', '12px')
+          .style('fill', '#374151')
+          .text('With related');
       }
     }
 
