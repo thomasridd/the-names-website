@@ -34,6 +34,20 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     </table>
   </div>
 
+  {% if nameData.tags and nameData.tags.length > 0 %}
+  <div class="mb-8">
+    <h2 class="text-2xl font-bold mb-4 text-gray-900">Tags</h2>
+    <div class="flex flex-wrap gap-3">
+      {% for tag in nameData.tags %}
+      {% set tagSlug = tag | lower | replace(" ", "-") %}
+      <a href="/tags/{{ tagSlug }}/" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:from-purple-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105">
+        <span>{{ tag }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
   {% if nameData.rankHistoric and nameData.rankHistoric.length > 0 %}
   <div class="mb-8">
     <h2 class="text-2xl font-bold mb-2 text-gray-900">Historic Rankings</h2>
@@ -169,14 +183,32 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
             {% set sortedRanked = rankedNames | sort(false, false, 'rank') %}
             {% for relName in sortedRanked %}
             <tr class="{% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-gray-50{% endif %} hover:bg-purple-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ relName.name }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                {% if relName.uniqueSlug and relName.gender %}
+                  <a href="/names/{{ relName.gender | lower }}/{{ relName.uniqueSlug }}/" class="text-blue-600 hover:text-blue-700 hover:underline">{{ relName.name }}</a>
+                {% else %}
+                  {{ relName.name }}
+                {% endif %}
+                {% if relName.gender %}
+                  <span class="text-gray-500 text-xs ml-1">({{ relName.gender }})</span>
+                {% endif %}
+              </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-purple-600 font-semibold">#{{ relName.rank }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{% if relName.count %}{{ relName.count }}{% else %}—{% endif %}</td>
             </tr>
             {% endfor %}
             {% for relName in unrankedNames %}
             <tr class="{% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-gray-50{% endif %} hover:bg-purple-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ relName.name }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                {% if relName.uniqueSlug and relName.gender %}
+                  <a href="/names/{{ relName.gender | lower }}/{{ relName.uniqueSlug }}/" class="text-blue-600 hover:text-blue-700 hover:underline">{{ relName.name }}</a>
+                {% else %}
+                  {{ relName.name }}
+                {% endif %}
+                {% if relName.gender %}
+                  <span class="text-gray-500 text-xs ml-1">({{ relName.gender }})</span>
+                {% endif %}
+              </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">Unranked</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{% if relName.count %}{{ relName.count }}{% else %}—{% endif %}</td>
             </tr>

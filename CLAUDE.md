@@ -1,6 +1,6 @@
 # CLAUDE.md - AI Assistant Guide for the-names-website
 
-**Last Updated:** December 8, 2025
+**Last Updated:** December 12, 2025
 **Project:** the-names-website
 **Description:** A website for thinking about names
 **Owner:** thomasridd
@@ -547,6 +547,49 @@ This command:
 3. Watches CSS files for changes
 4. Runs both in parallel with npm-run-all
 
+### Testing with Development Data
+
+**IMPORTANT:** Always use dev data for testing and development to avoid memory issues!
+
+The production dataset contains 41,570 names which requires significant memory (8GB heap) and takes several minutes to build. For testing changes, **always use the development data subset** which contains only 1,000 names (500 boys + 500 girls).
+
+**Generate dev data files (first time only):**
+```bash
+npm run dev:data
+```
+
+This creates `data/boys-dev.json` and `data/girls-dev.json` with the top 500 names from each gender.
+
+**Start dev server with dev data:**
+```bash
+npm run dev:fast
+```
+
+This command:
+1. Generates dev data files if they don't exist
+2. Builds CSS once
+3. Starts 11ty dev server with `USE_DEV_DATA=true` (uses dev data files)
+4. Watches for changes with live reload
+
+**Build with dev data:**
+```bash
+npm run build:dev
+# or manually:
+USE_DEV_DATA=true npm run build
+```
+
+**When to use dev vs production data:**
+- ✅ **Use DEV data** - For all testing, development, and verification of changes
+- ✅ **Use DEV data** - When testing template changes, styling, or new features
+- ✅ **Use DEV data** - Before committing changes
+- ⚠️ **Use PRODUCTION data** - Only for final builds or when testing with full dataset is required
+- ⚠️ **Use PRODUCTION data** - For deployment builds
+
+**Memory Configuration:**
+- Production builds use `NODE_OPTIONS='--max-old-space-size=8192'` (8GB heap)
+- This is configured in package.json for `build:eleventy` and `watch:eleventy`
+- Dev data builds work fine with default Node.js memory settings
+
 ### Building for Production
 
 ```bash
@@ -744,12 +787,23 @@ EOF
    - Fix security issues immediately
 
 7. **Test Your Changes**
+   - **ALWAYS use dev data for testing** - Use `npm run dev:fast` or `npm run build:dev`
    - Run the dev server after changes
    - Verify functionality works
    - Check generated output in _site/
    - Fix any errors before committing
+   - **NEVER** test with production data unless specifically required
 
 ### Project-Specific Guidelines
+
+#### Testing and Development Data
+- **CRITICAL:** Always use development data (`USE_DEV_DATA=true`) for testing
+- Production dataset (41,570 names) requires 8GB heap and takes several minutes to build
+- Development dataset (1,000 names) builds in seconds with default memory
+- Use `npm run dev:fast` for development with live reload
+- Use `npm run build:dev` to test a full build with dev data
+- Only use production data for final deployment builds or when full dataset testing is required
+- If you encounter memory errors, you're probably using production data by mistake
 
 #### Working with Large Data Files
 - **boys.json and girls.json are ~18.7MB total** - Be mindful when reading
@@ -816,7 +870,8 @@ EOF
 - ✅ All requested changes implemented
 - ✅ Code follows project conventions
 - ✅ No security vulnerabilities introduced
-- ✅ Build completes successfully
+- ✅ **Tested with dev data** - Used `npm run dev:fast` or `npm run build:dev`
+- ✅ Build completes successfully (with dev data)
 - ✅ Generated pages look correct in _site/ output
 - ✅ Links and navigation work properly
 - ✅ Data structure preserved
@@ -839,6 +894,7 @@ This CLAUDE.md should be updated when:
 
 ### Version History
 
+- **v2.1** - December 12, 2025 - Added dev data testing guidelines, increased heap memory to 8GB for production builds, added Related Names hyperlinks and gender indicators
 - **v2.0** - December 8, 2025 - Complete refresh: production data, classification system, unique slugs, thousands of pages
 - **v1.3** - December 7, 2025 - Integrated Tailwind CSS v4 with PostCSS build pipeline
 - **v1.2** - December 7, 2025 - Updated with selected technology stack (11ty + Nunjucks + csv-parse)
@@ -858,4 +914,4 @@ If you're an AI assistant working on this project and encounter situations not c
 
 ---
 
-**Remember:** This project now has production data and a complete classification system. Always test changes with the build system to ensure thousands of pages generate correctly. The data files are large - use appropriate tools and techniques when working with them.
+**Remember:** This project has production data (41,570 names) and a complete classification system. **Always use dev data (`npm run dev:fast` or `npm run build:dev`) for testing** to avoid memory issues and long build times. Only use production builds for final deployment. The data files are large - use appropriate tools and techniques when working with them.
