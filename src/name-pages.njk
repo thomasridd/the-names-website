@@ -41,16 +41,25 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     </table>
 
     {% if nameData.relatedNamesWithRank and nameData.relatedNamesWithRank.length > 0 %}
-    {% set sortedRelated = nameData.relatedNamesWithRank | sort(false, false, 'rank') %}
     <p class="text-base text-gray-700 mt-4">
       <span class="font-semibold">Related names:</span>
-      {%- for relName in sortedRelated -%}
+      {%- set rankedNames = [] -%}
+      {%- set unrankedNames = [] -%}
+      {%- for relName in nameData.relatedNamesWithRank -%}
         {%- if relName.rank -%}
-          {{ relName.name }} (#{{ relName.rank }})
+          {%- set _ = rankedNames.push(relName) -%}
         {%- else -%}
-          {{ relName.name }}
+          {%- set _ = unrankedNames.push(relName) -%}
         {%- endif -%}
-        {%- if not loop.last %}, {% endif -%}
+      {%- endfor -%}
+      {%- set sortedRanked = rankedNames | sort(false, false, 'rank') -%}
+      {%- for relName in sortedRanked -%}
+        {{ ' ' }}{{ relName.name }} (#{{ relName.rank }})
+        {%- if not loop.last or unrankedNames.length > 0 %},{% endif -%}
+      {%- endfor -%}
+      {%- for relName in unrankedNames -%}
+        {{ ' ' }}{{ relName.name }}
+        {%- if not loop.last %},{% endif -%}
       {%- endfor -%}
     </p>
     {% endif %}
