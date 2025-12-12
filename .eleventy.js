@@ -55,6 +55,27 @@ module.exports = function(eleventyConfig) {
       console.log(`Loaded ${girlsData.length} girls names`);
     }
 
+    // Create a lookup map for quick access to name data
+    const nameMap = new Map();
+    allNames.forEach(name => {
+      const key = `${name.name.toLowerCase()}-${name.gender}`;
+      nameMap.set(key, name);
+    });
+
+    // Enrich relatedNamesWithRank with count data
+    allNames.forEach(name => {
+      if (name.relatedNamesWithRank && name.relatedNamesWithRank.length > 0) {
+        name.relatedNamesWithRank = name.relatedNamesWithRank.map(relatedName => {
+          const key = `${relatedName.name.toLowerCase()}-${relatedName.gender || name.gender}`;
+          const fullData = nameMap.get(key);
+          return {
+            ...relatedName,
+            count: fullData ? fullData.count : null
+          };
+        });
+      }
+    });
+
     console.log(`Total names loaded: ${allNames.length}`);
     return allNames;
   });

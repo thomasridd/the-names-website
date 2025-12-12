@@ -181,6 +181,109 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
   </div>
   {% endif %}
 
+  {% if nameData.relatedNamesWithRank and nameData.relatedNamesWithRank.length > 0 %}
+  <div class="mb-8">
+    <h2 class="text-2xl font-bold mb-2 text-gray-900">Related Names</h2>
+    <p class="text-gray-700 mb-4">Names related to {{ nameData.name }}</p>
+
+    {% set totalWithRelated = nameData.count | int %}
+    {% for relName in nameData.relatedNamesWithRank %}
+      {% if relName.count %}
+        {% set totalWithRelated = totalWithRelated + (relName.count | int) %}
+      {% endif %}
+    {% endfor %}
+
+    <div class="mb-4">
+      <table class="min-w-full">
+        <tbody class="border-t border-gray-300">
+          <tr class="border-b border-gray-300">
+            <th scope="row" class="py-3 pr-4 text-left font-normal text-gray-900">Total including all related names</th>
+            <td class="py-3 text-right font-bold text-gray-900">{{ totalWithRelated }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+      <div id="related-chart" class="w-full" style="height: 400px;"></div>
+    </div>
+
+    <div class="mb-4 bg-white rounded-lg overflow-hidden border border-gray-200">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Count</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% set rankedNames = [] %}
+            {% set unrankedNames = [] %}
+            {% for relName in nameData.relatedNamesWithRank %}
+              {% if relName.rank %}
+                {% set _ = rankedNames.push(relName) %}
+              {% else %}
+                {% set _ = unrankedNames.push(relName) %}
+              {% endif %}
+            {% endfor %}
+            {% set sortedRanked = rankedNames | sort(false, false, 'rank') %}
+            {% for relName in sortedRanked %}
+            <tr class="{% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-gray-50{% endif %} hover:bg-purple-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ relName.name }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-purple-600 font-semibold">#{{ relName.rank }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{% if relName.count %}{{ relName.count }}{% else %}—{% endif %}</td>
+            </tr>
+            {% endfor %}
+            {% for relName in unrankedNames %}
+            <tr class="{% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-gray-50{% endif %} hover:bg-purple-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ relName.name }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">Unranked</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{% if relName.count %}{{ relName.count }}{% else %}—{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <details class="mt-4">
+      <summary class="cursor-pointer bg-white rounded-lg p-4 hover:bg-gray-50 font-semibold text-gray-700 select-none border border-gray-200">
+        View Year-by-Year Data
+      </summary>
+      <div class="mt-2 bg-white rounded-lg overflow-hidden border border-gray-200">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Related Count</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">With {{ nameData.name }}</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              {% set startYear = 1996 %}
+              {% for relatedCount in nameData.relatedTotalCountFrom1996 %}
+              {% set nameCount = nameData.countFrom1996[loop.index0] %}
+              <tr class="{% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-gray-50{% endif %} hover:bg-purple-50">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ startYear + loop.index0 }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-purple-600 font-semibold">
+                  {% if relatedCount != 'x' %}{{ relatedCount }}{% else %}—{% endif %}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {% if relatedCount != 'x' and nameCount != 'x' %}{{ (nameCount | int) + (relatedCount | int) }}{% elif nameCount != 'x' %}{{ nameCount }}{% else %}—{% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+  </div>
+  {% endif %}
+
   <nav class="pt-6 border-t border-gray-200">
     <a href="/names/" class="text-blue-600 hover:text-blue-700 font-medium">&larr; Back to all names</a>
   </nav>
@@ -572,6 +675,192 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     }
 
     // Initial draw
+    drawChart();
+
+    // Redraw on window resize
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(drawChart, 250);
+    });
+  })();
+  {% endif %}
+</script>
+
+<script>
+  // Related names chart - shows combined count of all related names over time
+  {% if nameData.relatedNamesWithRank and nameData.relatedNamesWithRank.length > 0 %}
+  (function() {
+    const relatedCountData = {{ nameData.relatedTotalCountFrom1996 | dump | safe }};
+    const startYear = 1996;
+
+    // Prepare related names total data
+    const chartData = relatedCountData.map((count, i) => ({
+      year: startYear + i,
+      count: count === 'x' ? null : parseInt(count)
+    })).filter(d => d.count !== null);
+
+    // Find min and max counts
+    const allCounts = chartData.map(d => d.count);
+    const minCount = allCounts.length > 0 ? Math.min(...allCounts) : 0;
+    const maxCount = allCounts.length > 0 ? Math.max(...allCounts) : 0;
+
+    const container = document.getElementById('related-chart');
+    const margin = {top: 20, right: 40, bottom: 60, left: 60};
+
+    function drawChart() {
+      d3.select('#related-chart').selectAll('*').remove();
+
+      const containerWidth = container.clientWidth;
+      const width = containerWidth - margin.left - margin.right;
+      const height = 400 - margin.top - margin.bottom;
+
+      const svg = d3.select('#related-chart')
+        .append('svg')
+        .attr('width', containerWidth)
+        .attr('height', 400)
+        .append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+
+      // X scale for years (horizontal)
+      const xScale = d3.scaleLinear()
+        .domain([1996, 2024])
+        .range([0, width]);
+
+      // Y scale for count (vertical)
+      const yScale = d3.scaleLinear()
+        .domain([0, maxCount])
+        .range([height, 0]);
+
+      // Add X axis
+      svg.append('g')
+        .attr('transform', `translate(0,${height})`)
+        .call(d3.axisBottom(xScale)
+          .ticks(7)
+          .tickFormat(d3.format('d')))
+        .style('font-size', '12px');
+
+      // Add X axis label
+      svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', height + 50)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '14px')
+        .style('fill', '#6b7280')
+        .text('Year');
+
+      // Add Y axis
+      svg.append('g')
+        .call(d3.axisLeft(yScale)
+          .ticks(5)
+          .tickFormat(d3.format(',d')))
+        .style('font-size', '12px');
+
+      // Add Y axis label
+      svg.append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('x', -height / 2)
+        .attr('y', -45)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '14px')
+        .style('fill', '#6b7280')
+        .text('Number of Babies');
+
+      // Add related names total dots
+      svg.selectAll('.dot-related')
+        .data(chartData)
+        .join('circle')
+        .attr('class', 'dot-related')
+        .attr('cx', d => xScale(d.year))
+        .attr('cy', d => yScale(d.count))
+        .attr('r', 4)
+        .attr('fill', '#9333ea')
+        .attr('opacity', 0.7)
+        .on('mouseover', function(event, d) {
+          d3.select(this)
+            .attr('r', 6)
+            .attr('opacity', 1);
+
+          // Show tooltip
+          const tooltip = svg.append('g')
+            .attr('class', 'tooltip')
+            .attr('transform', `translate(${xScale(d.year) + 10},${yScale(d.count)})`);
+
+          const text = tooltip.append('text')
+            .attr('text-anchor', 'start')
+            .style('font-size', '11px')
+            .style('font-weight', '600')
+            .style('fill', '#7e22ce')
+            .text(`${d.year}: ${d.count.toLocaleString()} babies`);
+
+          const bbox = text.node().getBBox();
+          tooltip.insert('rect', 'text')
+            .attr('x', bbox.x - 4)
+            .attr('y', bbox.y - 2)
+            .attr('width', bbox.width + 8)
+            .attr('height', bbox.height + 4)
+            .attr('fill', 'white')
+            .attr('stroke', '#9333ea')
+            .attr('stroke-width', 1)
+            .attr('rx', 3);
+
+          text.raise();
+        })
+        .on('mouseout', function() {
+          d3.select(this)
+            .attr('r', 4)
+            .attr('opacity', 0.7);
+          svg.selectAll('.tooltip').remove();
+        });
+
+      // Add markers for highest and lowest counts
+      if (maxCount > 0) {
+        const maxData = chartData.find(d => d.count === maxCount);
+        if (maxData) {
+          svg.append('circle')
+            .attr('cx', xScale(maxData.year))
+            .attr('cy', yScale(maxData.count))
+            .attr('r', 6)
+            .attr('fill', '#10b981')
+            .attr('stroke', 'white')
+            .attr('stroke-width', 2);
+        }
+      }
+
+      if (minCount > 0 && minCount !== maxCount) {
+        const minData = chartData.find(d => d.count === minCount);
+        if (minData) {
+          svg.append('circle')
+            .attr('cx', xScale(minData.year))
+            .attr('cy', yScale(minData.count))
+            .attr('r', 6)
+            .attr('fill', '#ef4444')
+            .attr('stroke', 'white')
+            .attr('stroke-width', 2);
+        }
+      }
+
+      // Add legend
+      const legend = svg.append('g')
+        .attr('class', 'legend')
+        .attr('transform', `translate(${width - 180}, 10)`);
+
+      legend.append('circle')
+        .attr('cx', 0)
+        .attr('cy', 0)
+        .attr('r', 4)
+        .attr('fill', '#9333ea')
+        .attr('opacity', 0.7);
+
+      legend.append('text')
+        .attr('x', 10)
+        .attr('y', 0)
+        .attr('dy', '0.32em')
+        .style('font-size', '12px')
+        .style('fill', '#374151')
+        .text('Related names total');
+    }
+
     drawChart();
 
     // Redraw on window resize
