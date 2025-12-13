@@ -47,7 +47,7 @@ In 2024 5,721 boy babies were named Muhammad making it the 1 most popular boy's 
 
 **For normal names:**
 ```
-{name} is currently {gaining, losing, maintaining} popularity. Over the last five years it achieved a high of {max_count} babies born in {max_year} and a low of {min_count} babies born in {min_year}
+{name} is currently {rapidly gaining, slowly gaining, rapidly losing, slowly losing, maintaining} popularity. Over the last five years it achieved a high of {max_count} babies born in {max_year} and a low of {min_count} babies born in {min_year}
 ```
 
 **Data Sources:**
@@ -70,16 +70,24 @@ In 2024 5,721 boy babies were named Muhammad making it the 1 most popular boy's 
    - Remember: **negative slope = losing popularity** (fewer babies per year)
 
 3. **Trend Classification:**
+   - Calculate average count across the 5-year period
+   - Set rapid threshold = 10% of average count per year
+   - Set slow threshold = 5% of average count per year
    - **Low confidence (r² < 0.3):** → "maintaining" (no clear trend)
-   - **Strong upward slope (slope > 50) + good fit:** → "gaining" (50+ more babies per year)
-   - **Strong downward slope (slope < -50) + good fit:** → "losing" (50+ fewer babies per year)
-   - **Small slope (|slope| ≤ 50):** → "maintaining"
+   - **Strong upward slope (slope > 10% of avg) + good fit:** → "rapidly gaining"
+   - **Moderate upward slope (slope > 5% of avg) + good fit:** → "slowly gaining"
+   - **Strong downward slope (slope < -10% of avg) + good fit:** → "rapidly losing"
+   - **Moderate downward slope (slope < -5% of avg) + good fit:** → "slowly losing"
+   - **Small slope (|slope| ≤ 5% of avg):** → "maintaining"
 
 **Implementation Notes:**
 - Uses least squares linear regression on baby counts (not ranks)
 - R-squared measures how well the trend fits the data
 - Slope represents change in number of babies per year
-- Slope thresholds (±50) can be adjusted based on testing
+- **Dynamic thresholds** scale with the name's popularity:
+  - Rapid threshold = 10% of average count per year
+  - Slow threshold = 5% of average count per year
+  - This ensures fair comparison (e.g., 500 baby increase matters more for a name averaging 1000 than for one averaging 10,000)
 - Higher r-squared (closer to 1.0) = more confident in the trend
 - Lower r-squared (closer to 0) = more volatile/no clear pattern
 - High/low values: Find maximum and minimum counts from the 5-year period with their respective years

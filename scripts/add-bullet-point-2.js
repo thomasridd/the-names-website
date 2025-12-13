@@ -4,12 +4,13 @@
  * Add Bullet Point 2: 5-Year Trend
  *
  * Generates:
- * - "{name} is currently {gaining, losing, maintaining} popularity. Over the last five years it achieved
- *    a high of X babies born in YYYY and a low of Y babies born in YYYY" (normal case)
+ * - "{name} is currently {rapidly/slowly gaining, rapidly/slowly losing, maintaining} popularity.
+ *    Over the last five years it achieved a high of X babies born in YYYY and a low of Y babies born in YYYY" (normal case)
  * - "{name} is a very rare name and in recent years has been missing from the statistics" (2+ missing years)
  *
  * Based on the last 5 years from countFrom1996 (2020-2024)
  * Uses linear regression on baby counts with r-squared to determine trend strength
+ * Dynamic thresholds: rapidly = 10% of average, slowly = 5% of average
  */
 
 const fs = require('fs');
@@ -92,6 +93,11 @@ function analyze5YearTrend(countFrom1996) {
     if (point.y < minCount.y) minCount = point;
   }
 
+  // Calculate average count to determine dynamic thresholds
+  const avgCount = points.reduce((sum, p) => sum + p.y, 0) / points.length;
+  const rapidThreshold = avgCount * 0.10; // 10% of average
+  const slowThreshold = avgCount * 0.05;  // 5% of average
+
   // Positive slope = count increasing = gaining popularity (more babies)
   // Negative slope = count decreasing = losing popularity (fewer babies)
 
@@ -104,12 +110,18 @@ function analyze5YearTrend(countFrom1996) {
   if (rSquared < 0.3) {
     // Low r-squared = no clear trend
     type = 'maintaining';
-  } else if (slope > 50) {
-    // Positive slope with good fit = gaining (more babies per year)
-    type = 'gaining';
-  } else if (slope < -50) {
-    // Negative slope with good fit = losing (fewer babies per year)
-    type = 'losing';
+  } else if (slope > rapidThreshold) {
+    // Strong positive slope with good fit = rapidly gaining
+    type = 'rapidly gaining';
+  } else if (slope > slowThreshold) {
+    // Moderate positive slope with good fit = slowly gaining
+    type = 'slowly gaining';
+  } else if (slope < -rapidThreshold) {
+    // Strong negative slope with good fit = rapidly losing
+    type = 'rapidly losing';
+  } else if (slope < -slowThreshold) {
+    // Moderate negative slope with good fit = slowly losing
+    type = 'slowly losing';
   } else {
     // Small slope = maintaining
     type = 'maintaining';
