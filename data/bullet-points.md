@@ -47,7 +47,7 @@ In 2024 5,721 boy babies were named Muhammad making it the 1 most popular boy's 
 
 **For normal names:**
 ```
-{name} is currently {gaining, losing, maintaining} popularity
+{name} is currently {gaining, losing, maintaining} popularity. Over the last five years it achieved a high of {max_count} babies born in {max_year} and a low of {min_count} babies born in {min_year}
 ```
 
 **Data Sources:**
@@ -82,6 +82,8 @@ In 2024 5,721 boy babies were named Muhammad making it the 1 most popular boy's 
 - Slope thresholds (±50) can be adjusted based on testing
 - Higher r-squared (closer to 1.0) = more confident in the trend
 - Lower r-squared (closer to 0) = more volatile/no clear pattern
+- High/low values: Find maximum and minimum counts from the 5-year period with their respective years
+- Counts are formatted with commas for readability (e.g., 5,721)
 
 ---
 

@@ -4,7 +4,8 @@
  * Add Bullet Point 2: 5-Year Trend
  *
  * Generates:
- * - "{name} is currently {gaining, losing, maintaining} popularity" (normal case)
+ * - "{name} is currently {gaining, losing, maintaining} popularity. Over the last five years it achieved
+ *    a high of X babies born in YYYY and a low of Y babies born in YYYY" (normal case)
  * - "{name} is a very rare name and in recent years has been missing from the statistics" (2+ missing years)
  *
  * Based on the last 5 years from countFrom1996 (2020-2024)
@@ -62,6 +63,7 @@ function linearRegression(points) {
 function analyze5YearTrend(countFrom1996) {
   // Get last 5 years (indices 24-28 = years 2020-2024)
   const last5Years = countFrom1996.slice(-5);
+  const startYear = 2020;
 
   // Check for missing data points
   const missingCount = last5Years.filter(c => c === 'x').length;
@@ -72,7 +74,7 @@ function analyze5YearTrend(countFrom1996) {
 
   // Convert to points for regression (x = year index, y = count)
   const points = last5Years
-    .map((c, i) => ({ x: i, y: c === 'x' ? null : parseInt(c) }))
+    .map((c, i) => ({ x: i, y: c === 'x' ? null : parseInt(c), year: startYear + i }))
     .filter(p => p.y !== null);
 
   if (points.length < 2) {
@@ -80,6 +82,15 @@ function analyze5YearTrend(countFrom1996) {
   }
 
   const { slope, rSquared, validCount } = linearRegression(points);
+
+  // Find high and low counts with their years
+  let maxCount = points[0];
+  let minCount = points[0];
+
+  for (const point of points) {
+    if (point.y > maxCount.y) maxCount = point;
+    if (point.y < minCount.y) minCount = point;
+  }
 
   // Positive slope = count increasing = gaining popularity (more babies)
   // Negative slope = count decreasing = losing popularity (fewer babies)
@@ -104,7 +115,16 @@ function analyze5YearTrend(countFrom1996) {
     type = 'maintaining';
   }
 
-  return { type, slope, rSquared, validCount };
+  return {
+    type,
+    slope,
+    rSquared,
+    validCount,
+    maxCount: maxCount.y,
+    maxYear: maxCount.year,
+    minCount: minCount.y,
+    minYear: minCount.year
+  };
 }
 
 function addBulletPoint2(names) {
@@ -126,7 +146,11 @@ function addBulletPoint2(names) {
       bulletPoint = `${name} is a very rare name and in recent years has been missing from the statistics`;
       rareCount++;
     } else {
-      bulletPoint = `${name} is currently ${result.type} popularity`;
+      // Format counts with commas
+      const maxCountFormatted = result.maxCount.toLocaleString();
+      const minCountFormatted = result.minCount.toLocaleString();
+
+      bulletPoint = `${name} is currently ${result.type} popularity. Over the last five years it achieved a high of ${maxCountFormatted} babies born in ${result.maxYear} and a low of ${minCountFormatted} babies born in ${result.minYear}`;
     }
 
     nameData.bulletPoint2 = bulletPoint;
