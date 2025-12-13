@@ -7,8 +7,8 @@
  * - "{name} is currently {gaining, losing, maintaining} popularity" (normal case)
  * - "{name} is a very rare name and in recent years has been missing from the statistics" (2+ missing years)
  *
- * Based on the last 5 years from rankFrom1996 (2020-2024)
- * Uses linear regression with r-squared to determine trend strength
+ * Based on the last 5 years from countFrom1996 (2020-2024)
+ * Uses linear regression on baby counts with r-squared to determine trend strength
  */
 
 const fs = require('fs');
@@ -59,20 +59,20 @@ function linearRegression(points) {
   return { slope, rSquared, validCount: n };
 }
 
-function analyze5YearTrend(rankFrom1996) {
+function analyze5YearTrend(countFrom1996) {
   // Get last 5 years (indices 24-28 = years 2020-2024)
-  const last5Years = rankFrom1996.slice(-5);
+  const last5Years = countFrom1996.slice(-5);
 
   // Check for missing data points
-  const missingCount = last5Years.filter(r => r === 'x').length;
+  const missingCount = last5Years.filter(c => c === 'x').length;
 
   if (missingCount >= 2) {
     return { type: 'rare', missingCount };
   }
 
-  // Convert to points for regression (x = year index, y = rank)
+  // Convert to points for regression (x = year index, y = count)
   const points = last5Years
-    .map((r, i) => ({ x: i, y: r === 'x' ? null : parseInt(r) }))
+    .map((c, i) => ({ x: i, y: c === 'x' ? null : parseInt(c) }))
     .filter(p => p.y !== null);
 
   if (points.length < 2) {
@@ -81,8 +81,8 @@ function analyze5YearTrend(rankFrom1996) {
 
   const { slope, rSquared, validCount } = linearRegression(points);
 
-  // Negative slope = rank decreasing = gaining popularity (moving toward #1)
-  // Positive slope = rank increasing = losing popularity (moving away from #1)
+  // Positive slope = count increasing = gaining popularity (more babies)
+  // Negative slope = count decreasing = losing popularity (fewer babies)
 
   // Use r-squared to determine confidence
   // Higher r-squared (> 0.5) means clear trend
@@ -93,11 +93,11 @@ function analyze5YearTrend(rankFrom1996) {
   if (rSquared < 0.3) {
     // Low r-squared = no clear trend
     type = 'maintaining';
-  } else if (slope < -5) {
-    // Negative slope with good fit = gaining
+  } else if (slope > 50) {
+    // Positive slope with good fit = gaining (more babies per year)
     type = 'gaining';
-  } else if (slope > 5) {
-    // Positive slope with good fit = losing
+  } else if (slope < -50) {
+    // Negative slope with good fit = losing (fewer babies per year)
     type = 'losing';
   } else {
     // Small slope = maintaining
@@ -112,14 +112,14 @@ function addBulletPoint2(names) {
   let rareCount = 0;
 
   names.forEach(nameData => {
-    const { name, rankFrom1996 } = nameData;
+    const { name, countFrom1996 } = nameData;
 
-    if (!name || !rankFrom1996 || rankFrom1996.length < 29) {
-      console.warn(`Skipping ${name || 'unknown'}: missing rankFrom1996 data`);
+    if (!name || !countFrom1996 || countFrom1996.length < 29) {
+      console.warn(`Skipping ${name || 'unknown'}: missing countFrom1996 data`);
       return;
     }
 
-    const result = analyze5YearTrend(rankFrom1996);
+    const result = analyze5YearTrend(countFrom1996);
     let bulletPoint;
 
     if (result.type === 'rare') {

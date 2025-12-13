@@ -51,7 +51,7 @@ In 2024 5,721 boy babies were named Muhammad making it the 1 most popular boy's 
 ```
 
 **Data Sources:**
-- Use the **last 5 values** from `rankFrom1996` time series (indices 24-28, years 2020-2024)
+- Use the **last 5 values** from `countFrom1996` time series (indices 24-28, years 2020-2024)
 - Check for missing data (values marked as 'x')
 
 **Algorithm:**
@@ -64,21 +64,22 @@ In 2024 5,721 boy babies were named Muhammad making it the 1 most popular boy's 
 2. **Linear Regression Analysis:**
    - Convert valid data points to (x, y) coordinates where:
      - x = year index (0-4)
-     - y = rank value
+     - y = count value (number of babies given the name)
    - Calculate slope and r-squared using linear regression
-   - Remember: **negative slope = gaining popularity** (rank decreasing toward #1)
-   - Remember: **positive slope = losing popularity** (rank increasing away from #1)
+   - Remember: **positive slope = gaining popularity** (more babies per year)
+   - Remember: **negative slope = losing popularity** (fewer babies per year)
 
 3. **Trend Classification:**
    - **Low confidence (r² < 0.3):** → "maintaining" (no clear trend)
-   - **Strong downward slope (slope < -5) + good fit:** → "gaining"
-   - **Strong upward slope (slope > 5) + good fit:** → "losing"
-   - **Small slope (|slope| ≤ 5):** → "maintaining"
+   - **Strong upward slope (slope > 50) + good fit:** → "gaining" (50+ more babies per year)
+   - **Strong downward slope (slope < -50) + good fit:** → "losing" (50+ fewer babies per year)
+   - **Small slope (|slope| ≤ 50):** → "maintaining"
 
 **Implementation Notes:**
-- Uses least squares linear regression
+- Uses least squares linear regression on baby counts (not ranks)
 - R-squared measures how well the trend fits the data
-- Slope thresholds can be adjusted based on testing
+- Slope represents change in number of babies per year
+- Slope thresholds (±50) can be adjusted based on testing
 - Higher r-squared (closer to 1.0) = more confident in the trend
 - Lower r-squared (closer to 0) = more volatile/no clear pattern
 
