@@ -38,24 +38,49 @@ In 2024 5,721 boy babies were named Muhammad making it the 1 most popular boy's 
 
 **Purpose:** Describe the trend over the last 5 years
 
-**Template:**
+**Templates:**
+
+**For rare names (2+ missing data points):**
 ```
-{name} is currently {gaining, losing, maintaining} popularity {additional context}
+{name} is a very rare name and in recent years has been missing from the statistics
+```
+
+**For normal names:**
+```
+{name} is currently {gaining, losing, maintaining} popularity
 ```
 
 **Data Sources:**
-- Use the **last 5 values** from `rankFrom1996` time series
-- Compare 2024 rank with 2020 rank
+- Use the **last 5 values** from `rankFrom1996` time series (indices 24-28, years 2020-2024)
+- Check for missing data (values marked as 'x')
 
-**Logic:**
-- **Gaining**: Rank has improved (lower number) significantly over 5 years
-- **Losing**: Rank has declined (higher number) significantly over 5 years
-- **Maintaining**: Rank has stayed relatively stable
+**Algorithm:**
+
+1. **Check for Missing Data:**
+   - Count how many of the last 5 years have 'x' values
+   - If 2 or more are missing → use "very rare name" template
+   - Otherwise → proceed to regression analysis
+
+2. **Linear Regression Analysis:**
+   - Convert valid data points to (x, y) coordinates where:
+     - x = year index (0-4)
+     - y = rank value
+   - Calculate slope and r-squared using linear regression
+   - Remember: **negative slope = gaining popularity** (rank decreasing toward #1)
+   - Remember: **positive slope = losing popularity** (rank increasing away from #1)
+
+3. **Trend Classification:**
+   - **Low confidence (r² < 0.3):** → "maintaining" (no clear trend)
+   - **Strong downward slope (slope < -5) + good fit:** → "gaining"
+   - **Strong upward slope (slope > 5) + good fit:** → "losing"
+   - **Small slope (|slope| ≤ 5):** → "maintaining"
 
 **Implementation Notes:**
-- Calculate the change between year 5 years ago and current year
-- Determine threshold for "significant" change
-- Add contextual phrases like "picking up", "steadily", etc.
+- Uses least squares linear regression
+- R-squared measures how well the trend fits the data
+- Slope thresholds can be adjusted based on testing
+- Higher r-squared (closer to 1.0) = more confident in the trend
+- Lower r-squared (closer to 0) = more volatile/no clear pattern
 
 ---
 

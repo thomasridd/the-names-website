@@ -3,8 +3,12 @@
 /**
  * Add Bullet Point 2: 5-Year Trend
  *
- * Generates: "{name} is currently {gaining, losing, maintaining} popularity"
+ * Generates:
+ * - "{name} is currently {gaining, losing, maintaining} popularity" (normal case)
+ * - "{name} is a very rare name and in recent years has been missing from the statistics" (2+ missing years)
+ *
  * Based on the last 5 years from rankFrom1996 (2020-2024)
+ * Uses linear regression with r-squared to determine trend strength
  */
 
 const fs = require('fs');
@@ -13,37 +17,99 @@ const path = require('path');
 const BOYS_FILE = path.join(__dirname, '../data/boys.json');
 const GIRLS_FILE = path.join(__dirname, '../data/girls.json');
 
+/**
+ * Calculate linear regression and r-squared
+ * Returns { slope, rSquared, validCount }
+ */
+function linearRegression(points) {
+  const n = points.length;
+
+  if (n < 2) {
+    return { slope: 0, rSquared: 0, validCount: n };
+  }
+
+  // Calculate means
+  const meanX = points.reduce((sum, p) => sum + p.x, 0) / n;
+  const meanY = points.reduce((sum, p) => sum + p.y, 0) / n;
+
+  // Calculate slope and intercept
+  let numerator = 0;
+  let denominator = 0;
+
+  for (const point of points) {
+    numerator += (point.x - meanX) * (point.y - meanY);
+    denominator += (point.x - meanX) ** 2;
+  }
+
+  const slope = denominator === 0 ? 0 : numerator / denominator;
+  const intercept = meanY - slope * meanX;
+
+  // Calculate r-squared
+  let ssTotal = 0;
+  let ssResidual = 0;
+
+  for (const point of points) {
+    const predicted = slope * point.x + intercept;
+    ssTotal += (point.y - meanY) ** 2;
+    ssResidual += (point.y - predicted) ** 2;
+  }
+
+  const rSquared = ssTotal === 0 ? 0 : 1 - (ssResidual / ssTotal);
+
+  return { slope, rSquared, validCount: n };
+}
+
 function analyze5YearTrend(rankFrom1996) {
   // Get last 5 years (indices 24-28 = years 2020-2024)
   const last5Years = rankFrom1996.slice(-5);
 
-  // Filter out 'x' values and convert to numbers
-  const validRanks = last5Years
-    .map((r, i) => ({ rank: r === 'x' ? null : parseInt(r), index: i }))
-    .filter(d => d.rank !== null);
+  // Check for missing data points
+  const missingCount = last5Years.filter(r => r === 'x').length;
 
-  if (validRanks.length < 2) {
-    return 'maintaining';
+  if (missingCount >= 2) {
+    return { type: 'rare', missingCount };
   }
 
-  const firstRank = validRanks[0].rank;
-  const lastRank = validRanks[validRanks.length - 1].rank;
+  // Convert to points for regression (x = year index, y = rank)
+  const points = last5Years
+    .map((r, i) => ({ x: i, y: r === 'x' ? null : parseInt(r) }))
+    .filter(p => p.y !== null);
 
-  // Lower rank number = more popular (rank 1 is best)
-  const change = firstRank - lastRank;
+  if (points.length < 2) {
+    return { type: 'maintaining', slope: 0, rSquared: 0 };
+  }
 
-  // Gaining popularity means rank number decreased (moved towards 1)
-  if (change > 20) {
-    return 'gaining';
-  } else if (change < -20) {
-    return 'losing';
+  const { slope, rSquared, validCount } = linearRegression(points);
+
+  // Negative slope = rank decreasing = gaining popularity (moving toward #1)
+  // Positive slope = rank increasing = losing popularity (moving away from #1)
+
+  // Use r-squared to determine confidence
+  // Higher r-squared (> 0.5) means clear trend
+  // Lower r-squared means volatile/maintaining
+
+  let type;
+
+  if (rSquared < 0.3) {
+    // Low r-squared = no clear trend
+    type = 'maintaining';
+  } else if (slope < -5) {
+    // Negative slope with good fit = gaining
+    type = 'gaining';
+  } else if (slope > 5) {
+    // Positive slope with good fit = losing
+    type = 'losing';
   } else {
-    return 'maintaining';
+    // Small slope = maintaining
+    type = 'maintaining';
   }
+
+  return { type, slope, rSquared, validCount };
 }
 
 function addBulletPoint2(names) {
   let updated = 0;
+  let rareCount = 0;
 
   names.forEach(nameData => {
     const { name, rankFrom1996 } = nameData;
@@ -53,13 +119,21 @@ function addBulletPoint2(names) {
       return;
     }
 
-    const trend = analyze5YearTrend(rankFrom1996);
-    const bulletPoint = `${name} is currently ${trend} popularity`;
+    const result = analyze5YearTrend(rankFrom1996);
+    let bulletPoint;
+
+    if (result.type === 'rare') {
+      bulletPoint = `${name} is a very rare name and in recent years has been missing from the statistics`;
+      rareCount++;
+    } else {
+      bulletPoint = `${name} is currently ${result.type} popularity`;
+    }
 
     nameData.bulletPoint2 = bulletPoint;
     updated++;
   });
 
+  console.log(`  - ${rareCount} rare names with missing data`);
   return updated;
 }
 
