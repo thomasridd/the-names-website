@@ -52,6 +52,24 @@ function addTagsToNames(names) {
       tags.push("Vintage revival");
     }
 
+    // "Timeless" - must have >2 popularity in all eras
+    if (earlyPopularity > 2 && midPopularity > 2 && endPopularity > 2 && recentPopularity > 2) {
+      tags.push("Timeless");
+    }
+
+    // "Consistent" - must have >0 in all four eras but not timeless
+    const isConsistent = earlyPopularity > 0 && midPopularity > 0 && endPopularity > 0 && recentPopularity > 0;
+    const isTimeless = earlyPopularity > 2 && midPopularity > 2 && endPopularity > 2 && recentPopularity > 2;
+    if (isConsistent && !isTimeless) {
+      tags.push("Consistent");
+    }
+
+    // "Out of fashion" - must have popularity 5 in at least one era but 0 for recent
+    const hadPeak = earlyPopularity === 5 || midPopularity === 5 || endPopularity === 5;
+    if (hadPeak && recentPopularity === 0) {
+      tags.push("Out of fashion");
+    }
+
     name.tags = tags;
     return name;
   });
@@ -85,6 +103,9 @@ function processFile(filePath) {
     millenialCount: 0,
     modernCount: 0,
     vintageCount: 0,
+    timelessCount: 0,
+    consistentCount: 0,
+    outOfFashionCount: 0,
     noTags: 0
   };
 
@@ -107,6 +128,15 @@ function processFile(filePath) {
     if (name.tags.includes("Vintage revival")) {
       stats.vintageCount++;
     }
+    if (name.tags.includes("Timeless")) {
+      stats.timelessCount++;
+    }
+    if (name.tags.includes("Consistent")) {
+      stats.consistentCount++;
+    }
+    if (name.tags.includes("Out of fashion")) {
+      stats.outOfFashionCount++;
+    }
   });
 
   console.log(`\nTag Statistics:`);
@@ -115,6 +145,9 @@ function processFile(filePath) {
   console.log(`  Millenial: ${stats.millenialCount}`);
   console.log(`  Modern era: ${stats.modernCount}`);
   console.log(`  Vintage revival: ${stats.vintageCount}`);
+  console.log(`  Timeless: ${stats.timelessCount}`);
+  console.log(`  Consistent: ${stats.consistentCount}`);
+  console.log(`  Out of fashion: ${stats.outOfFashionCount}`);
   console.log(`  No tags: ${stats.noTags}`);
 
   // Write back to file
