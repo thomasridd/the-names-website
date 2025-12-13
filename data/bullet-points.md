@@ -45,9 +45,19 @@ In 2024 5,721 boy babies were named Muhammad making it the 1 most popular boy's 
 {name} is a very rare name and in recent years has been missing from the statistics
 ```
 
-**For normal names:**
+**For gaining popularity:**
 ```
-{name} is currently {rapidly gaining, slowly gaining, rapidly losing, slowly losing, maintaining} popularity. Over the last five years it achieved a high of {max_count} babies born in {max_year} and a low of {min_count} babies born in {min_year}
+Since 2020 {name} has {rapidly, slightly} gained popularity at a rate of {slope} extra births per year
+```
+
+**For losing popularity:**
+```
+Since 2020 {name} has {rapidly, slightly} decreased in popularity at a rate of {slope} fewer births per year
+```
+
+**For maintaining popularity:**
+```
+Since 2020 {name} has roughly maintained popularity between {min} and {max} births per year
 ```
 
 **Data Sources:**
@@ -73,12 +83,13 @@ In 2024 5,721 boy babies were named Muhammad making it the 1 most popular boy's 
    - Calculate average count across the 5-year period
    - Set rapid threshold = 10% of average count per year
    - Set slow threshold = 5% of average count per year
-   - **Low confidence (r² < 0.3):** → "maintaining" (no clear trend)
-   - **Strong upward slope (slope > 10% of avg) + good fit:** → "rapidly gaining"
-   - **Moderate upward slope (slope > 5% of avg) + good fit:** → "slowly gaining"
-   - **Strong downward slope (slope < -10% of avg) + good fit:** → "rapidly losing"
-   - **Moderate downward slope (slope < -5% of avg) + good fit:** → "slowly losing"
-   - **Small slope (|slope| ≤ 5% of avg):** → "maintaining"
+   - Round slope to nearest integer for display
+   - **Low confidence (r² < 0.3):** → "maintaining" template
+   - **Strong upward slope (slope > 10% of avg) + good fit:** → "rapidly gained" template with {slope} as integer
+   - **Moderate upward slope (slope > 5% of avg) + good fit:** → "slightly gained" template with {slope} as integer
+   - **Strong downward slope (slope < -10% of avg) + good fit:** → "rapidly decreased" template with absolute {slope} as integer
+   - **Moderate downward slope (slope < -5% of avg) + good fit:** → "slightly decreased" template with absolute {slope} as integer
+   - **Small slope (|slope| ≤ 5% of avg):** → "maintaining" template
 
 **Implementation Notes:**
 - Uses least squares linear regression on baby counts (not ranks)
@@ -90,8 +101,12 @@ In 2024 5,721 boy babies were named Muhammad making it the 1 most popular boy's 
   - This ensures fair comparison (e.g., 500 baby increase matters more for a name averaging 1000 than for one averaging 10,000)
 - Higher r-squared (closer to 1.0) = more confident in the trend
 - Lower r-squared (closer to 0) = more volatile/no clear pattern
-- High/low values: Find maximum and minimum counts from the 5-year period with their respective years
-- Counts are formatted with commas for readability (e.g., 5,721)
+
+**Template Variables:**
+- **{slope}** - Absolute value of slope rounded to nearest integer (e.g., "245" for +245.3 or -245.3 babies per year)
+- **{min}** - Minimum count from the 5-year period (formatted with commas, e.g., "5,721")
+- **{max}** - Maximum count from the 5-year period (formatted with commas)
+- **{rapidly, slightly}** - Choose based on threshold comparison (rapid > 10% of avg, slight > 5% of avg)
 
 ---
 

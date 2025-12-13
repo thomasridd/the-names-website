@@ -4,13 +4,14 @@
  * Add Bullet Point 2: 5-Year Trend
  *
  * Generates:
- * - "{name} is currently {rapidly/slowly gaining, rapidly/slowly losing, maintaining} popularity.
- *    Over the last five years it achieved a high of X babies born in YYYY and a low of Y babies born in YYYY" (normal case)
+ * - "Since 2020 {name} has {rapidly, slightly} gained popularity at a rate of {slope} extra births per year"
+ * - "Since 2020 {name} has {rapidly, slightly} decreased in popularity at a rate of {slope} fewer births per year"
+ * - "Since 2020 {name} has roughly maintained popularity between {min} and {max} births per year"
  * - "{name} is a very rare name and in recent years has been missing from the statistics" (2+ missing years)
  *
  * Based on the last 5 years from countFrom1996 (2020-2024)
  * Uses linear regression on baby counts with r-squared to determine trend strength
- * Dynamic thresholds: rapidly = 10% of average, slowly = 5% of average
+ * Dynamic thresholds: rapidly = 10% of average, slightly = 5% of average
  */
 
 const fs = require('fs');
@@ -142,6 +143,9 @@ function analyze5YearTrend(countFrom1996) {
 function addBulletPoint2(names) {
   let updated = 0;
   let rareCount = 0;
+  let gainedCount = 0;
+  let lostCount = 0;
+  let maintainedCount = 0;
 
   names.forEach(nameData => {
     const { name, countFrom1996 } = nameData;
@@ -157,12 +161,27 @@ function addBulletPoint2(names) {
     if (result.type === 'rare') {
       bulletPoint = `${name} is a very rare name and in recent years has been missing from the statistics`;
       rareCount++;
-    } else {
+    } else if (result.type === 'maintaining') {
       // Format counts with commas
       const maxCountFormatted = result.maxCount.toLocaleString();
       const minCountFormatted = result.minCount.toLocaleString();
 
-      bulletPoint = `${name} is currently ${result.type} popularity. Over the last five years it achieved a high of ${maxCountFormatted} babies born in ${result.maxYear} and a low of ${minCountFormatted} babies born in ${result.minYear}`;
+      bulletPoint = `Since 2020 ${name} has roughly maintained popularity between ${minCountFormatted} and ${maxCountFormatted} births per year`;
+      maintainedCount++;
+    } else if (result.type === 'rapidly gaining' || result.type === 'slowly gaining') {
+      // Round slope to integer
+      const slopeInt = Math.round(Math.abs(result.slope));
+      const intensity = result.type === 'rapidly gaining' ? 'rapidly' : 'slightly';
+
+      bulletPoint = `Since 2020 ${name} has ${intensity} gained popularity at a rate of ${slopeInt} extra births per year`;
+      gainedCount++;
+    } else if (result.type === 'rapidly losing' || result.type === 'slowly losing') {
+      // Round slope to integer (use absolute value)
+      const slopeInt = Math.round(Math.abs(result.slope));
+      const intensity = result.type === 'rapidly losing' ? 'rapidly' : 'slightly';
+
+      bulletPoint = `Since 2020 ${name} has ${intensity} decreased in popularity at a rate of ${slopeInt} fewer births per year`;
+      lostCount++;
     }
 
     nameData.bulletPoint2 = bulletPoint;
@@ -170,6 +189,9 @@ function addBulletPoint2(names) {
   });
 
   console.log(`  - ${rareCount} rare names with missing data`);
+  console.log(`  - ${gainedCount} names gaining popularity`);
+  console.log(`  - ${lostCount} names losing popularity`);
+  console.log(`  - ${maintainedCount} names maintaining popularity`);
   return updated;
 }
 
