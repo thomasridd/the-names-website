@@ -2,11 +2,11 @@ Point 1: status
 
 - In 2024 {count} {gender} babies were named {name} making it the {rank} most popular {gender}'s name
 
-Point 2: past 5 years based on 
+Point 2: past 5 years based on // use the last five points from the rankFrom1996 time series
 
 - { name} is currently {gaining, losing, maintaining} popularity {picking up}
 
-Point 3: 20 year trend
+Point 3: 20 year trend // pick the most appropriate option based on the rankFrom1996 time series
 
 - Over the past 20 years { name } 
     1) has maintained a steady ranking between {min} in {min_year} to {max} in {max_year}
@@ -17,16 +17,17 @@ Point 3: 20 year trend
     6) dropped in popularity to {min} in {min_year} but has since regained popularity to {min} in {min_year}
     7) has cycled in and out of fashion achieving a peak of {max} in {max_year} and a low of {min} in {min_year}
 
+Point 4: Historic // pick the most appropriate based on the rankHistoric time series
 - Historically { name } 
     1) has never made it to the top 100 lists
-    1) has only made it to the top 100 list {n} times in the {list of decades} // where n is less than 3 and decades do not have more than 2 consecutive
-    2) made it to the top 100 names for boys between {decade_one} and {decade_two} peaking in {decade_max} // total time is less than 50 years, decade_one > 1910s, decade_two < 2010s
-    2) was most popular in the early 20th century ({max} in the {max_decade}) but hasn't ranked in the top 100 since {last_decade} // last_decade 2000 or before
-    3) was popular in the mid 20th century ({max} in the {max_decade}) but hasn't ranked  in the top 100 since {last_decade} // last_decade 2000 or before
-    4) was popular in the late 20th century ({max} in the {max_decade}) but hasn't ranked  in the top 100 since {last_decade} // last_decade 2000 or before
-    5) is a modern name and didn't rank in the top 100 until {first_decade} // first_decade 1990 or after
-    6) was very popular in the early 20th century ({max} in the {max_decade}), dropped out of the top 100 for {time_not_in_top_100} years, but has revived and is now ranked {2024 rank} // 2024 rank less than 100, time_not_in_top_100 at least 30 years
-    7) has always been a popular name and has never dropped out of the top 100 names
+    2) has only made it to the top 100 list {n} time{s} in the {list of decades} // where n is less than 3 and decades do not have more than 2 consecutive
+    3) made it to the top 100 names for boys between {decade_one} and {decade_two} peaking in {decade_max} // total time is less than 50 years, decade_one > 1910s, decade_two < 2010s
+    4) was most popular in the early 20th century ({max} in the {max_decade}) but hasn't ranked in the top 100 since {last_decade} // last_decade 2000 or before
+    5) was popular in the mid 20th century ({max} in the {max_decade}) but hasn't ranked  in the top 100 since {last_decade} // last_decade 2000 or before
+    6) was popular in the late 20th century ({max} in the {max_decade}) but hasn't ranked  in the top 100 since {last_decade} // last_decade 2000 or before
+    7) is a modern name and didn't rank in the top 100 until {first_decade} // first_decade 1990 or after
+    8) was very popular in the early 20th century ({max} in the {max_decade}), dropped out of the top 100 for {time_not_in_top_100} years, but has revived and is now ranked {2024 rank} // 2024 rank less than 100, time_not_in_top_100 at least 30 years
+    9) has always been a popular name and has never dropped out of the top 100 names
 
   
     
