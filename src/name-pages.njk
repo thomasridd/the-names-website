@@ -400,53 +400,6 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
             .attr('opacity', 0.7);
           svg.selectAll('.tooltip').remove();
         });
-
-      // Add markers for highest and lowest counts
-      if (maxCount > 0) {
-        const maxData = chartData.find(d => d.count === maxCount);
-        if (maxData) {
-          svg.append('circle')
-            .attr('cx', xScale(maxData.year))
-            .attr('cy', yScale(maxData.count))
-            .attr('r', 6)
-            .attr('fill', '#10b981')
-            .attr('stroke', 'white')
-            .attr('stroke-width', 2);
-        }
-      }
-
-      if (minCount > 0 && minCount !== maxCount) {
-        const minData = chartData.find(d => d.count === minCount);
-        if (minData) {
-          svg.append('circle')
-            .attr('cx', xScale(minData.year))
-            .attr('cy', yScale(minData.count))
-            .attr('r', 6)
-            .attr('fill', '#ef4444')
-            .attr('stroke', 'white')
-            .attr('stroke-width', 2);
-        }
-      }
-
-      // Add legend
-      const legend = svg.append('g')
-        .attr('class', 'legend')
-        .attr('transform', `translate(${width - 180}, 10)`);
-
-      legend.append('circle')
-        .attr('cx', 0)
-        .attr('cy', 0)
-        .attr('r', 4)
-        .attr('fill', '#3b82f6')
-        .attr('opacity', 0.7);
-
-      legend.append('text')
-        .attr('x', 10)
-        .attr('y', 0)
-        .attr('dy', '0.32em')
-        .style('font-size', '12px')
-        .style('fill', '#374151')
-        .text('This name');
     }
 
     drawChart();
