@@ -1,12 +1,13 @@
 I have ~8000 baby name time series (13 decades) representing top-100 rankings, with many null values when names fall out of the top 100.
 
-The file is data/rankHistoricTimeSeries.csv
+The file is data/countTimeSeries.csv
 
-x mean "ranked 101+"
+x means lower than 3 babies given name that year
 
 Please:
 1. Create meaningful features that handle sparse data:
    - Years in top 100
+   - Years in top 10
    - Peak ranking and year achieved
    - Entry/exit patterns (did it debut high or climb?)
    - Volatility/stability when present
