@@ -1,13 +1,32 @@
 const fs = require('fs');
 const path = require('path');
 const { parse } = require('csv-parse/sync');
+const { execSync } = require('child_process');
 
 module.exports = function(eleventyConfig) {
-  // Determine which data files to use based on environment
-  const USE_DEV_DATA = process.env.USE_DEV_DATA === 'true';
-  const dataSuffix = USE_DEV_DATA ? '-dev.json' : '.json';
+  // Determine which data files to use based on git branch
+  // Use full dataset on main branch, dev dataset on all other branches
+  let USE_DEV_DATA;
 
-  console.log(`\n🔧 Build mode: ${USE_DEV_DATA ? 'DEVELOPMENT (top 500 names)' : 'PRODUCTION (all names)'}`);
+  if (process.env.USE_DEV_DATA !== undefined) {
+    // Allow manual override via environment variable
+    USE_DEV_DATA = process.env.USE_DEV_DATA === 'true';
+    console.log(`\n🔧 Manual override: USE_DEV_DATA=${USE_DEV_DATA}`);
+  } else {
+    // Auto-detect based on git branch
+    try {
+      const currentBranch = execSync('git branch --show-current', { encoding: 'utf-8' }).trim();
+      USE_DEV_DATA = currentBranch !== 'main';
+      console.log(`\n🔧 Auto-detected branch: "${currentBranch}"`);
+    } catch (error) {
+      // If git command fails (not a git repo, etc.), default to dev data for safety
+      USE_DEV_DATA = true;
+      console.log(`\n⚠️  Could not detect git branch, defaulting to dev data`);
+    }
+  }
+
+  const dataSuffix = USE_DEV_DATA ? '-dev.json' : '.json';
+  console.log(`🔧 Build mode: ${USE_DEV_DATA ? 'DEVELOPMENT (top 500 names)' : 'PRODUCTION (all names)'}`);
   console.log(`📁 Data files: boys${dataSuffix} & girls${dataSuffix}\n`);
 
   // Pass through static assets
@@ -200,69 +219,6 @@ module.exports = function(eleventyConfig) {
     return classifications;
   });
 
-  // Generate tag pages data
-  eleventyConfig.addGlobalData('tags', () => {
-    const boysPath = path.join(__dirname, 'data', `boys${dataSuffix}`);
-    const girlsPath = path.join(__dirname, 'data', `girls${dataSuffix}`);
-
-    let allNames = [];
-
-    // Load boys names
-    if (fs.existsSync(boysPath)) {
-      const boysData = JSON.parse(fs.readFileSync(boysPath, 'utf-8'));
-      allNames = allNames.concat(boysData.map(name => ({
-        ...name,
-        gender: 'Boy'
-      })));
-    }
-
-    // Load girls names
-    if (fs.existsSync(girlsPath)) {
-      const girlsData = JSON.parse(fs.readFileSync(girlsPath, 'utf-8'));
-      allNames = allNames.concat(girlsData.map(name => ({
-        ...name,
-        gender: 'Girl'
-      })));
-    }
-
-    // Tag descriptions
-    const tagDescriptions = {
-      'Early 20th century': 'Names that were popular only in the early 20th century (1904-1930s), with no significant popularity in mid-century, late century, or recent decades.',
-      'Booming': 'Names that were popular only during the mid-20th century (1940s-1960s), with no significant popularity in earlier or later periods.',
-      'Millenial': 'Names that were popular only in the late 20th century (1970s-1990s), with no significant popularity in earlier periods or recent decades.',
-      'Modern era': 'Names that have emerged as popular only in recent decades (1990s-2024), with no significant historical presence in earlier periods.',
-      'Vintage revival': 'Names that were popular in the early 20th century, disappeared during mid and late century, and have made a comeback in recent decades.'
-    };
-
-    const tags = [];
-
-    // Process tags
-    const tagGroups = {};
-    allNames.forEach(name => {
-      if (name.tags && Array.isArray(name.tags)) {
-        name.tags.forEach(tag => {
-          if (!tagGroups[tag]) {
-            tagGroups[tag] = [];
-          }
-          tagGroups[tag].push(name);
-        });
-      }
-    });
-
-    Object.keys(tagGroups).sort().forEach(tagName => {
-      tags.push({
-        name: tagName,
-        slug: createSlug(tagName),
-        description: tagDescriptions[tagName] || '',
-        names: tagGroups[tagName],
-        count: tagGroups[tagName].length
-      });
-    });
-
-    console.log(`Generated ${tags.length} tag pages`);
-    return tags;
-  });
-
   // Generate search index after build
   eleventyConfig.on('eleventy.after', async () => {
     const boysPath = path.join(__dirname, 'data', `boys${dataSuffix}`);
@@ -312,6 +268,9 @@ module.exports = function(eleventyConfig) {
     },
     templateFormats: ['njk', 'md', 'html'],
     markdownTemplateEngine: 'njk',
-    htmlTemplateEngine: 'njk'
+    htmlTemplateEngine: 'njk',
+    serverOptions: {
+      port: 1872
+    }
   };
 };

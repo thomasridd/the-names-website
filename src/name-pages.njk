@@ -34,17 +34,35 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     </table>
   </div>
 
-  {% if nameData.tags and nameData.tags.length > 0 %}
+  {% if nameData.bulletPoint1 or nameData.bulletPoint2 or nameData.bulletPoint3 or nameData.bulletPoint4 %}
   <div class="mb-8">
-    <h2 class="text-2xl font-bold mb-4 text-gray-900">Tags</h2>
-    <div class="flex flex-wrap gap-3">
-      {% for tag in nameData.tags %}
-      {% set tagSlug = tag | lower | replace(" ", "-") %}
-      <a href="/tags/{{ tagSlug }}/" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:from-purple-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105">
-        <span>{{ tag }}</span>
-      </a>
-      {% endfor %}
-    </div>
+    <h2 class="text-2xl font-bold mb-4 text-gray-900">Summary</h2>
+    <ul class="space-y-3">
+      {% if nameData.bulletPoint1 %}
+      <li class="flex items-start">
+        <span class="text-blue-600 mr-3 mt-1 flex-shrink-0">•</span>
+        <span class="text-gray-700">{{ nameData.bulletPoint1 }}</span>
+      </li>
+      {% endif %}
+      {% if nameData.bulletPoint2 %}
+      <li class="flex items-start">
+        <span class="text-blue-600 mr-3 mt-1 flex-shrink-0">•</span>
+        <span class="text-gray-700">{{ nameData.bulletPoint2 }}</span>
+      </li>
+      {% endif %}
+      {% if nameData.bulletPoint3 %}
+      <li class="flex items-start">
+        <span class="text-blue-600 mr-3 mt-1 flex-shrink-0">•</span>
+        <span class="text-gray-700">{{ nameData.bulletPoint3 }}</span>
+      </li>
+      {% endif %}
+      {% if nameData.bulletPoint4 %}
+      <li class="flex items-start">
+        <span class="text-blue-600 mr-3 mt-1 flex-shrink-0">•</span>
+        <span class="text-gray-700">{{ nameData.bulletPoint4 }}</span>
+      </li>
+      {% endif %}
+    </ul>
   </div>
   {% endif %}
 
@@ -368,53 +386,6 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
             .attr('opacity', 0.7);
           svg.selectAll('.tooltip').remove();
         });
-
-      // Add markers for highest and lowest counts
-      if (maxCount > 0) {
-        const maxData = chartData.find(d => d.count === maxCount);
-        if (maxData) {
-          svg.append('circle')
-            .attr('cx', xScale(maxData.year))
-            .attr('cy', yScale(maxData.count))
-            .attr('r', 6)
-            .attr('fill', '#10b981')
-            .attr('stroke', 'white')
-            .attr('stroke-width', 2);
-        }
-      }
-
-      if (minCount > 0 && minCount !== maxCount) {
-        const minData = chartData.find(d => d.count === minCount);
-        if (minData) {
-          svg.append('circle')
-            .attr('cx', xScale(minData.year))
-            .attr('cy', yScale(minData.count))
-            .attr('r', 6)
-            .attr('fill', '#ef4444')
-            .attr('stroke', 'white')
-            .attr('stroke-width', 2);
-        }
-      }
-
-      // Add legend
-      const legend = svg.append('g')
-        .attr('class', 'legend')
-        .attr('transform', `translate(${width - 180}, 10)`);
-
-      legend.append('circle')
-        .attr('cx', 0)
-        .attr('cy', 0)
-        .attr('r', 4)
-        .attr('fill', '#3b82f6')
-        .attr('opacity', 0.7);
-
-      legend.append('text')
-        .attr('x', 10)
-        .attr('y', 0)
-        .attr('dy', '0.32em')
-        .style('font-size', '12px')
-        .style('fill', '#374151')
-        .text('This name');
     }
 
     drawChart();

@@ -12,7 +12,12 @@
       "Bash(USE_DEV_DATA=true npm run build:eleventy:*)",
       "Bash(node:*)",
       "Bash(npm run watch:eleventy:*)",
-      "Bash(npm run build:dev:*)"
+      "Bash(npm run build:dev:*)",
+      "Bash(npm run dev:data:*)",
+      "Bash(pip3 install:*)",
+      "Bash(ls:*)",
+      "Bash(wait)",
+      "Bash(awk:*)"
     ],
     "deny": [],
     "ask": []

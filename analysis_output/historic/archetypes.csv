@@ -1,0 +1,7 @@
+Cluster,Archetype,Description,Count,Avg Years,Avg Peak,% Recent,% Early
+0,Steady Classic,Long-term presence with high rankings,36,10.8,7.2,52.8,100.0
+1,Declining Former Favorite,Worsening rank over time (moving down),161,3.1,56.4,37.9,0.6
+2,Declining Former Favorite,Worsening rank over time (moving down),109,5.0,11.7,17.4,46.8
+3,Recent Entrant,"New to top 100, emerged in 2000s or later",103,2.8,25.3,89.3,0.0
+4,Intermittent Presence,Sporadic appearances with gaps,60,6.5,20.9,95.0,100.0
+5,Lost Generation,"Popular in early decades, no longer in top 100",86,4.1,52.7,1.2,100.0
