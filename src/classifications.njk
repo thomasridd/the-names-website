@@ -29,6 +29,17 @@ permalink: /classifications/
            class="block p-4 bg-amber-50 hover:bg-amber-100 rounded-lg border-l-4 border-amber-500 transition-colors">
           <h3 class="font-bold text-amber-900 mb-2">{{ classification.name }}</h3>
           <p class="text-sm text-gray-700 mb-2">{{ classification.description }}</p>
+          {% if classification.names.length > 0 %}
+          <div class="text-xs text-gray-600 mb-2 mt-3">
+            <span class="text-gray-500">Examples:</span>
+            {% set sortedNames = classification.names | sort(false, false, 'rank') %}
+            {% for example in sortedNames %}
+              {% if loop.index0 < 3 %}
+              <span class="font-medium text-amber-700">{{ example.name }}</span>{% if loop.index0 < 2 and sortedNames.length > loop.index %}, {% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% endif %}
           <p class="text-xs text-amber-600">{{ classification.count }} names</p>
         </a>
         {% endif %}
@@ -50,6 +61,17 @@ permalink: /classifications/
            class="block p-4 bg-blue-50 hover:bg-blue-100 rounded-lg border-l-4 border-blue-500 transition-colors">
           <h3 class="font-bold text-blue-900 mb-2">{{ classification.name }}</h3>
           <p class="text-sm text-gray-700 mb-2">{{ classification.description }}</p>
+          {% if classification.names.length > 0 %}
+          <div class="text-xs text-gray-600 mb-2 mt-3">
+            <span class="text-gray-500">Examples:</span>
+            {% set sortedNames = classification.names | sort(false, false, 'rank') %}
+            {% for example in sortedNames %}
+              {% if loop.index0 < 3 %}
+              <span class="font-medium text-blue-700">{{ example.name }}</span>{% if loop.index0 < 2 and sortedNames.length > loop.index %}, {% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% endif %}
           <p class="text-xs text-blue-600">{{ classification.count }} names</p>
         </a>
         {% endif %}
