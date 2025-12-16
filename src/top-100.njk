@@ -1,0 +1,184 @@
+---
+permalink: /top-100/
+---
+
+{% extends "base.njk" %}
+
+{% block title %}Top 100 Names by Year - {{ siteConfig.title }}{% endblock %}
+
+{% block content %}
+<section class="mb-8">
+  <h1 class="text-4xl sm:text-5xl font-bold mb-4 text-gray-900">Top 100 Names by Year</h1>
+  <p class="text-lg text-gray-700 max-w-3xl">
+    Browse the top 100 most popular boys' and girls' names for each year from 1996 to 2024.
+  </p>
+</section>
+
+<!-- Gender Tabs -->
+<div class="mb-6">
+  <div class="border-b border-gray-200">
+    <nav class="-mb-px flex gap-6" aria-label="Tabs">
+      <button
+        onclick="switchGender('boys')"
+        id="boys-tab"
+        class="gender-tab active border-b-2 border-blue-600 py-4 px-1 text-sm font-semibold text-blue-600">
+        Boys
+      </button>
+      <button
+        onclick="switchGender('girls')"
+        id="girls-tab"
+        class="gender-tab border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:border-gray-300 hover:text-gray-700">
+        Girls
+      </button>
+    </nav>
+  </div>
+</div>
+
+<!-- Year Selector -->
+<div class="mb-6">
+  <label for="year-select" class="block text-sm font-semibold text-gray-700 mb-2">Select Year:</label>
+  <select
+    id="year-select"
+    onchange="switchYear(this.value)"
+    class="block w-full max-w-xs px-4 py-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base">
+    {% for year in range(2024, 1995, -1) %}
+    <option value="{{ year }}" {% if year == 2024 %}selected{% endif %}>{{ year }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+<!-- Loading State -->
+<div id="loading" class="text-center py-8 hidden">
+  <div class="text-gray-500">Loading...</div>
+</div>
+
+<!-- Top 100 Table -->
+<div id="top-100-container" class="bg-white rounded-lg shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sticky left-0 bg-gray-50">
+            Rank
+          </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            Name
+          </th>
+        </tr>
+      </thead>
+      <tbody id="table-body" class="bg-white divide-y divide-gray-200">
+        <!-- Table rows will be populated by JavaScript -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// Store data in JavaScript
+const allNamesData = {{ allNames | dump | safe }};
+const boysData = allNamesData.filter(n => n.gender === 'Boy');
+const girlsData = allNamesData.filter(n => n.gender === 'Girl');
+
+let currentGender = 'boys';
+let currentYear = 2024;
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', function() {
+  updateTable();
+});
+
+function switchGender(gender) {
+  currentGender = gender;
+
+  // Update tab styles
+  document.querySelectorAll('.gender-tab').forEach(tab => {
+    tab.classList.remove('active', 'border-blue-600', 'text-blue-600');
+    tab.classList.add('border-transparent', 'text-gray-500');
+  });
+
+  const activeTab = document.getElementById(gender + '-tab');
+  activeTab.classList.add('active', 'border-blue-600', 'text-blue-600');
+  activeTab.classList.remove('border-transparent', 'text-gray-500');
+
+  updateTable();
+}
+
+function switchYear(year) {
+  currentYear = parseInt(year);
+  updateTable();
+}
+
+function updateTable() {
+  const data = currentGender === 'boys' ? boysData : girlsData;
+  const yearIndex = currentYear - 1996; // Calculate index for rankFrom1996 array
+
+  if (yearIndex < 0 || yearIndex >= 29) {
+    console.error('Invalid year index:', yearIndex);
+    return;
+  }
+
+  // Build array of names with their rank for the selected year
+  const rankedNames = [];
+
+  data.forEach(nameObj => {
+    if (nameObj.rankFrom1996 && nameObj.rankFrom1996[yearIndex]) {
+      const rank = nameObj.rankFrom1996[yearIndex];
+      if (rank !== 'x' && rank !== '' && rank !== null) {
+        const rankNum = parseInt(rank);
+        if (rankNum >= 1 && rankNum <= 100) {
+          rankedNames.push({
+            name: nameObj.name,
+            rank: rankNum,
+            uniqueSlug: nameObj.uniqueSlug,
+            gender: currentGender === 'boys' ? 'boy' : 'girl'
+          });
+        }
+      }
+    }
+  });
+
+  // Sort by rank
+  rankedNames.sort((a, b) => a.rank - b.rank);
+
+  // Generate table HTML
+  const tableBody = document.getElementById('table-body');
+
+  if (rankedNames.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="2" class="px-6 py-8 text-center text-gray-500">
+          No data available for ${currentYear}
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  let html = '';
+  rankedNames.forEach(item => {
+    html += `
+      <tr class="hover:bg-gray-50">
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 sticky left-0 bg-white">
+          ${item.rank}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm">
+          <a href="/names/${item.gender}/${item.uniqueSlug}/" class="text-blue-600 hover:text-blue-800 font-medium">
+            ${item.name}
+          </a>
+        </td>
+      </tr>
+    `;
+  });
+
+  tableBody.innerHTML = html;
+}
+</script>
+
+<style>
+.gender-tab.active {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+</style>
+
+{% endblock %}
