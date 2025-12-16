@@ -262,22 +262,19 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 </article>
 
 <script>
-  // Modern rankings dot plot with count on y-axis
-  {% if nameData.countFrom1996 and nameData.countFrom1996.length > 0 %}
+  // Modern rankings dot plot with rank on y-axis (inverted)
+  {% if nameData.rankFrom1996 and nameData.rankFrom1996.length > 0 %}
   (function() {
+    const rankData = {{ nameData.rankFrom1996 | dump | safe }};
     const countData = {{ nameData.countFrom1996 | dump | safe }};
     const startYear = 1996;
 
-    // Prepare main data (name's own count)
-    const chartData = countData.map((count, i) => ({
+    // Prepare data with rank and count
+    const chartData = rankData.map((rank, i) => ({
       year: startYear + i,
-      count: count === 'x' ? null : parseInt(count)
-    })).filter(d => d.count !== null);
-
-    // Find min and max counts
-    const allCounts = chartData.map(d => d.count);
-    const minCount = allCounts.length > 0 ? Math.min(...allCounts) : 0;
-    const maxCount = allCounts.length > 0 ? Math.max(...allCounts) : 0;
+      rank: rank === 'x' ? null : parseInt(rank),
+      count: countData[i] === 'x' ? null : parseInt(countData[i])
+    })).filter(d => d.rank !== null);
 
     const container = document.getElementById('modern-chart');
     const margin = {top: 20, right: 40, bottom: 60, left: 60};
@@ -301,10 +298,10 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .domain([1996, 2024])
         .range([0, width]);
 
-      // Y scale for count (vertical)
+      // Y scale for rank (vertical, inverted: 1 at top, 100 at bottom)
       const yScale = d3.scaleLinear()
-        .domain([0, maxCount])
-        .range([height, 0]);
+        .domain([1, 100])
+        .range([0, height]);
 
       // Add X axis
       svg.append('g')
@@ -326,8 +323,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       // Add Y axis
       svg.append('g')
         .call(d3.axisLeft(yScale)
-          .ticks(5)
-          .tickFormat(d3.format(',d')))
+          .ticks(5))
         .style('font-size', '12px');
 
       // Add Y axis label
@@ -338,7 +334,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .attr('text-anchor', 'middle')
         .style('font-size', '14px')
         .style('fill', '#6b7280')
-        .text('Number of Babies');
+        .text('Rank (1 = Most Popular)');
 
       // Add main series dots
       svg.selectAll('.dot')
@@ -346,7 +342,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .join('circle')
         .attr('class', 'dot')
         .attr('cx', d => xScale(d.year))
-        .attr('cy', d => yScale(d.count))
+        .attr('cy', d => yScale(d.rank))
         .attr('r', 4)
         .attr('fill', '#3b82f6')
         .attr('opacity', 0.7)
@@ -358,14 +354,18 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           // Show tooltip
           const tooltip = svg.append('g')
             .attr('class', 'tooltip')
-            .attr('transform', `translate(${xScale(d.year) + 10},${yScale(d.count)})`);
+            .attr('transform', `translate(${xScale(d.year) + 10},${yScale(d.rank)})`);
+
+          const tooltipText = d.count !== null
+            ? `${d.year}: #${d.rank} (${d.count.toLocaleString()} babies)`
+            : `${d.year}: #${d.rank}`;
 
           const text = tooltip.append('text')
             .attr('text-anchor', 'start')
             .style('font-size', '11px')
             .style('font-weight', '600')
             .style('fill', '#1e40af')
-            .text(`${d.year}: ${d.count.toLocaleString()} babies`);
+            .text(tooltipText);
 
           const bbox = text.node().getBBox();
           tooltip.insert('rect', 'text')
@@ -401,20 +401,17 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 </script>
 
 <script>
-  // Historic rankings chart
+  // Historic rankings dot plot with rank on y-axis (inverted)
   {% if nameData.rankHistoric and nameData.rankHistoric.length > 0 %}
   (function() {
     const data = {{ nameData.rankHistoric | dump | safe }};
-    const decades = data.map((rank, i) => ({
-      decade: (1900 + i * 10) + 's',
-      rank: rank === 'x' ? null : parseInt(rank),
-      index: i
-    }));
 
-    // Color scale for bars (darker amber for better ranks)
-    const colorScale = d3.scaleSequential()
-      .domain([100, 1])  // Reversed: 100 to 1, so lower ranks get darker colors
-      .interpolator(d3.interpolateOranges);
+    // Prepare data with decade year and rank
+    const chartData = data.map((rank, i) => ({
+      year: 1900 + i * 10,
+      decadeLabel: (1900 + i * 10) + 's',
+      rank: rank === 'x' ? null : parseInt(rank)
+    })).filter(d => d.rank !== null);
 
     // Set up dimensions
     const container = document.getElementById('historic-chart');
@@ -436,20 +433,22 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
-      // Create scales
+      // X scale for years (horizontal)
       const xScale = d3.scaleLinear()
-        .domain([100, 1])  // Inverted: 100 to 1
+        .domain([1900, 2020])
         .range([0, width]);
 
-      const yScale = d3.scaleBand()
-        .domain(decades.map(d => d.decade))
-        .range([0, height])
-        .padding(0.2);
+      // Y scale for rank (vertical, inverted: 1 at top, 100 at bottom)
+      const yScale = d3.scaleLinear()
+        .domain([1, 100])
+        .range([0, height]);
 
       // Add X axis
       svg.append('g')
         .attr('transform', `translate(0,${height})`)
-        .call(d3.axisBottom(xScale).ticks(5))
+        .call(d3.axisBottom(xScale)
+          .ticks(6)
+          .tickFormat(d3.format('d')))
         .style('font-size', '12px');
 
       // Add X axis label
@@ -459,11 +458,11 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .attr('text-anchor', 'middle')
         .style('font-size', '14px')
         .style('fill', '#6b7280')
-        .text('Rank (1 = Most Popular)');
+        .text('Decade');
 
       // Add Y axis
       svg.append('g')
-        .call(d3.axisLeft(yScale))
+        .call(d3.axisLeft(yScale).ticks(5))
         .style('font-size', '12px');
 
       // Add Y axis label
@@ -474,46 +473,54 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .attr('text-anchor', 'middle')
         .style('font-size', '14px')
         .style('fill', '#6b7280')
-        .text('Decade');
+        .text('Rank (1 = Most Popular)');
 
-      // Add bars
-      svg.selectAll('.bar')
-        .data(decades)
-        .join('rect')
-        .attr('class', 'bar')
-        .attr('x', 0)
-        .attr('y', d => yScale(d.decade))
-        .attr('width', d => d.rank ? xScale(d.rank) : 0)
-        .attr('height', yScale.bandwidth())
-        .attr('fill', d => d.rank ? '#93c5fd' : '#e5e7eb')
-        .attr('opacity', 1)
-        .attr('stroke', d => d.rank ? '#3b82f6' : '#d1d5db')
-        .attr('stroke-width', 1)
-        .style('cursor', d => d.rank ? 'pointer' : 'default')
+      // Add dots
+      svg.selectAll('.dot')
+        .data(chartData)
+        .join('circle')
+        .attr('class', 'dot')
+        .attr('cx', d => xScale(d.year))
+        .attr('cy', d => yScale(d.rank))
+        .attr('r', 4)
+        .attr('fill', '#f59e0b')
+        .attr('opacity', 0.7)
         .on('mouseover', function(event, d) {
-          if (d.rank) {
-            d3.select(this).attr('opacity', 0.8);
-          }
-        })
-        .on('mouseout', function(event, d) {
-          if (d.rank) {
-            d3.select(this).attr('opacity', 1);
-          }
-        });
+          d3.select(this)
+            .attr('r', 6)
+            .attr('opacity', 1);
 
-      // Add rank labels on bars
-      svg.selectAll('.label')
-        .data(decades.filter(d => d.rank))
-        .join('text')
-        .attr('class', 'label')
-        .attr('x', d => xScale(d.rank) - 5)
-        .attr('y', d => yScale(d.decade) + yScale.bandwidth() / 2)
-        .attr('dy', '0.35em')
-        .attr('text-anchor', 'end')
-        .style('font-size', '12px')
-        .style('font-weight', '600')
-        .style('fill', '#1e40af')
-        .text(d => `#${d.rank}`);
+          // Show tooltip
+          const tooltip = svg.append('g')
+            .attr('class', 'tooltip')
+            .attr('transform', `translate(${xScale(d.year) + 10},${yScale(d.rank)})`);
+
+          const text = tooltip.append('text')
+            .attr('text-anchor', 'start')
+            .style('font-size', '11px')
+            .style('font-weight', '600')
+            .style('fill', '#92400e')
+            .text(`${d.decadeLabel}: #${d.rank}`);
+
+          const bbox = text.node().getBBox();
+          tooltip.insert('rect', 'text')
+            .attr('x', bbox.x - 4)
+            .attr('y', bbox.y - 2)
+            .attr('width', bbox.width + 8)
+            .attr('height', bbox.height + 4)
+            .attr('fill', 'white')
+            .attr('stroke', '#f59e0b')
+            .attr('stroke-width', 1)
+            .attr('rx', 3);
+
+          text.raise();
+        })
+        .on('mouseout', function() {
+          d3.select(this)
+            .attr('r', 4)
+            .attr('opacity', 0.7);
+          svg.selectAll('.tooltip').remove();
+        });
     }
 
     // Initial draw
