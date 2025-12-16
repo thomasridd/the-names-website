@@ -66,7 +66,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
   </div>
   {% endif %}
 
-  {% if nameData.rankHistoric and nameData.rankHistoric.length > 0 %}
+  {% if nameData.rankHistoric and nameData.rankHistoric.length > 0 and nameData.historicClassification != 'Unranked' %}
   <div class="mb-8">
     <h2 class="text-2xl font-bold mb-2 text-gray-900">Historic Rankings</h2>
     <p class="text-gray-700 mb-4">Top 100 rankings from 1904 to 2024</p>
@@ -262,19 +262,24 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 </article>
 
 <script>
-  // Modern rankings dot plot with rank on y-axis (inverted)
-  {% if nameData.rankFrom1996 and nameData.rankFrom1996.length > 0 %}
+  // Modern rankings dot plot with count on y-axis
+  {% if nameData.countFrom1996 and nameData.countFrom1996.length > 0 %}
   (function() {
-    const rankData = {{ nameData.rankFrom1996 | dump | safe }};
     const countData = {{ nameData.countFrom1996 | dump | safe }};
+    const rankData = {{ nameData.rankFrom1996 | dump | safe }};
     const startYear = 1996;
 
-    // Prepare data with rank and count
-    const chartData = rankData.map((rank, i) => ({
+    // Prepare data with count and rank
+    const chartData = countData.map((count, i) => ({
       year: startYear + i,
-      rank: rank === 'x' ? null : parseInt(rank),
-      count: countData[i] === 'x' ? null : parseInt(countData[i])
-    })).filter(d => d.rank !== null);
+      count: count === 'x' ? null : parseInt(count),
+      rank: rankData[i] === 'x' ? null : parseInt(rankData[i])
+    })).filter(d => d.count !== null);
+
+    // Find min and max counts
+    const allCounts = chartData.map(d => d.count);
+    const minCount = allCounts.length > 0 ? Math.min(...allCounts) : 0;
+    const maxCount = allCounts.length > 0 ? Math.max(...allCounts) : 0;
 
     const container = document.getElementById('modern-chart');
     const margin = {top: 20, right: 40, bottom: 60, left: 60};
@@ -298,10 +303,10 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .domain([1996, 2024])
         .range([0, width]);
 
-      // Y scale for rank (vertical, inverted: 1 at top, 100 at bottom)
+      // Y scale for count (vertical)
       const yScale = d3.scaleLinear()
-        .domain([1, 100])
-        .range([0, height]);
+        .domain([0, maxCount])
+        .range([height, 0]);
 
       // Add X axis
       svg.append('g')
@@ -323,7 +328,8 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       // Add Y axis
       svg.append('g')
         .call(d3.axisLeft(yScale)
-          .ticks(5))
+          .ticks(5)
+          .tickFormat(d3.format(',d')))
         .style('font-size', '12px');
 
       // Add Y axis label
@@ -334,7 +340,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .attr('text-anchor', 'middle')
         .style('font-size', '14px')
         .style('fill', '#6b7280')
-        .text('Rank (1 = Most Popular)');
+        .text('Number of Babies');
 
       // Add main series dots
       svg.selectAll('.dot')
@@ -342,7 +348,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .join('circle')
         .attr('class', 'dot')
         .attr('cx', d => xScale(d.year))
-        .attr('cy', d => yScale(d.rank))
+        .attr('cy', d => yScale(d.count))
         .attr('r', 4)
         .attr('fill', '#3b82f6')
         .attr('opacity', 0.7)
@@ -354,11 +360,11 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           // Show tooltip
           const tooltip = svg.append('g')
             .attr('class', 'tooltip')
-            .attr('transform', `translate(${xScale(d.year) + 10},${yScale(d.rank)})`);
+            .attr('transform', `translate(${xScale(d.year) + 10},${yScale(d.count)})`);
 
-          const tooltipText = d.count !== null
-            ? `${d.year}: #${d.rank} (${d.count.toLocaleString()} babies)`
-            : `${d.year}: #${d.rank}`;
+          const tooltipText = d.rank !== null
+            ? `${d.year}: ${d.count.toLocaleString()} babies (#${d.rank})`
+            : `${d.year}: ${d.count.toLocaleString()} babies`;
 
           const text = tooltip.append('text')
             .attr('text-anchor', 'start')

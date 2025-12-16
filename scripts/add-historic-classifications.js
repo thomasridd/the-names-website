@@ -212,8 +212,8 @@ function classifyHistoric(name, rankArray) {
     }
   }
 
-  // Default: Uncategorized
-  return 'Uncategorized';
+  // Default: Unranked
+  return 'Unranked';
 }
 
 /**
@@ -234,7 +234,7 @@ function addClassifications(data, gender) {
 
       // Track statistics
       classificationCounts[classification] = (classificationCounts[classification] || 0) + 1;
-      if (classification === 'Uncategorized') {
+      if (classification === 'Unranked') {
         uncategorized++;
       } else {
         classified++;
