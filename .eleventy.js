@@ -136,7 +136,7 @@ module.exports = function(eleventyConfig) {
     if (fs.existsSync(descriptionsPath)) {
       return JSON.parse(fs.readFileSync(descriptionsPath, 'utf-8'));
     }
-    return { recent: {}, historic: {} };
+    return { five_year: {}, recent: {}, historic: {} };
   });
 
   // Generate classification pages data
@@ -162,21 +162,44 @@ module.exports = function(eleventyConfig) {
     }
 
     // Load descriptions
-    let descriptions = { recent: {}, historic: {} };
+    let descriptions = { five_year: {}, recent: {}, historic: {} };
     if (fs.existsSync(descriptionsPath)) {
       descriptions = JSON.parse(fs.readFileSync(descriptionsPath, 'utf-8'));
     }
 
     const classifications = [];
 
+    // Process five_year classifications
+    const fiveYearGroups = {};
+    allNames.forEach(name => {
+      if (name.classifications && name.classifications.five_year) {
+        if (!fiveYearGroups[name.classifications.five_year]) {
+          fiveYearGroups[name.classifications.five_year] = [];
+        }
+        fiveYearGroups[name.classifications.five_year].push(name);
+      }
+    });
+
+    Object.keys(fiveYearGroups).forEach(classificationName => {
+      classifications.push({
+        name: classificationName,
+        slug: createSlug(classificationName),
+        type: 'five_year',
+        period: '2020-2024',
+        description: descriptions.five_year[classificationName] || '',
+        names: fiveYearGroups[classificationName],
+        count: fiveYearGroups[classificationName].length
+      });
+    });
+
     // Process recent classifications
     const recentGroups = {};
     allNames.forEach(name => {
-      if (name.recentClassification) {
-        if (!recentGroups[name.recentClassification]) {
-          recentGroups[name.recentClassification] = [];
+      if (name.classifications && name.classifications.recent) {
+        if (!recentGroups[name.classifications.recent]) {
+          recentGroups[name.classifications.recent] = [];
         }
-        recentGroups[name.recentClassification].push(name);
+        recentGroups[name.classifications.recent].push(name);
       }
     });
 
@@ -195,11 +218,11 @@ module.exports = function(eleventyConfig) {
     // Process historic classifications
     const historicGroups = {};
     allNames.forEach(name => {
-      if (name.historicClassification) {
-        if (!historicGroups[name.historicClassification]) {
-          historicGroups[name.historicClassification] = [];
+      if (name.classifications && name.classifications.historic) {
+        if (!historicGroups[name.classifications.historic]) {
+          historicGroups[name.classifications.historic] = [];
         }
-        historicGroups[name.historicClassification].push(name);
+        historicGroups[name.classifications.historic].push(name);
       }
     });
 

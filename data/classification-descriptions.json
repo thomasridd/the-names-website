@@ -1,4 +1,15 @@
 {
+  "five_year": {
+    "Top Tier Stable": "Consistently in the top 10-15 across all recent years. Elite names with minimal variation and extremely stable popularity.",
+    "Steady Performer": "Present all five years with consistent rankings in top 100. Reliable choices maintaining their position year after year.",
+    "Rising Star": "Strong upward momentum with significant improvement over the period. Names gaining substantial popularity in recent years.",
+    "New Entrant": "First appeared in rankings within the last 3 years. Fresh names gaining initial traction and building presence.",
+    "Fading": "Experiencing significant decline in popularity over recent years. Names losing favor with substantial downward trends.",
+    "Volatile": "Unpredictable patterns with significant year-to-year swings. Names showing multiple ranking changes without clear direction.",
+    "One-Hit Wonder": "Brief appearance in rankings for only 1-2 years. Names with fleeting popularity that didn't sustain momentum.",
+    "Dominant Force": "In top 10 for most or all recent years. The absolute elite tier of current popularity.",
+    "Unknown": "Insufficient recent data to determine a clear trend. Either never ranked or appeared only sporadically."
+  },
   "recent": {
     "Perennial Favorite": "Consistently high popularity across decades. Timeless appeal with stable demand.",
     "Modern Hit": "Strong sustained popularity with continued growth. Already well-established and still gaining momentum.",

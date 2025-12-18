@@ -1,0 +1,48 @@
+TOP 20 RISING NAMES (2020-2024)
+==================================================
+
+Avitaaz: slope=-3272.0, 2020 rank=N/A, 2024 rank=1517
+Azlin: slope=-3113.0, 2020 rank=N/A, 2024 rank=2575
+Azwa: slope=-3113.0, 2020 rank=N/A, 2024 rank=2575
+Charis: slope=-3040.0, 2020 rank=N/A, 2024 rank=1952
+Durva: slope=-2916.0, 2020 rank=N/A, 2024 rank=2772
+Faiyaz: slope=-2903.0, 2020 rank=N/A, 2024 rank=2089
+Nyha: slope=-2809.0, 2020 rank=N/A, 2024 rank=2772
+Carmen: slope=-2728.0, 2020 rank=N/A, 2024 rank=2264
+Mojolaoluwa: slope=-2672.0, 2020 rank=N/A, 2024 rank=3016
+Hasrat: slope=-2654.0, 2020 rank=N/A, 2024 rank=3016
+Lourdes: slope=-2654.0, 2020 rank=N/A, 2024 rank=3016
+Kridha: slope=-2594.0, 2020 rank=N/A, 2024 rank=2116
+Fabeeha: slope=-2565.0, 2020 rank=N/A, 2024 rank=3016
+Davyd: slope=-2548.0, 2020 rank=N/A, 2024 rank=2444
+Chigozirim: slope=-2525.0, 2020 rank=N/A, 2024 rank=2264
+Anaahat: slope=-2477.0, 2020 rank=5493, 2024 rank=3016
+Umairah: slope=-2477.0, 2020 rank=5493, 2024 rank=3016
+Anant: slope=-2456.0, 2020 rank=N/A, 2024 rank=2254
+Ellidy: slope=-2369.0, 2020 rank=N/A, 2024 rank=3319
+Emrakel: slope=-2369.0, 2020 rank=N/A, 2024 rank=3319
+
+
+TOP 20 FALLING NAMES (2020-2024)
+==================================================
+
+Roksana: slope=1814.0, 2020 rank=2042, 2024 rank=N/A
+Ezinne: slope=1638.5, 2020 rank=2615, 2024 rank=5892
+Aleigha: slope=1638.5, 2020 rank=2615, 2024 rank=5892
+Lacey-May: slope=1610.5, 2020 rank=2449, 2024 rank=N/A
+Mileja: slope=1610.5, 2020 rank=2449, 2024 rank=N/A
+Hendrix: slope=1524.5, 2020 rank=2843, 2024 rank=5892
+Du'aa: slope=1501.5, 2020 rank=N/A, 2024 rank=5892
+Fabien: slope=1446.0, 2020 rank=2228, 2024 rank=5120
+Riad: slope=1446.0, 2020 rank=2228, 2024 rank=5120
+Dollie-Rose: slope=1422.5, 2020 rank=2843, 2024 rank=N/A
+Eva-May: slope=1422.5, 2020 rank=2843, 2024 rank=N/A
+Mollie-Rose: slope=1422.5, 2020 rank=2843, 2024 rank=N/A
+Kika: slope=1413.5, 2020 rank=2843, 2024 rank=N/A
+Paityn: slope=1413.5, 2020 rank=2843, 2024 rank=N/A
+Sireen: slope=1413.5, 2020 rank=2843, 2024 rank=N/A
+Marli: slope=1409.5, 2020 rank=N/A, 2024 rank=5120
+Princeton: slope=1399.5, 2020 rank=N/A, 2024 rank=5120
+Elliw: slope=1387.5, 2020 rank=3117, 2024 rank=5892
+Makeda: slope=1387.5, 2020 rank=3117, 2024 rank=5892
+Pavneet: slope=1387.5, 2020 rank=3117, 2024 rank=5892

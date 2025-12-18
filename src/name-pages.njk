@@ -30,6 +30,36 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           <th scope="row" class="py-3 pr-4 text-left font-normal text-gray-900">Babies named {{ nameData.name }}</th>
           <td class="py-3 text-right font-bold text-gray-900">{{ nameData.count }}</td>
         </tr>
+        {% if nameData.classifications and nameData.classifications.five_year %}
+        <tr class="border-b border-gray-300">
+          <th scope="row" class="py-3 pr-4 text-left font-normal text-gray-900">Current trend (2020-2024)</th>
+          <td class="py-3 text-right">
+            <a href="/classifications/five_year/{{ nameData.classifications.five_year | lower | replace(' ', '-') | replace('(', '') | replace(')', '') }}/" class="inline-block px-3 py-1 bg-green-50 text-green-700 rounded-md hover:bg-green-100 transition-colors font-medium text-sm border border-green-200">
+              {{ nameData.classifications.five_year }}
+            </a>
+          </td>
+        </tr>
+        {% endif %}
+        {% if nameData.classifications and nameData.classifications.recent %}
+        <tr class="border-b border-gray-300">
+          <th scope="row" class="py-3 pr-4 text-left font-normal text-gray-900">Recent trend (1996-2024)</th>
+          <td class="py-3 text-right">
+            <a href="/classifications/recent/{{ nameData.classifications.recent | lower | replace(' ', '-') | replace('(', '') | replace(')', '') }}/" class="inline-block px-3 py-1 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100 transition-colors font-medium text-sm border border-blue-200">
+              {{ nameData.classifications.recent }}
+            </a>
+          </td>
+        </tr>
+        {% endif %}
+        {% if nameData.classifications and nameData.classifications.historic %}
+        <tr class="border-b border-gray-300">
+          <th scope="row" class="py-3 pr-4 text-left font-normal text-gray-900">Historic trend (1904-2024)</th>
+          <td class="py-3 text-right">
+            <a href="/classifications/historic/{{ nameData.classifications.historic | lower | replace(' ', '-') | replace('(', '') | replace(')', '') }}/" class="inline-block px-3 py-1 bg-amber-50 text-amber-700 rounded-md hover:bg-amber-100 transition-colors font-medium text-sm border border-amber-200">
+              {{ nameData.classifications.historic }}
+            </a>
+          </td>
+        </tr>
+        {% endif %}
       </tbody>
     </table>
   </div>
@@ -71,13 +101,13 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     <h2 class="text-2xl font-bold mb-2 text-gray-900">Historic Rankings</h2>
     <p class="text-gray-700 mb-4">Top 100 rankings from 1904 to 2024</p>
 
-    {% if nameData.historicClassification %}
+    {% if nameData.classifications and nameData.classifications.historic %}
     <div class="mb-4 bg-amber-50 rounded-lg p-4 border-l-4 border-amber-500">
       <p class="text-sm font-semibold text-gray-700 mb-1">
-        Classification: <span class="text-amber-600">{{ nameData.historicClassification }}</span>
+        Classification: <span class="text-amber-600">{{ nameData.classifications.historic }}</span>
       </p>
-      {% if classificationDescriptions.historic[nameData.historicClassification] %}
-      <p class="text-sm text-gray-600">{{ classificationDescriptions.historic[nameData.historicClassification] }}</p>
+      {% if classificationDescriptions.historic[nameData.classifications.historic] %}
+      <p class="text-sm text-gray-600">{{ classificationDescriptions.historic[nameData.classifications.historic] }}</p>
       {% endif %}
     </div>
     {% endif %}
@@ -122,13 +152,13 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     <h2 class="text-2xl font-bold mb-2 text-gray-900">Modern Rankings</h2>
     <p class="text-gray-700 mb-4">Rankings from 1996 to 2024 (29 years)</p>
 
-    {% if nameData.recentClassification %}
+    {% if nameData.classifications and nameData.classifications.recent %}
     <div class="mb-4 bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
       <p class="text-sm font-semibold text-gray-700 mb-1">
-        Classification: <span class="text-blue-600">{{ nameData.recentClassification }}</span>
+        Classification: <span class="text-blue-600">{{ nameData.classifications.recent }}</span>
       </p>
-      {% if classificationDescriptions.recent[nameData.recentClassification] %}
-      <p class="text-sm text-gray-600">{{ classificationDescriptions.recent[nameData.recentClassification] }}</p>
+      {% if classificationDescriptions.recent[nameData.classifications.recent] %}
+      <p class="text-sm text-gray-600">{{ classificationDescriptions.recent[nameData.classifications.recent] }}</p>
       {% endif %}
     </div>
     {% endif %}
