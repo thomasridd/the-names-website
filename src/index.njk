@@ -1,8 +1,10 @@
 ---
-layout: base.njk
-title: Home
 permalink: /
 ---
+
+{% extends "base.njk" %}
+
+{% block title %}Home - {{ siteConfig.title }}{% endblock %}
 
 {% block content %}
 <section class="text-center py-16 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl mb-12 shadow-sm">
