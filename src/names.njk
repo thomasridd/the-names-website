@@ -1,8 +1,10 @@
 ---
-layout: base.njk
-title: All Names
 permalink: /names/
 ---
+
+{% extends "base.njk" %}
+
+{% block title %}All Names - {{ siteConfig.title }}{% endblock %}
 
 {% block content %}
 <section>
