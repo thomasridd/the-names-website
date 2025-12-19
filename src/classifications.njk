@@ -110,38 +110,6 @@ permalink: /patterns/
         {% endfor %}
       </div>
     </section>
-
-    <!-- Recent Classifications -->
-    <section>
-      <h2 class="text-3xl font-bold mb-4 text-gray-900 border-b-2 border-blue-500 pb-2">
-        Modern Rankings (1996-2024)
-      </h2>
-      <p class="text-gray-600 mb-6">Classifications based on 29 years of recent naming trends</p>
-
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {% for classification in classifications %}
-        {% if classification.type === 'recent' %}
-        <a href="/classifications/recent/{{ classification.slug }}/"
-           class="block p-4 bg-blue-50 hover:bg-blue-100 rounded-lg border-l-4 border-blue-500 transition-colors">
-          <h3 class="font-bold text-blue-900 mb-2">{{ classification.name }}</h3>
-          <p class="text-sm text-gray-700 mb-2">{{ classification.description }}</p>
-          {% if classification.names.length > 0 %}
-          <div class="text-xs text-gray-600 mb-2 mt-3">
-            <span class="text-gray-500">Examples:</span>
-            {% set sortedNames = classification.names | sort(false, false, 'rank') %}
-            {% for example in sortedNames %}
-              {% if loop.index0 < 3 %}
-              <span class="font-medium text-blue-700">{{ example.name }}</span>{% if loop.index0 < 2 and sortedNames.length > loop.index %}, {% endif %}
-              {% endif %}
-            {% endfor %}
-          </div>
-          {% endif %}
-          <p class="text-xs text-blue-600">{{ classification.count }} names</p>
-        </a>
-        {% endif %}
-        {% endfor %}
-      </div>
-    </section>
   </div>
 </article>
 {% endblock %}
