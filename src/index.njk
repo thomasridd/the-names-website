@@ -1,108 +1,343 @@
 ---
-layout: base.njk
-title: Home
 permalink: /
 ---
 
+{% extends "base.njk" %}
+
+{% block title %}Home - {{ siteConfig.title }}{% endblock %}
+
 {% block content %}
 <section class="text-center py-16 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl mb-12 shadow-sm">
-  <h1 class="text-5xl sm:text-6xl font-bold mb-6 text-gray-900">The Names Website</h1>
-  <p class="text-xl sm:text-2xl text-gray-700 max-w-3xl mx-auto mb-8 leading-relaxed">
-    Discover the stories, meanings, and cultural heritage behind names from around the world
+  <h1 class="text-5xl sm:text-6xl font-bold mb-6 text-gray-900">The History of Names</h1>
+  <p class="text-xl sm:text-2xl text-gray-700 max-w-3xl mx-auto mb-4 leading-relaxed">
+    Explore 120 years of baby name trends across 40,000+ names
+  </p>
+  <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+    Discover how names rise and fall through generations, from century classics to modern hits, vintage revivals to lost generations
   </p>
   <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-    <a href="/names/" class="btn-primary px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-      Browse All Names
+    <a href="/patterns/" class="btn-primary px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+      Explore Patterns
     </a>
     <a href="/top-100/" class="btn-secondary px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold border-2 border-blue-600 hover:bg-blue-50 transition-colors">
       Top 100 Rankings
     </a>
-    <a href="#search" class="btn-secondary px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold border-2 border-blue-600 hover:bg-blue-50 transition-colors">
-      Search Names
+  </div>
+</section>
+
+<section class="mb-16">
+  <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">The Journey Through Time</h2>
+  <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
+      <div class="text-center">
+        <div class="text-5xl font-bold text-blue-600 mb-2">1904</div>
+        <div class="text-gray-600 font-medium">Start of Records</div>
+      </div>
+      <div class="hidden md:block flex-1 h-1 bg-gradient-to-r from-blue-200 via-indigo-200 to-purple-200 rounded"></div>
+      <div class="text-center">
+        <div class="text-5xl font-bold text-indigo-600 mb-2">13</div>
+        <div class="text-gray-600 font-medium">Decades Tracked</div>
+      </div>
+      <div class="hidden md:block flex-1 h-1 bg-gradient-to-r from-purple-200 via-pink-200 to-rose-200 rounded"></div>
+      <div class="text-center">
+        <div class="text-5xl font-bold text-purple-600 mb-2">2024</div>
+        <div class="text-gray-600 font-medium">Latest Data</div>
+      </div>
+    </div>
+    <p class="text-center text-gray-700 leading-relaxed max-w-3xl mx-auto">
+      Every name tells a story of cultural shifts, celebrity influence, and generational preferences.
+      Our classification system identifies distinct patterns across 120+ years of naming history.
+    </p>
+  </div>
+</section>
+
+<section class="mb-16">
+  <h2 class="text-3xl font-bold text-gray-900 mb-4 text-center">Discover Historical Patterns</h2>
+  <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
+    We've analyzed decades of data to identify fascinating trends in how names rise, fall, and sometimes return
+  </p>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <a href="/classifications/historic/vintage-revival/" class="block bg-white rounded-lg p-6 shadow-sm hover:shadow-lg transition-shadow border border-gray-100">
+      <div class="flex items-start gap-3 mb-3">
+        <div class="text-3xl">🔄</div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 mb-1">Vintage Revival</h3>
+          <p class="text-sm text-indigo-600 font-medium">Back in Fashion</p>
+        </div>
+      </div>
+      <p class="text-gray-700 text-sm mb-4 leading-relaxed">
+        Names from the early 20th century making a triumphant return to popularity
+      </p>
+      <div class="flex flex-wrap gap-2">
+        <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">Oliver</span>
+        <span class="px-3 py-1 bg-pink-50 text-pink-700 rounded-full text-sm font-medium">Amelia</span>
+        <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">Henry</span>
+        <span class="px-3 py-1 bg-pink-50 text-pink-700 rounded-full text-sm font-medium">Ivy</span>
+      </div>
+    </a>
+
+    <a href="/classifications/historic/steady-classic/" class="block bg-white rounded-lg p-6 shadow-sm hover:shadow-lg transition-shadow border border-gray-100">
+      <div class="flex items-start gap-3 mb-3">
+        <div class="text-3xl">⭐</div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 mb-1">Steady Classics</h3>
+          <p class="text-sm text-green-600 font-medium">Timeless Favorites</p>
+        </div>
+      </div>
+      <p class="text-gray-700 text-sm mb-4 leading-relaxed">
+        Names that maintain high rankings decade after decade, generation after generation
+      </p>
+      <div class="flex flex-wrap gap-2">
+        <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">James</span>
+        <span class="px-3 py-1 bg-pink-50 text-pink-700 rounded-full text-sm font-medium">Emma</span>
+        <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">William</span>
+      </div>
+    </a>
+
+    <a href="/classifications/historic/lost-generation/" class="block bg-white rounded-lg p-6 shadow-sm hover:shadow-lg transition-shadow border border-gray-100">
+      <div class="flex items-start gap-3 mb-3">
+        <div class="text-3xl">📜</div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 mb-1">Lost Generation</h3>
+          <p class="text-sm text-amber-600 font-medium">Faded From Use</p>
+        </div>
+      </div>
+      <p class="text-gray-700 text-sm mb-4 leading-relaxed">
+        Once-popular names from the early century that have largely disappeared from use
+      </p>
+      <div class="flex flex-wrap gap-2">
+        <span class="px-3 py-1 bg-gray-50 text-gray-700 rounded-full text-sm font-medium">Herbert</span>
+        <span class="px-3 py-1 bg-gray-50 text-gray-700 rounded-full text-sm font-medium">Doris</span>
+        <span class="px-3 py-1 bg-gray-50 text-gray-700 rounded-full text-sm font-medium">Clarence</span>
+      </div>
+    </a>
+
+    <a href="/classifications/historic/recent-entrant/" class="block bg-white rounded-lg p-6 shadow-sm hover:shadow-lg transition-shadow border border-gray-100">
+      <div class="flex items-start gap-3 mb-3">
+        <div class="text-3xl">🚀</div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 mb-1">Recent Entrants</h3>
+          <p class="text-sm text-purple-600 font-medium">Modern Arrivals</p>
+        </div>
+      </div>
+      <p class="text-gray-700 text-sm mb-4 leading-relaxed">
+        Names that first entered the top 100 in the 21st century
+      </p>
+      <div class="flex flex-wrap gap-2">
+        <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">Muhammad</span>
+        <span class="px-3 py-1 bg-pink-50 text-pink-700 rounded-full text-sm font-medium">Luna</span>
+        <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">Mason</span>
+      </div>
+    </a>
+
+    <a href="/classifications/historic/pendulum/" class="block bg-white rounded-lg p-6 shadow-sm hover:shadow-lg transition-shadow border border-gray-100">
+      <div class="flex items-start gap-3 mb-3">
+        <div class="text-3xl">↔️</div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 mb-1">Pendulum</h3>
+          <p class="text-sm text-teal-600 font-medium">Swinging Back</p>
+        </div>
+      </div>
+      <p class="text-gray-700 text-sm mb-4 leading-relaxed">
+        Popular early, disappeared mid-century, and returned in the 2000s
+      </p>
+      <div class="flex flex-wrap gap-2">
+        <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">Oscar</span>
+        <span class="px-3 py-1 bg-pink-50 text-pink-700 rounded-full text-sm font-medium">Ruby</span>
+        <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">Felix</span>
+      </div>
+    </a>
+
+    <a href="/classifications/historic/declining-former-favorite/" class="block bg-white rounded-lg p-6 shadow-sm hover:shadow-lg transition-shadow border border-gray-100">
+      <div class="flex items-start gap-3 mb-3">
+        <div class="text-3xl">📉</div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 mb-1">Declining Favorites</h3>
+          <p class="text-sm text-orange-600 font-medium">Losing Ground</p>
+        </div>
+      </div>
+      <p class="text-gray-700 text-sm mb-4 leading-relaxed">
+        Former favorites showing steady downward trends in recent decades
+      </p>
+      <div class="flex flex-wrap gap-2">
+        <span class="px-3 py-1 bg-gray-50 text-gray-700 rounded-full text-sm font-medium">Kevin</span>
+        <span class="px-3 py-1 bg-gray-50 text-gray-700 rounded-full text-sm font-medium">Sharon</span>
+        <span class="px-3 py-1 bg-gray-50 text-gray-700 rounded-full text-sm font-medium">Gary</span>
+      </div>
+    </a>
+  </div>
+  <div class="text-center mt-8">
+    <a href="/patterns/" class="inline-block px-6 py-3 bg-gray-100 text-gray-900 rounded-lg font-semibold hover:bg-gray-200 transition-colors">
+      View All Pattern Types →
     </a>
   </div>
 </section>
 
-<section class="mb-12">
-  <div class="flex justify-between items-baseline mb-6">
-    <h2 class="text-3xl font-bold text-gray-900">Featured Names</h2>
-    <a href="/names/" class="text-blue-600 hover:text-blue-700 font-medium">View all →</a>
-  </div>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% for nameData in names | slice(0, 6) %}
-    <div class="name-card bg-white hover:shadow-lg transition-shadow duration-200">
-      <h3 class="text-2xl font-bold mb-2">
-        <a href="/names/{{ nameData.name | lower | replace(' ', '-') }}/" class="text-blue-600 hover:text-blue-800 transition-colors">
-          {{ nameData.name }}
-        </a>
-      </h3>
-      <p class="text-sm text-gray-500 uppercase tracking-wide mb-3 font-medium">{{ nameData.origin }}</p>
-      <p class="text-gray-700 leading-relaxed">{{ nameData.meaning }}</p>
-      {% if nameData.popularity %}
-      <div class="mt-3 pt-3 border-t border-gray-100">
-        <span class="text-xs text-gray-500">Popularity: {{ nameData.popularity }}</span>
+<section class="mb-16">
+  <h2 class="text-3xl font-bold text-gray-900 mb-4 text-center">Featured Name Journeys</h2>
+  <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
+    Real examples of how names rise and fall through the generations
+  </p>
+  <div class="grid md:grid-cols-2 gap-6">
+    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-8 shadow-sm border border-blue-100">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <h3 class="text-2xl font-bold text-gray-900 mb-1">Oliver</h3>
+          <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">Vintage Revival</span>
+        </div>
+        <div class="text-3xl">🔄</div>
       </div>
-      {% endif %}
+      <div class="space-y-3 mb-4">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 text-sm">1910s-1920s</span>
+          <span class="text-gray-900 font-semibold">Popular in early century</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 text-sm">1950s-1980s</span>
+          <span class="text-gray-600 font-medium">Fell out of fashion</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 text-sm">2000s-2024</span>
+          <span class="text-blue-700 font-bold">Triumphant return! #2 in 2024</span>
+        </div>
+      </div>
+      <p class="text-gray-700 text-sm leading-relaxed">
+        A perfect example of cyclical naming trends. Oliver has returned to the top of the charts after decades of obscurity, reclaiming its early-century glory.
+      </p>
     </div>
-    {% endfor %}
+
+    <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-8 shadow-sm border border-purple-100">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <h3 class="text-2xl font-bold text-gray-900 mb-1">Muhammad</h3>
+          <span class="inline-block px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-semibold">Recent Entrant</span>
+        </div>
+        <div class="text-3xl">🚀</div>
+      </div>
+      <div class="space-y-3 mb-4">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 text-sm">1996</span>
+          <span class="text-gray-600 font-medium">Ranked #108</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 text-sm">2010</span>
+          <span class="text-gray-900 font-semibold">Climbed to #43</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 text-sm">2024</span>
+          <span class="text-purple-700 font-bold">Reached #1!</span>
+        </div>
+      </div>
+      <p class="text-gray-700 text-sm leading-relaxed">
+        A remarkable modern success story. Muhammad has steadily climbed from outside the top 100 to become the #1 boys name, reflecting changing demographics.
+      </p>
+    </div>
+
+    <div class="bg-gradient-to-br from-pink-50 to-rose-50 rounded-lg p-8 shadow-sm border border-pink-100">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <h3 class="text-2xl font-bold text-gray-900 mb-1">Ivy</h3>
+          <span class="inline-block px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-xs font-semibold">Vintage Revival</span>
+        </div>
+        <div class="text-3xl">🌿</div>
+      </div>
+      <div class="space-y-3 mb-4">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 text-sm">1920s</span>
+          <span class="text-gray-900 font-semibold">Popular botanical name</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 text-sm">1960s-1990s</span>
+          <span class="text-gray-600 font-medium">Out of top 100</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 text-sm">2010s-2024</span>
+          <span class="text-pink-700 font-bold">Back in the top 20</span>
+        </div>
+      </div>
+      <p class="text-gray-700 text-sm leading-relaxed">
+        Part of the nature name revival. Ivy has returned after a 50-year absence, joining other botanical names like Lily and Rose at the top of the charts.
+      </p>
+    </div>
+
+    <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg p-8 shadow-sm border border-amber-100">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <h3 class="text-2xl font-bold text-gray-900 mb-1">Sharon</h3>
+          <span class="inline-block px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-semibold">Declining Favorite</span>
+        </div>
+        <div class="text-3xl">📉</div>
+      </div>
+      <div class="space-y-3 mb-4">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 text-sm">1940s-1950s</span>
+          <span class="text-gray-900 font-bold">Top 10 name</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 text-sm">1970s-1990s</span>
+          <span class="text-gray-700 font-medium">Steady decline</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 text-sm">2024</span>
+          <span class="text-gray-600 font-medium">Rarely used</span>
+        </div>
+      </div>
+      <p class="text-gray-700 text-sm leading-relaxed">
+        A mid-century favorite that has fallen dramatically. Sharon shows how names can become strongly associated with a particular generation.
+      </p>
+    </div>
   </div>
 </section>
 
-<section class="grid md:grid-cols-2 gap-8 mb-12">
-  <div class="bg-white rounded-lg p-8 shadow-sm">
-    <div class="text-blue-600 text-3xl mb-4">📚</div>
-    <h2 class="text-2xl font-bold mb-4 text-gray-900">Rich Cultural Heritage</h2>
-    <p class="text-gray-700 leading-relaxed mb-4">
-      Every name carries with it centuries of history, tradition, and cultural significance. Explore names from dozens of cultures and discover the rich tapestry of human naming traditions.
-    </p>
-    <p class="text-gray-700 leading-relaxed">
-      From ancient Greek and Latin origins to modern multicultural influences, understand how names have evolved and what they reveal about our shared heritage.
-    </p>
-  </div>
-
-  <div class="bg-white rounded-lg p-8 shadow-sm">
-    <div class="text-blue-600 text-3xl mb-4">🔍</div>
-    <h2 class="text-2xl font-bold mb-4 text-gray-900">Discover Meanings</h2>
-    <p class="text-gray-700 leading-relaxed mb-4">
-      Names are more than just labels—they carry meanings, aspirations, and stories. Whether you're choosing a name for a new arrival or simply curious about your own name's origins, you'll find comprehensive information here.
-    </p>
-    <p class="text-gray-700 leading-relaxed">
-      Each name entry includes its etymological roots, historical usage, and cultural context to give you a complete understanding.
-    </p>
-  </div>
-</section>
-
-<section class="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-8 mb-12">
-  <h2 class="text-3xl font-bold mb-6 text-gray-900 text-center">Why Names Matter</h2>
+<section class="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-8 mb-16">
+  <h2 class="text-3xl font-bold mb-6 text-gray-900 text-center">What You Can Discover</h2>
   <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
     <div class="text-center">
-      <div class="text-4xl mb-3">🌍</div>
-      <h3 class="font-bold text-lg mb-2 text-gray-900">Cultural Identity</h3>
-      <p class="text-gray-700 text-sm">Names connect us to our heritage and help preserve cultural traditions across generations.</p>
+      <div class="text-4xl mb-3">📊</div>
+      <h3 class="font-bold text-lg mb-2 text-gray-900">Trend Analysis</h3>
+      <p class="text-gray-700 text-sm">Track how names have risen and fallen in popularity across 13 decades of data from 1904 to 2024.</p>
     </div>
     <div class="text-center">
-      <div class="text-4xl mb-3">👶</div>
-      <h3 class="font-bold text-lg mb-2 text-gray-900">Personal Significance</h3>
-      <p class="text-gray-700 text-sm">Choosing a name is one of the first meaningful decisions parents make for their children.</p>
+      <div class="text-4xl mb-3">🔍</div>
+      <h3 class="font-bold text-lg mb-2 text-gray-900">Pattern Recognition</h3>
+      <p class="text-gray-700 text-sm">Explore our classification system identifying distinct patterns like Vintage Revivals, Lost Generations, and Steady Classics.</p>
     </div>
     <div class="text-center">
-      <div class="text-4xl mb-3">📖</div>
-      <h3 class="font-bold text-lg mb-2 text-gray-900">Historical Context</h3>
-      <p class="text-gray-700 text-sm">Names reflect historical events, religious beliefs, and social movements throughout time.</p>
+      <div class="text-4xl mb-3">⏳</div>
+      <h3 class="font-bold text-lg mb-2 text-gray-900">Generational Shifts</h3>
+      <p class="text-gray-700 text-sm">See which names defined each generation and discover the cultural forces that drove naming trends.</p>
     </div>
   </div>
 </section>
 
 <section class="bg-white rounded-lg p-8 shadow-sm">
-  <h2 class="text-2xl font-bold mb-4 text-gray-900">About This Website</h2>
+  <h2 class="text-2xl font-bold mb-4 text-gray-900">About This Project</h2>
   <p class="text-gray-700 leading-relaxed mb-4">
-    The Names Website is a comprehensive resource for exploring the fascinating world of personal names. We've compiled information about names from cultures around the globe, providing insights into their origins, meanings, and historical significance.
+    The Names Website is a data-driven exploration of baby name trends spanning 120 years. We've analyzed over 40,000 names, tracking their popularity through 13 decades from 1904 to 2024, revealing fascinating patterns in how names rise, fall, and sometimes return to prominence.
   </p>
   <p class="text-gray-700 leading-relaxed mb-4">
-    Whether you're researching baby names, exploring your family history, or simply curious about the stories behind names, you'll find a wealth of information organized and accessible for easy discovery.
+    Our unique classification system identifies distinct historical patterns—from Vintage Revivals bringing back names like Oliver and Amelia, to Recent Entrants like Muhammad making their mark, to Lost Generations of names like Herbert and Doris that have faded from use.
   </p>
-  <p class="text-gray-700 leading-relaxed">
-    Browse our collection of {{ names | length }} names, each with detailed information about etymology, cultural background, and usage patterns across different time periods and regions.
+  <p class="text-gray-700 leading-relaxed mb-4">
+    Each name page includes year-by-year rankings from 1996-2024, decade-by-decade historic data, and classification badges that reveal its unique journey through time. Whether you're choosing a baby name, researching generational trends, or simply curious about naming history, you'll find insights into the cultural forces that shape our choices.
   </p>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+    <div class="text-center p-4 bg-gray-50 rounded-lg">
+      <div class="text-2xl font-bold text-blue-600 mb-1">40,000+</div>
+      <div class="text-xs text-gray-600 uppercase tracking-wide">Names Tracked</div>
+    </div>
+    <div class="text-center p-4 bg-gray-50 rounded-lg">
+      <div class="text-2xl font-bold text-indigo-600 mb-1">120</div>
+      <div class="text-xs text-gray-600 uppercase tracking-wide">Years of Data</div>
+    </div>
+    <div class="text-center p-4 bg-gray-50 rounded-lg">
+      <div class="text-2xl font-bold text-purple-600 mb-1">29</div>
+      <div class="text-xs text-gray-600 uppercase tracking-wide">Recent Years</div>
+    </div>
+    <div class="text-center p-4 bg-gray-50 rounded-lg">
+      <div class="text-2xl font-bold text-pink-600 mb-1">13</div>
+      <div class="text-xs text-gray-600 uppercase tracking-wide">Decades Historic</div>
+    </div>
+  </div>
 </section>
 {% endblock %}
