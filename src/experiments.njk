@@ -1,0 +1,31 @@
+---
+permalink: /experiments/
+---
+
+{% extends "base.njk" %}
+
+{% block title %}Experiments - {{ siteConfig.title }}{% endblock %}
+{% block description %}Experimental classification methods for exploring name patterns{% endblock %}
+
+{% block content %}
+<article class="bg-white rounded-lg p-8 shadow-sm">
+  <h1 class="text-4xl font-bold mb-4 text-gray-900">Experiments</h1>
+  <p class="text-lg text-gray-600 mb-8">
+    Experimental classification methods for exploring name patterns. Each experiment groups names using a different approach.
+  </p>
+
+  {% if experiments.length > 0 %}
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for experiment in experiments %}
+    <a href="/experiments/{{ experiment.slug }}/"
+       class="block p-6 bg-purple-50 hover:bg-purple-100 rounded-lg border-l-4 border-purple-500 transition-colors">
+      <h2 class="font-bold text-purple-900 text-xl mb-2">{{ experiment.name }}</h2>
+      <p class="text-sm text-gray-600">{{ experiment.classes.length }} classes</p>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-gray-500">No experiments found. Add experiment data to <code>data/experiments/</code>.</p>
+  {% endif %}
+</article>
+{% endblock %}

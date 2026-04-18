@@ -242,6 +242,98 @@ module.exports = function(eleventyConfig) {
     return classifications;
   });
 
+  // Load experiment classification data
+  function loadExperimentsData() {
+    const experimentsDir = path.join(__dirname, 'experiment-data');
+    if (!fs.existsSync(experimentsDir)) return [];
+
+    const nameLookup = { boy: new Map(), girl: new Map() };
+    const boysPath = path.join(__dirname, 'data', `boys${dataSuffix}`);
+    const girlsPath = path.join(__dirname, 'data', `girls${dataSuffix}`);
+
+    if (fs.existsSync(boysPath)) {
+      JSON.parse(fs.readFileSync(boysPath, 'utf-8')).forEach(n => {
+        nameLookup.boy.set(n.name.toLowerCase(), n);
+      });
+    }
+    if (fs.existsSync(girlsPath)) {
+      JSON.parse(fs.readFileSync(girlsPath, 'utf-8')).forEach(n => {
+        nameLookup.girl.set(n.name.toLowerCase(), n);
+      });
+    }
+
+    function lookupName(nameStr, genderKey) {
+      const data = nameLookup[genderKey].get(nameStr.toLowerCase());
+      const gender = genderKey === 'boy' ? 'Boy' : 'Girl';
+      if (data) {
+        return { name: data.name, rank: data.rank, count: data.count, uniqueSlug: data.uniqueSlug, gender };
+      }
+      return { name: nameStr, rank: null, count: null, uniqueSlug: null, gender };
+    }
+
+    const experiments = [];
+
+    try {
+      fs.readdirSync(experimentsDir).forEach(dirName => {
+        const dirPath = path.join(experimentsDir, dirName);
+        if (!fs.statSync(dirPath).isDirectory()) return;
+
+        const experimentSlug = dirName;
+        const experimentName = dirName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        const classMap = {};
+
+        const boysExpPath = path.join(dirPath, 'boys.json');
+        if (fs.existsSync(boysExpPath)) {
+          Object.entries(JSON.parse(fs.readFileSync(boysExpPath, 'utf-8'))).forEach(([className, nameList]) => {
+            if (!classMap[className]) classMap[className] = { boys: [], girls: [] };
+            classMap[className].boys = nameList.map(n => lookupName(n, 'boy'));
+          });
+        }
+
+        const girlsExpPath = path.join(dirPath, 'girls.json');
+        if (fs.existsSync(girlsExpPath)) {
+          Object.entries(JSON.parse(fs.readFileSync(girlsExpPath, 'utf-8'))).forEach(([className, nameList]) => {
+            if (!classMap[className]) classMap[className] = { boys: [], girls: [] };
+            classMap[className].girls = nameList.map(n => lookupName(n, 'girl'));
+          });
+        }
+
+        const classes = Object.entries(classMap).map(([className, classData]) => {
+          const boys = classData.boys.sort((a, b) => (a.rank || 99999) - (b.rank || 99999));
+          const girls = classData.girls.sort((a, b) => (a.rank || 99999) - (b.rank || 99999));
+          const examples = [...boys, ...girls]
+            .filter(n => n.rank)
+            .sort((a, b) => a.rank - b.rank)
+            .slice(0, 3);
+
+          return {
+            name: className,
+            slug: createSlug(className),
+            experimentSlug,
+            experimentName,
+            boys,
+            girls,
+            count: boys.length + girls.length,
+            examples
+          };
+        });
+
+        experiments.push({ name: experimentName, slug: experimentSlug, classes });
+      });
+    } catch (e) {
+      console.warn('Error loading experiments:', e.message);
+    }
+
+    console.log(`Loaded ${experiments.length} experiments`);
+    return experiments;
+  }
+
+  eleventyConfig.addGlobalData('experiments', loadExperimentsData);
+
+  eleventyConfig.addGlobalData('experimentClasses', () =>
+    loadExperimentsData().flatMap(exp => exp.classes)
+  );
+
   // Generate search index after build
   eleventyConfig.on('eleventy.after', async () => {
     const boysPath = path.join(__dirname, 'data', `boys${dataSuffix}`);

@@ -1,0 +1,100 @@
+---
+pagination:
+  data: experimentClasses
+  size: 1
+  alias: expClass
+permalink: /experiments/{{ expClass.experimentSlug }}/{{ expClass.slug }}/
+---
+
+{% extends "base.njk" %}
+
+{% block title %}{{ expClass.name }} - {{ expClass.experimentName }} - {{ siteConfig.title }}{% endblock %}
+{% block description %}Names in the {{ expClass.name }} class of the {{ expClass.experimentName }} experiment{% endblock %}
+
+{% block content %}
+<article class="bg-white rounded-lg p-8 shadow-sm">
+  <div class="mb-8">
+    <div class="mb-2 space-x-2 text-sm">
+      <a href="/experiments/" class="text-purple-600 hover:text-purple-700">&larr; All Experiments</a>
+      <span class="text-gray-400">/</span>
+      <a href="/experiments/{{ expClass.experimentSlug }}/" class="text-purple-600 hover:text-purple-700">{{ expClass.experimentName }}</a>
+    </div>
+    <h1 class="text-4xl font-bold mb-1 text-gray-900">{{ expClass.name }}</h1>
+    <p class="text-sm text-gray-500">{{ expClass.count }} names</p>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-8">
+    {% if expClass.boys.length > 0 %}
+    <div class="bg-blue-50 rounded-lg p-6">
+      <h2 class="text-2xl font-bold mb-4 text-blue-900">Boys' Names ({{ expClass.boys.length }})</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="border-b border-blue-200">
+              <th class="py-2 pr-4 font-semibold text-blue-800 text-sm">Name</th>
+              <th class="py-2 pr-4 font-semibold text-blue-800 text-sm text-right">2024 Rank</th>
+              <th class="py-2 font-semibold text-blue-800 text-sm text-right">2024 Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for name in expClass.boys %}
+            <tr class="border-b border-blue-100">
+              <td class="py-2 pr-4">
+                {% if name.uniqueSlug %}
+                <a href="/names/boy/{{ name.uniqueSlug }}/" class="text-blue-700 hover:text-blue-900 font-medium">{{ name.name }}</a>
+                {% else %}
+                <span class="font-medium text-gray-700">{{ name.name }}</span>
+                {% endif %}
+              </td>
+              <td class="py-2 pr-4 text-right text-gray-600 text-sm">
+                {% if name.rank %}#{{ name.rank }}{% else %}-{% endif %}
+              </td>
+              <td class="py-2 text-right text-gray-600 text-sm">
+                {% if name.count %}{{ name.count }}{% else %}-{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if expClass.girls.length > 0 %}
+    <div class="bg-pink-50 rounded-lg p-6">
+      <h2 class="text-2xl font-bold mb-4 text-pink-900">Girls' Names ({{ expClass.girls.length }})</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="border-b border-pink-200">
+              <th class="py-2 pr-4 font-semibold text-pink-800 text-sm">Name</th>
+              <th class="py-2 pr-4 font-semibold text-pink-800 text-sm text-right">2024 Rank</th>
+              <th class="py-2 font-semibold text-pink-800 text-sm text-right">2024 Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for name in expClass.girls %}
+            <tr class="border-b border-pink-100">
+              <td class="py-2 pr-4">
+                {% if name.uniqueSlug %}
+                <a href="/names/girl/{{ name.uniqueSlug }}/" class="text-pink-700 hover:text-pink-900 font-medium">{{ name.name }}</a>
+                {% else %}
+                <span class="font-medium text-gray-700">{{ name.name }}</span>
+                {% endif %}
+              </td>
+              <td class="py-2 pr-4 text-right text-gray-600 text-sm">
+                {% if name.rank %}#{{ name.rank }}{% else %}-{% endif %}
+              </td>
+              <td class="py-2 text-right text-gray-600 text-sm">
+                {% if name.count %}{{ name.count }}{% else %}-{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</article>
+{% endblock %}
