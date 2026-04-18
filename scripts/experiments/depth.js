@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Classifies names by historical depth:
 //   Surface   - ever in top 100 in the historic file
-//   Twilight  - ever ranked > 1000 in modern file, not Surface
-//   The Abyss - never in top 10 in any modern year, not Surface or Twilight
+//   Twilight  - ever ranked 101-1000 in modern file, not Surface
+//   The Abyss - birth count below 10 or unranked in ALL modern years, not Surface or Twilight
 //   Midnight  - all remaining names
 // Produces experiment-data/depth/boys.json and girls.json
 
@@ -22,7 +22,7 @@ function loadData(gender) {
   return JSON.parse(fs.readFileSync(prodPath, 'utf-8'));
 }
 
-function parseRank(val) {
+function parseNum(val) {
   if (val === 'x' || val === null || val === undefined) return null;
   const n = parseInt(val, 10);
   return isNaN(n) ? null : n;
@@ -31,28 +31,28 @@ function parseRank(val) {
 function classify(nameObj) {
   const historic = nameObj.rankHistoric || [];
   const modern = nameObj.rankFrom1996 || [];
+  const counts = nameObj.countFrom1996 || [];
 
   // Surface: ever in top 100 in historic file
   const everTop100Historic = historic.some(v => {
-    const r = parseRank(v);
+    const r = parseNum(v);
     return r !== null && r <= 100;
   });
   if (everTop100Historic) return 'Surface';
 
-  // Twilight: ever over rank 1000 in modern file (including unranked = "x")
-  const everOver1000Modern = modern.some(v => {
-    if (v === 'x') return true;
-    const r = parseRank(v);
-    return r !== null && r > 1000;
+  // Twilight: ever ranked 101-1000 in modern file, not Surface
+  const everRanked101to1000 = modern.some(v => {
+    const r = parseNum(v);
+    return r !== null && r >= 101 && r <= 1000;
   });
-  if (everOver1000Modern) return 'Twilight';
+  if (everRanked101to1000) return 'Twilight';
 
-  // The Abyss: never in top 10 in any modern year
-  const everTop10Modern = modern.some(v => {
-    const r = parseRank(v);
-    return r !== null && r <= 10;
+  // The Abyss: birth count below 10 or unranked in ALL modern years
+  const everCount10orMore = counts.some(v => {
+    const c = parseNum(v);
+    return c !== null && c >= 10;
   });
-  if (!everTop10Modern) return 'The Abyss';
+  if (!everCount10orMore) return 'The Abyss';
 
   // Midnight: everything else
   return 'Midnight';
