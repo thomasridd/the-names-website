@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 // Classifies names by historical depth:
-//   Surface   - ever in top 100 in the historic file
-//   Twilight  - ever ranked 101-1000 in modern file, not Surface
-//   The Abyss - birth count below 10 or unranked in ALL modern years, not Surface or Twilight
-//   Midnight  - all remaining names
-// Produces experiment-data/depth/boys.json and girls.json
+//   Surface Current  - ever top 100 historically AND 2024 rank <= 100
+//   Surface Past     - ever top 100 historically but 2024 rank > 100 or unranked
+//   Twilight Current - ever ranked 101-1000 in modern, not Surface, AND 2024 rank 101-1000
+//   Twilight Past    - ever ranked 101-1000 in modern, not Surface, but 2024 rank outside 101-1000
+//   The Abyss        - birth count below 10 or unranked in ALL modern years, not Surface or Twilight
+//   Midnight         - all remaining names
+// Produces experiment-data/depth/boys.json, girls.json, metadata.json
 
 const fs = require('fs');
 const path = require('path');
@@ -30,22 +32,29 @@ function parseNum(val) {
 
 function classify(nameObj) {
   const historic = nameObj.rankHistoric || [];
-  const modern = nameObj.rankFrom1996 || [];
-  const counts = nameObj.countFrom1996 || [];
+  const modern   = nameObj.rankFrom1996 || [];
+  const counts   = nameObj.countFrom1996 || [];
+  const rank2024 = parseNum(modern[28]); // index 28 = 2024
 
   // Surface: ever in top 100 in historic file
   const everTop100Historic = historic.some(v => {
     const r = parseNum(v);
     return r !== null && r <= 100;
   });
-  if (everTop100Historic) return 'Surface';
+  if (everTop100Historic) {
+    return (rank2024 !== null && rank2024 <= 100) ? 'Surface Current' : 'Surface Past';
+  }
 
   // Twilight: ever ranked 101-1000 in modern file, not Surface
   const everRanked101to1000 = modern.some(v => {
     const r = parseNum(v);
     return r !== null && r >= 101 && r <= 1000;
   });
-  if (everRanked101to1000) return 'Twilight';
+  if (everRanked101to1000) {
+    return (rank2024 !== null && rank2024 >= 101 && rank2024 <= 1000)
+      ? 'Twilight Current'
+      : 'Twilight Past';
+  }
 
   // The Abyss: birth count below 10 or unranked in ALL modern years
   const everCount10orMore = counts.some(v => {
@@ -69,16 +78,17 @@ function sumBirths(names) {
   return total;
 }
 
+const CLASS_ORDER = ['Surface Current', 'Surface Past', 'Twilight Current', 'Twilight Past', 'The Abyss', 'Midnight'];
+
 function generateClassification(names) {
-  const classNames = { Surface: [], Twilight: [], Midnight: [], 'The Abyss': [] };
-  const classObjs  = { Surface: [], Twilight: [], Midnight: [], 'The Abyss': [] };
+  const classNames = Object.fromEntries(CLASS_ORDER.map(c => [c, []]));
+  const classObjs  = Object.fromEntries(CLASS_ORDER.map(c => [c, []]));
   names.forEach(nameObj => {
     const cls = classify(nameObj);
     classNames[cls].push(nameObj.name);
     classObjs[cls].push(nameObj);
   });
-  Object.keys(classNames).forEach(k => {
-    // sort names alphabetically
+  CLASS_ORDER.forEach(k => {
     const paired = classNames[k].map((name, i) => ({ name, obj: classObjs[k][i] }));
     paired.sort((a, b) => a.name.localeCompare(b.name));
     classNames[k] = paired.map(p => p.name);
@@ -95,13 +105,11 @@ const girlsData = loadData('girls');
 const boys = generateClassification(boysData);
 const girls = generateClassification(girlsData);
 
-// Name lists (existing format)
-const boysClasses = Object.fromEntries(Object.keys(boys.classNames).map(k => [k, boys.classNames[k]]));
-const girlsClasses = Object.fromEntries(Object.keys(girls.classNames).map(k => [k, girls.classNames[k]]));
+const boysClasses = Object.fromEntries(CLASS_ORDER.map(k => [k, boys.classNames[k]]));
+const girlsClasses = Object.fromEntries(CLASS_ORDER.map(k => [k, girls.classNames[k]]));
 
-// Metadata: total births per class across both sexes
 const metadata = {};
-Object.keys(boys.classNames).forEach(cls => {
+CLASS_ORDER.forEach(cls => {
   metadata[cls] = {
     totalBirths: sumBirths(boys.classObjs[cls]) + sumBirths(girls.classObjs[cls])
   };
@@ -112,6 +120,7 @@ fs.writeFileSync(path.join(outputDir, 'girls.json'), JSON.stringify(girlsClasses
 fs.writeFileSync(path.join(outputDir, 'metadata.json'), JSON.stringify(metadata, null, 2));
 
 console.log('\nGenerated depth experiment data:');
-['Surface', 'Twilight', 'The Abyss', 'Midnight'].forEach(cls => {
-  console.log(`  ${cls}: ${(boys.classNames[cls].length + girls.classNames[cls].length)} names, ${metadata[cls].totalBirths.toLocaleString()} total births`);
+CLASS_ORDER.forEach(cls => {
+  const count = boys.classNames[cls].length + girls.classNames[cls].length;
+  console.log(`  ${cls}: ${count} names, ${metadata[cls].totalBirths.toLocaleString()} total births`);
 });
