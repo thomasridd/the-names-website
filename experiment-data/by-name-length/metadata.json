@@ -1,0 +1,11 @@
+{
+  "Short (1-4 letters)": {
+    "totalBirths": 3796494
+  },
+  "Medium (5-6 letters)": {
+    "totalBirths": 9530545
+  },
+  "Long (7+ letters)": {
+    "totalBirths": 4208450
+  }
+}

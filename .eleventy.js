@@ -242,6 +242,59 @@ module.exports = function(eleventyConfig) {
     return classifications;
   });
 
+  // Format large numbers with comma separators
+  eleventyConfig.addFilter('formatNumber', n => n == null ? '-' : n.toLocaleString('en-GB'));
+
+  // Load experiment classification data
+  function loadExperimentsData() {
+    const experimentsDir = path.join(__dirname, 'experiment-data');
+    if (!fs.existsSync(experimentsDir)) return [];
+
+    const experiments = [];
+
+    try {
+      fs.readdirSync(experimentsDir).forEach(dirName => {
+        const dirPath = path.join(experimentsDir, dirName);
+        if (!fs.statSync(dirPath).isDirectory()) return;
+
+        const experimentSlug = dirName;
+        const experimentName = dirName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+        // Tally name counts from boys/girls data files
+        const classCounts = {};
+        ['boys', 'girls'].forEach(gender => {
+          const filePath = path.join(dirPath, `${gender}.json`);
+          if (!fs.existsSync(filePath)) return;
+          Object.entries(JSON.parse(fs.readFileSync(filePath, 'utf-8'))).forEach(([className, names]) => {
+            classCounts[className] = (classCounts[className] || 0) + names.length;
+          });
+        });
+
+        // Read pre-computed per-class stats (total births, etc.)
+        const metadataPath = path.join(dirPath, 'metadata.json');
+        const metadata = fs.existsSync(metadataPath)
+          ? JSON.parse(fs.readFileSync(metadataPath, 'utf-8'))
+          : {};
+
+        const classes = Object.keys(classCounts).map(className => ({
+          name: className,
+          experimentSlug,
+          count: classCounts[className],
+          totalBirths: metadata[className] ? metadata[className].totalBirths : null
+        }));
+
+        experiments.push({ name: experimentName, slug: experimentSlug, classes });
+      });
+    } catch (e) {
+      console.warn('Error loading experiments:', e.message);
+    }
+
+    console.log(`Loaded ${experiments.length} experiments`);
+    return experiments;
+  }
+
+  eleventyConfig.addGlobalData('experiments', loadExperimentsData);
+
   // Generate search index after build
   eleventyConfig.on('eleventy.after', async () => {
     const boysPath = path.join(__dirname, 'data', `boys${dataSuffix}`);

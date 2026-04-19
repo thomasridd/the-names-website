@@ -1,0 +1,45 @@
+---
+pagination:
+  data: experiments
+  size: 1
+  alias: experiment
+permalink: /experiments/{{ experiment.slug }}/
+---
+
+{% extends "base.njk" %}
+
+{% block title %}{{ experiment.name }} - Experiments - {{ siteConfig.title }}{% endblock %}
+{% block description %}Browse classes in the {{ experiment.name }} experiment{% endblock %}
+
+{% block content %}
+<article class="bg-white rounded-lg p-8 shadow-sm">
+  <div class="mb-8">
+    <div class="mb-2">
+      <a href="/experiments/" class="text-purple-600 hover:text-purple-700 text-sm">&larr; All Experiments</a>
+    </div>
+    <h1 class="text-4xl font-bold mb-2 text-gray-900">{{ experiment.name }}</h1>
+    <p class="text-sm text-gray-500">{{ experiment.classes.length }} classes</p>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="border-b-2 border-gray-200">
+          <th class="py-3 px-4 font-semibold text-gray-700">Class</th>
+          <th class="py-3 px-4 font-semibold text-gray-700 text-right">Names</th>
+          <th class="py-3 px-4 font-semibold text-gray-700 text-right">Total Births (1996–2024)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for class in experiment.classes %}
+        <tr class="border-b border-gray-100 hover:bg-purple-50 transition-colors">
+          <td class="py-3 px-4 font-medium text-gray-800">{{ class.name }}</td>
+          <td class="py-3 px-4 text-right text-gray-600">{{ class.count | formatNumber }}</td>
+          <td class="py-3 px-4 text-right text-gray-600">{{ class.totalBirths | formatNumber }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</article>
+{% endblock %}
