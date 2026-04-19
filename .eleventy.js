@@ -441,6 +441,232 @@ module.exports = function(eleventyConfig) {
     return { clusters, decades, total: N };
   });
 
+  // Labelled clustering: 3 methods that partition 2024's top 100 into
+  // { Classics, Modern classics, Shooting stars, Vintage revival, Pendulums }
+  eleventyConfig.addGlobalData('labelledClusters', () => {
+    const boysPath = path.join(__dirname, 'data', `boys${dataSuffix}`);
+    const girlsPath = path.join(__dirname, 'data', `girls${dataSuffix}`);
+
+    const decades = ['1904', '1914', '1924', '1934', '1944', '1954', '1964', '1974', '1984', '1994', '2004', '2014', '2024'];
+    const D = decades.length;
+
+    const LABELS = ['Classics', 'Modern classics', 'Shooting stars', 'Vintage revival', 'Pendulums'];
+    const LABEL_DESCRIPTIONS = {
+      'Classics': 'Consistently popular across the century.',
+      'Modern classics': 'Consistently popular in recent decades.',
+      'Shooting stars': 'New arrivals to the top 100.',
+      'Vintage revival': 'Popular early, disappeared, back again.',
+      'Pendulums': 'Swinging in and out of the top 50.'
+    };
+
+    // ---------- Load and featurise entries ----------
+    const entries = [];
+    const loadFile = (filePath, gender) => {
+      if (!fs.existsSync(filePath)) return;
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      for (const n of data) {
+        if (typeof n.rank !== 'number' || n.rank < 1 || n.rank > 100) continue;
+        if (!Array.isArray(n.rankHistoric) || n.rankHistoric.length !== D) continue;
+
+        const numericRanks = n.rankHistoric.map(v => {
+          const r = parseInt(v, 10);
+          return isNaN(r) ? null : r;
+        });
+        const bin100 = numericRanks.map(r => (r !== null && r >= 1 && r <= 100) ? 1 : 0);
+        const bin50 = numericRanks.map(r => (r !== null && r >= 1 && r <= 50) ? 1 : 0);
+        const ternary = numericRanks.map(r => {
+          if (r === null || r > 100) return 0;
+          if (r > 50) return 1;
+          return 2;
+        });
+
+        // Features
+        const sumTop100 = bin100.reduce((a, b) => a + b, 0);
+        const sumTop50 = bin50.reduce((a, b) => a + b, 0);
+        let firstTop100 = bin100.indexOf(1);
+        let lastTop100 = bin100.lastIndexOf(1);
+        // Longest run of zeros between two ones
+        let longestGap = 0;
+        if (firstTop100 !== -1 && lastTop100 !== -1 && firstTop100 !== lastTop100) {
+          let gap = 0;
+          for (let i = firstTop100 + 1; i < lastTop100; i++) {
+            if (bin100[i] === 0) { gap++; if (gap > longestGap) longestGap = gap; }
+            else gap = 0;
+          }
+        }
+        // Top-50 crossings: transitions between "in top 50" and "not in top 50"
+        let top50Crossings = 0;
+        for (let i = 1; i < D; i++) {
+          if (bin50[i] !== bin50[i - 1]) top50Crossings++;
+        }
+
+        entries.push({
+          name: n.name,
+          gender,
+          uniqueSlug: n.uniqueSlug,
+          rank: n.rank,
+          bin100,
+          bin50,
+          ternary,
+          features: {
+            sumTop100, sumTop50, firstTop100, lastTop100, longestGap, top50Crossings
+          }
+        });
+      }
+    };
+    loadFile(boysPath, 'Boy');
+    loadFile(girlsPath, 'Girl');
+
+    if (entries.length === 0) {
+      return { decades, labels: LABELS, descriptions: LABEL_DESCRIPTIONS, methods: [], total: 0 };
+    }
+
+    const sortMembers = arr => arr.slice().sort((a, b) => {
+      const ra = a.rank ?? 1e9, rb = b.rank ?? 1e9;
+      return ra !== rb ? ra - rb : a.name.localeCompare(b.name);
+    });
+
+    // ---------- Method A: priority-ordered rules ----------
+    const assignA = (e) => {
+      const f = e.features;
+      const bin = e.bin100;
+      // Shooting star: only recent (last 2 decades) and ≤1 earlier appearance
+      const earlyCount = bin.slice(0, D - 2).reduce((a, b) => a + b, 0);
+      const recentCount = bin.slice(D - 2).reduce((a, b) => a + b, 0);
+      if (recentCount >= 1 && earlyCount <= 1 && f.sumTop100 <= 2) return 'Shooting stars';
+      // Vintage revival: early presence (1904–1934 = indices 0..3), gap in mid (1944–1984 = 4..8), recent presence (1994+ = 9..12)
+      const earlyHit = bin.slice(0, 4).some(b => b === 1);
+      const midHit = bin.slice(4, 9).some(b => b === 1);
+      const recentHit = bin.slice(9).some(b => b === 1);
+      if (earlyHit && !midHit && recentHit) return 'Vintage revival';
+      // Classic: top 100 in ≥10 of 13 decades
+      if (f.sumTop100 >= 10) return 'Classics';
+      // Pendulum: ≥3 top-50 crossings
+      if (f.top50Crossings >= 3) return 'Pendulums';
+      // Fallback: modern classic
+      return 'Modern classics';
+    };
+
+    // ---------- Method B: nearest prototype in ternary decade space ----------
+    const prototypesB = {
+      'Classics':         [2,2,2,2,2,2,2,2,2,2,2,2,2],
+      'Modern classics':  [0,0,0,0,0,0,0,0,1,1,2,2,2],
+      'Shooting stars':   [0,0,0,0,0,0,0,0,0,0,0,0,2],
+      'Vintage revival':  [2,2,2,1,0,0,0,0,0,0,1,2,2],
+      'Pendulums':        [2,0,2,0,2,0,2,0,2,0,2,0,2]
+    };
+    const sqDist = (a, b) => {
+      let s = 0; for (let i = 0; i < a.length; i++) { const d = a[i] - b[i]; s += d * d; } return s;
+    };
+    const assignB = (e) => {
+      let bestLabel = LABELS[0], bestD = Infinity;
+      for (const label of LABELS) {
+        const d = sqDist(e.ternary, prototypesB[label]);
+        if (d < bestD) { bestD = d; bestLabel = label; }
+      }
+      return bestLabel;
+    };
+
+    // ---------- Method C: k-means in engineered feature space, prototype-seeded ----------
+    // Feature vector per name: [sumTop100/13, sumTop50/13, firstTop100/12 (or 1), lastTop100/12 (or 0), longestGap/13, top50Crossings/12]
+    const toFeature = (e) => {
+      const f = e.features;
+      return [
+        f.sumTop100 / 13,
+        f.sumTop50 / 13,
+        (f.firstTop100 === -1) ? 1 : f.firstTop100 / 12,
+        (f.lastTop100 === -1) ? 0 : f.lastTop100 / 12,
+        f.longestGap / 13,
+        f.top50Crossings / 12
+      ];
+    };
+    const featureVectors = entries.map(toFeature);
+    const initialCentroidsC = {
+      'Classics':         [1.00, 0.70, 0.00, 1.00, 0.00, 0.10],
+      'Modern classics':  [0.40, 0.30, 0.60, 1.00, 0.00, 0.10],
+      'Shooting stars':   [0.10, 0.00, 1.00, 1.00, 0.00, 0.00],
+      'Vintage revival':  [0.30, 0.15, 0.00, 1.00, 0.60, 0.20],
+      'Pendulums':        [0.50, 0.30, 0.10, 1.00, 0.25, 0.60]
+    };
+    const orderedLabels = LABELS;
+    const centroidsC = orderedLabels.map(l => initialCentroidsC[l].slice());
+    const Nc = featureVectors.length;
+    const Kc = orderedLabels.length;
+    const assignmentsC = new Array(Nc).fill(-1);
+    for (let iter = 0; iter < 100; iter++) {
+      let changed = false;
+      for (let i = 0; i < Nc; i++) {
+        let best = 0, bestD = sqDist(featureVectors[i], centroidsC[0]);
+        for (let c = 1; c < Kc; c++) {
+          const d = sqDist(featureVectors[i], centroidsC[c]);
+          if (d < bestD) { bestD = d; best = c; }
+        }
+        if (assignmentsC[i] !== best) { assignmentsC[i] = best; changed = true; }
+      }
+      if (!changed && iter > 0) break;
+      for (let c = 0; c < Kc; c++) {
+        const sum = new Array(featureVectors[0].length).fill(0);
+        let count = 0;
+        for (let i = 0; i < Nc; i++) {
+          if (assignmentsC[i] !== c) continue;
+          for (let j = 0; j < sum.length; j++) sum[j] += featureVectors[i][j];
+          count++;
+        }
+        if (count === 0) continue;
+        for (let j = 0; j < sum.length; j++) sum[j] /= count;
+        centroidsC[c] = sum;
+      }
+    }
+
+    // ---------- Build output for a method ----------
+    const buildMethod = (name, description, assignments) => {
+      const groups = {};
+      for (const label of LABELS) groups[label] = [];
+      entries.forEach((e, i) => groups[assignments[i]].push(e));
+      const clusters = LABELS.map(label => {
+        const members = sortMembers(groups[label]);
+        const centroid = new Array(D).fill(0);
+        if (members.length > 0) {
+          for (const m of members) for (let j = 0; j < D; j++) centroid[j] += m.bin100[j];
+          for (let j = 0; j < D; j++) centroid[j] /= members.length;
+        }
+        return {
+          label,
+          description: LABEL_DESCRIPTIONS[label],
+          count: members.length,
+          centroid,
+          members
+        };
+      });
+      return { name, description, clusters };
+    };
+
+    const assignmentsA = entries.map(assignA);
+    const assignmentsB = entries.map(assignB);
+    const assignmentsC_labels = assignmentsC.map(i => orderedLabels[i]);
+
+    const methods = [
+      buildMethod(
+        'Method 1 — Priority-ordered rules',
+        'A decision list evaluated top to bottom. Each name takes the first rule it matches: only-recent → Shooting star; early + recent with a mid-century gap → Vintage revival; ≥10 of 13 decades in the top 100 → Classic; ≥3 crossings of the top-50 boundary → Pendulum; everything else → Modern classic.',
+        assignmentsA
+      ),
+      buildMethod(
+        'Method 2 — Nearest prototype (ternary decades)',
+        'Each decade is encoded as 0 (outside top 100), 1 (51–100) or 2 (top 50). Each category has a hand-crafted prototype vector of this shape, and every name is assigned to the prototype it is closest to by Euclidean distance.',
+        assignmentsB
+      ),
+      buildMethod(
+        'Method 3 — Feature-space k-means (prototype-seeded)',
+        'Six summary features per name (share in top 100, share in top 50, first/last top-100 decade, longest gap, number of top-50 crossings). K-means is run with k=5 using labelled prototype centroids as the initial seeds, so each converged cluster keeps its intended label.',
+        assignmentsC_labels
+      )
+    ];
+
+    console.log(`Labelled clustering computed over ${entries.length} names across ${methods.length} methods`);
+    return { decades, labels: LABELS, descriptions: LABEL_DESCRIPTIONS, methods, total: entries.length };
+  });
+
   // Generate search index after build
   eleventyConfig.on('eleventy.after', async () => {
     const boysPath = path.join(__dirname, 'data', `boys${dataSuffix}`);
