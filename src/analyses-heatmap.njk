@@ -1,0 +1,116 @@
+---
+permalink: /analyses/heatmap/
+---
+
+{% extends "base.njk" %}
+
+{% block title %}Historic Heatmap - Analyses - {{ siteConfig.title }}{% endblock %}
+{% block description %}GitHub-style heatmap showing the historic decade rankings for the current top 100 boys' and girls' names{% endblock %}
+
+{% set decades = ['1904', '1914', '1924', '1934', '1944', '1954', '1964', '1974', '1984', '1994', '2004', '2014', '2024'] %}
+
+{% macro heatmapRow(nameData, decades) %}
+  <tr class="hover:bg-gray-50">
+    <td class="sticky left-0 bg-white hover:bg-gray-50 px-3 py-1 text-sm font-medium text-gray-800 whitespace-nowrap border-r border-gray-200">
+      <a href="/names/{{ 'boy' if nameData.gender == 'Boy' else 'girl' }}/{{ nameData.uniqueSlug }}/" class="text-blue-600 hover:underline">{{ nameData.name }}</a>
+    </td>
+    {% for i in range(0, decades.length) %}
+      {% set raw = nameData.rankHistoric[i] if nameData.rankHistoric else 'x' %}
+      {% set rankNum = raw | int %}
+      {% if raw == 'x' or rankNum == 0 %}
+        {% set cellClass = 'bg-white' %}
+        {% set cellTitle = nameData.name + ' — ' + decades[i] + ': unranked' %}
+      {% elif rankNum <= 30 %}
+        {% set cellClass = 'bg-green-600' %}
+        {% set cellTitle = nameData.name + ' — ' + decades[i] + ': #' + rankNum|string %}
+      {% elif rankNum <= 100 %}
+        {% set cellClass = 'bg-green-200' %}
+        {% set cellTitle = nameData.name + ' — ' + decades[i] + ': #' + rankNum|string %}
+      {% else %}
+        {% set cellClass = 'bg-white' %}
+        {% set cellTitle = nameData.name + ' — ' + decades[i] + ': #' + rankNum|string %}
+      {% endif %}
+      <td class="heatmap-cell {{ cellClass }}" title="{{ cellTitle }}"></td>
+    {% endfor %}
+  </tr>
+{% endmacro %}
+
+{% block content %}
+<article class="bg-white rounded-lg p-6 sm:p-8 shadow-sm">
+  <div class="mb-6">
+    <div class="mb-2">
+      <a href="/analyses/" class="text-green-600 hover:text-green-700 text-sm">&larr; All Analyses</a>
+    </div>
+    <h1 class="text-4xl font-bold mb-2 text-gray-900">Historic Heatmap</h1>
+    <p class="text-lg text-gray-600">
+      Each row is one of today's top 100 names (2024). Each column is a decade from 1904 to 2024. Cells show how that name ranked in each decade.
+    </p>
+  </div>
+
+  <div class="mb-8 flex flex-wrap gap-4 items-center text-sm text-gray-700">
+    <span class="font-semibold">Legend:</span>
+    <span class="inline-flex items-center gap-2"><span class="inline-block w-4 h-4 bg-green-600 border border-gray-200"></span>Top 30</span>
+    <span class="inline-flex items-center gap-2"><span class="inline-block w-4 h-4 bg-green-200 border border-gray-200"></span>31–100</span>
+    <span class="inline-flex items-center gap-2"><span class="inline-block w-4 h-4 bg-white border border-gray-200"></span>Outside top 100</span>
+  </div>
+
+  {% set boysTop100 = allNames | filterByGender('Boy') | sort(false, false, 'rank') %}
+  {% set girlsTop100 = allNames | filterByGender('Girl') | sort(false, false, 'rank') %}
+
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold mb-4 text-blue-900 border-b-2 border-blue-500 pb-2">Boys — Top 100 (2024)</h2>
+    <div class="overflow-x-auto">
+      <table class="border-collapse">
+        <thead>
+          <tr>
+            <th class="sticky left-0 bg-white px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-b border-gray-200">Name</th>
+            {% for decade in decades %}
+            <th class="px-2 py-2 text-xs font-semibold text-gray-700 border-b border-gray-200">{{ decade }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for name in boysTop100 %}
+            {% if name.rank and name.rank <= 100 %}
+              {{ heatmapRow(name, decades) }}
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold mb-4 text-pink-900 border-b-2 border-pink-500 pb-2">Girls — Top 100 (2024)</h2>
+    <div class="overflow-x-auto">
+      <table class="border-collapse">
+        <thead>
+          <tr>
+            <th class="sticky left-0 bg-white px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-b border-gray-200">Name</th>
+            {% for decade in decades %}
+            <th class="px-2 py-2 text-xs font-semibold text-gray-700 border-b border-gray-200">{{ decade }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for name in girlsTop100 %}
+            {% if name.rank and name.rank <= 100 %}
+              {{ heatmapRow(name, decades) }}
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</article>
+
+<style>
+  .heatmap-cell {
+    width: 24px;
+    min-width: 24px;
+    height: 20px;
+    padding: 0;
+    border: 1px solid #e5e7eb;
+  }
+</style>
+{% endblock %}
