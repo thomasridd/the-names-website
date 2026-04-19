@@ -5,7 +5,7 @@ permalink: /analyses/clusters/
 {% extends "base.njk" %}
 
 {% block title %}Historic Clusters - Analyses - {{ siteConfig.title }}{% endblock %}
-{% block description %}K-means clustering of names based on binary vectors of historic top-100 presence across 13 decades{% endblock %}
+{% block description %}K-means clustering of 2024's top 100 boys' and girls' names based on binary vectors of historic top-100 presence across 13 decades{% endblock %}
 
 {% block content %}
 <article class="bg-white rounded-lg p-6 sm:p-8 shadow-sm">
@@ -15,10 +15,10 @@ permalink: /analyses/clusters/
     </div>
     <h1 class="text-4xl font-bold mb-2 text-gray-900">Historic Clusters</h1>
     <p class="text-lg text-gray-600 max-w-3xl">
-      Every name with at least one historic top-100 decade is converted into a 13-dimensional binary vector (1 if top 100, 0 otherwise), then grouped into 4 clusters using k-means. Below each cluster shows its centroid (the "average" pattern) and the names assigned to it.
+      Each of 2024's top 100 boys' and girls' names is converted into a 13-dimensional binary vector (1 if that name was in the top 100 in that decade, 0 otherwise), then grouped into 4 clusters using k-means. Below each cluster shows its centroid (the "average" pattern) and the names assigned to it.
     </p>
     <p class="text-sm text-gray-500 mt-2">
-      Clustered across {{ historicClusters.total | formatNumber }} names, spanning decades {{ historicClusters.decades[0] }}–{{ historicClusters.decades[historicClusters.decades.length - 1] }}.
+      Clustered across {{ historicClusters.total | formatNumber }} names (2024 top 100 boys + girls), spanning decades {{ historicClusters.decades[0] }}–{{ historicClusters.decades[historicClusters.decades.length - 1] }}.
     </p>
   </div>
 

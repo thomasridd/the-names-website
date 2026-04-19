@@ -308,12 +308,12 @@ module.exports = function(eleventyConfig) {
       if (!fs.existsSync(filePath)) return;
       const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
       for (const n of data) {
+        if (typeof n.rank !== 'number' || n.rank < 1 || n.rank > 100) continue;
         if (!Array.isArray(n.rankHistoric) || n.rankHistoric.length !== D) continue;
         const vec = n.rankHistoric.map(v => {
           const r = parseInt(v, 10);
           return (!isNaN(r) && r >= 1 && r <= 100) ? 1 : 0;
         });
-        if (vec.reduce((a, b) => a + b, 0) === 0) continue;
         entries.push({
           name: n.name,
           gender,
