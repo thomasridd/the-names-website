@@ -58,13 +58,33 @@ function classify(nameObj) {
   return 'Midnight';
 }
 
-function generateClassification(names) {
-  const classes = { Surface: [], Twilight: [], Midnight: [], 'The Abyss': [] };
-  names.forEach(nameObj => {
-    classes[classify(nameObj)].push(nameObj.name);
+function sumBirths(names) {
+  let total = 0;
+  names.forEach(n => {
+    (n.countFrom1996 || []).forEach(v => {
+      const c = parseNum(v);
+      if (c !== null) total += c;
+    });
   });
-  Object.keys(classes).forEach(k => classes[k].sort());
-  return classes;
+  return total;
+}
+
+function generateClassification(names) {
+  const classNames = { Surface: [], Twilight: [], Midnight: [], 'The Abyss': [] };
+  const classObjs  = { Surface: [], Twilight: [], Midnight: [], 'The Abyss': [] };
+  names.forEach(nameObj => {
+    const cls = classify(nameObj);
+    classNames[cls].push(nameObj.name);
+    classObjs[cls].push(nameObj);
+  });
+  Object.keys(classNames).forEach(k => {
+    // sort names alphabetically
+    const paired = classNames[k].map((name, i) => ({ name, obj: classObjs[k][i] }));
+    paired.sort((a, b) => a.name.localeCompare(b.name));
+    classNames[k] = paired.map(p => p.name);
+    classObjs[k]  = paired.map(p => p.obj);
+  });
+  return { classNames, classObjs };
 }
 
 fs.mkdirSync(outputDir, { recursive: true });
@@ -72,14 +92,26 @@ fs.mkdirSync(outputDir, { recursive: true });
 const boysData = loadData('boys');
 const girlsData = loadData('girls');
 
-const boysClasses = generateClassification(boysData);
-const girlsClasses = generateClassification(girlsData);
+const boys = generateClassification(boysData);
+const girls = generateClassification(girlsData);
+
+// Name lists (existing format)
+const boysClasses = Object.fromEntries(Object.keys(boys.classNames).map(k => [k, boys.classNames[k]]));
+const girlsClasses = Object.fromEntries(Object.keys(girls.classNames).map(k => [k, girls.classNames[k]]));
+
+// Metadata: total births per class across both sexes
+const metadata = {};
+Object.keys(boys.classNames).forEach(cls => {
+  metadata[cls] = {
+    totalBirths: sumBirths(boys.classObjs[cls]) + sumBirths(girls.classObjs[cls])
+  };
+});
 
 fs.writeFileSync(path.join(outputDir, 'boys.json'), JSON.stringify(boysClasses, null, 2));
 fs.writeFileSync(path.join(outputDir, 'girls.json'), JSON.stringify(girlsClasses, null, 2));
+fs.writeFileSync(path.join(outputDir, 'metadata.json'), JSON.stringify(metadata, null, 2));
 
 console.log('\nGenerated depth experiment data:');
 ['Surface', 'Twilight', 'The Abyss', 'Midnight'].forEach(cls => {
-  console.log(`  Boys  - ${cls}: ${boysClasses[cls].length} names`);
-  console.log(`  Girls - ${cls}: ${girlsClasses[cls].length} names`);
+  console.log(`  ${cls}: ${(boys.classNames[cls].length + girls.classNames[cls].length)} names, ${metadata[cls].totalBirths.toLocaleString()} total births`);
 });

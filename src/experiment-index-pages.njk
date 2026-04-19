@@ -27,24 +27,15 @@ permalink: /experiments/{{ experiment.slug }}/
         <tr class="border-b-2 border-gray-200">
           <th class="py-3 px-4 font-semibold text-gray-700">Class</th>
           <th class="py-3 px-4 font-semibold text-gray-700 text-right">Names</th>
-          <th class="py-3 px-4 font-semibold text-gray-700">Examples</th>
+          <th class="py-3 px-4 font-semibold text-gray-700 text-right">Total Births (1996–2024)</th>
         </tr>
       </thead>
       <tbody>
         {% for class in experiment.classes %}
         <tr class="border-b border-gray-100 hover:bg-purple-50 transition-colors">
-          <td class="py-3 px-4">
-            <a href="/experiments/{{ experiment.slug }}/{{ class.slug }}/"
-               class="font-medium text-purple-700 hover:text-purple-900">
-              {{ class.name }}
-            </a>
-          </td>
-          <td class="py-3 px-4 text-right text-gray-600">{{ class.count }}</td>
-          <td class="py-3 px-4 text-gray-600 text-sm">
-            {% for example in class.examples %}
-              <span>{{ example.name }}</span>{% if not loop.last %}, {% endif %}
-            {% endfor %}
-          </td>
+          <td class="py-3 px-4 font-medium text-gray-800">{{ class.name }}</td>
+          <td class="py-3 px-4 text-right text-gray-600">{{ class.count | formatNumber }}</td>
+          <td class="py-3 px-4 text-right text-gray-600">{{ class.totalBirths | formatNumber }}</td>
         </tr>
         {% endfor %}
       </tbody>
