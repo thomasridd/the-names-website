@@ -295,6 +295,152 @@ module.exports = function(eleventyConfig) {
 
   eleventyConfig.addGlobalData('experiments', loadExperimentsData);
 
+  // Cluster analysis: binary vectors of historic top-100 presence, k-means k=4
+  eleventyConfig.addGlobalData('historicClusters', () => {
+    const boysPath = path.join(__dirname, 'data', `boys${dataSuffix}`);
+    const girlsPath = path.join(__dirname, 'data', `girls${dataSuffix}`);
+
+    const decades = ['1904', '1914', '1924', '1934', '1944', '1954', '1964', '1974', '1984', '1994', '2004', '2014', '2024'];
+    const D = decades.length;
+
+    const entries = [];
+    const addEntries = (filePath, gender) => {
+      if (!fs.existsSync(filePath)) return;
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      for (const n of data) {
+        if (!Array.isArray(n.rankHistoric) || n.rankHistoric.length !== D) continue;
+        const vec = n.rankHistoric.map(v => {
+          const r = parseInt(v, 10);
+          return (!isNaN(r) && r >= 1 && r <= 100) ? 1 : 0;
+        });
+        if (vec.reduce((a, b) => a + b, 0) === 0) continue;
+        entries.push({
+          name: n.name,
+          gender,
+          uniqueSlug: n.uniqueSlug,
+          rank: n.rank,
+          vector: vec,
+          rankHistoric: n.rankHistoric
+        });
+      }
+    };
+    addEntries(boysPath, 'Boy');
+    addEntries(girlsPath, 'Girl');
+
+    if (entries.length === 0) {
+      console.log('No entries for historic clustering');
+      return { clusters: [], decades, total: 0 };
+    }
+
+    // Seeded RNG for deterministic k-means++ initialisation
+    let rngState = 42;
+    const rng = () => {
+      rngState = (rngState * 1664525 + 1013904223) >>> 0;
+      return rngState / 4294967296;
+    };
+
+    const sqDist = (a, b) => {
+      let s = 0;
+      for (let i = 0; i < a.length; i++) { const d = a[i] - b[i]; s += d * d; }
+      return s;
+    };
+
+    const K = 4;
+    const vectors = entries.map(e => e.vector);
+    const N = vectors.length;
+
+    // k-means++ init
+    const centroids = [];
+    centroids.push(vectors[Math.floor(rng() * N)].slice());
+    while (centroids.length < K) {
+      const dists = vectors.map(v => Math.min(...centroids.map(c => sqDist(v, c))));
+      const total = dists.reduce((a, b) => a + b, 0);
+      if (total === 0) {
+        centroids.push(vectors[Math.floor(rng() * N)].slice());
+        continue;
+      }
+      let r = rng() * total;
+      let idx = 0;
+      for (let i = 0; i < N; i++) { r -= dists[i]; if (r <= 0) { idx = i; break; } }
+      centroids.push(vectors[idx].slice());
+    }
+
+    // Lloyd's algorithm
+    const assignments = new Array(N).fill(-1);
+    const maxIter = 100;
+    for (let iter = 0; iter < maxIter; iter++) {
+      let changed = false;
+      for (let i = 0; i < N; i++) {
+        let best = 0, bestD = sqDist(vectors[i], centroids[0]);
+        for (let c = 1; c < K; c++) {
+          const d = sqDist(vectors[i], centroids[c]);
+          if (d < bestD) { bestD = d; best = c; }
+        }
+        if (assignments[i] !== best) { assignments[i] = best; changed = true; }
+      }
+      if (!changed && iter > 0) break;
+
+      for (let c = 0; c < K; c++) {
+        const sum = new Array(D).fill(0);
+        let count = 0;
+        for (let i = 0; i < N; i++) {
+          if (assignments[i] !== c) continue;
+          for (let j = 0; j < D; j++) sum[j] += vectors[i][j];
+          count++;
+        }
+        if (count === 0) continue;
+        for (let j = 0; j < D; j++) sum[j] /= count;
+        centroids[c] = sum;
+      }
+    }
+
+    // Build clusters with sorted names, and a human-readable label from centroid
+    const clusters = centroids.map((centroid, c) => {
+      const members = [];
+      for (let i = 0; i < N; i++) if (assignments[i] === c) members.push(entries[i]);
+      members.sort((a, b) => {
+        const ra = (a.rank != null) ? a.rank : 1e9;
+        const rb = (b.rank != null) ? b.rank : 1e9;
+        if (ra !== rb) return ra - rb;
+        return a.name.localeCompare(b.name);
+      });
+
+      // Label: range of decades where centroid >= 0.5
+      const onIdx = centroid.map((v, i) => v >= 0.5 ? i : -1).filter(i => i >= 0);
+      let label;
+      if (onIdx.length === 0) {
+        const peakIdx = centroid.indexOf(Math.max(...centroid));
+        label = `Peak ${decades[peakIdx]}s`;
+      } else if (onIdx.length === D) {
+        label = `Every decade (${decades[0]}–${decades[D - 1]})`;
+      } else {
+        label = `${decades[onIdx[0]]}–${decades[onIdx[onIdx.length - 1]]}`;
+      }
+
+      return {
+        index: c,
+        label,
+        centroid,
+        count: members.length,
+        members
+      };
+    });
+
+    // Order clusters by centroid "centre of mass" (earliest average decade first)
+    clusters.sort((a, b) => {
+      const com = v => {
+        let num = 0, den = 0;
+        for (let i = 0; i < v.length; i++) { num += i * v[i]; den += v[i]; }
+        return den > 0 ? num / den : Infinity;
+      };
+      return com(a.centroid) - com(b.centroid);
+    });
+    clusters.forEach((cl, i) => cl.index = i);
+
+    console.log(`Generated ${clusters.length} historic clusters over ${N} names`);
+    return { clusters, decades, total: N };
+  });
+
   // Generate search index after build
   eleventyConfig.on('eleventy.after', async () => {
     const boysPath = path.join(__dirname, 'data', `boys${dataSuffix}`);

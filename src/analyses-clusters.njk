@@ -1,0 +1,117 @@
+---
+permalink: /analyses/clusters/
+---
+
+{% extends "base.njk" %}
+
+{% block title %}Historic Clusters - Analyses - {{ siteConfig.title }}{% endblock %}
+{% block description %}K-means clustering of names based on binary vectors of historic top-100 presence across 13 decades{% endblock %}
+
+{% block content %}
+<article class="bg-white rounded-lg p-6 sm:p-8 shadow-sm">
+  <div class="mb-6">
+    <div class="mb-2">
+      <a href="/analyses/" class="text-green-600 hover:text-green-700 text-sm">&larr; All Analyses</a>
+    </div>
+    <h1 class="text-4xl font-bold mb-2 text-gray-900">Historic Clusters</h1>
+    <p class="text-lg text-gray-600 max-w-3xl">
+      Every name with at least one historic top-100 decade is converted into a 13-dimensional binary vector (1 if top 100, 0 otherwise), then grouped into 4 clusters using k-means. Below each cluster shows its centroid (the "average" pattern) and the names assigned to it.
+    </p>
+    <p class="text-sm text-gray-500 mt-2">
+      Clustered across {{ historicClusters.total | formatNumber }} names, spanning decades {{ historicClusters.decades[0] }}–{{ historicClusters.decades[historicClusters.decades.length - 1] }}.
+    </p>
+  </div>
+
+  <div class="mb-8 flex flex-wrap gap-4 items-center text-sm text-gray-700">
+    <span class="font-semibold">Legend:</span>
+    <span class="inline-flex items-center gap-2"><span class="inline-block w-4 h-4 bg-green-600 border border-gray-200"></span>Top 100 in that decade</span>
+    <span class="inline-flex items-center gap-2"><span class="inline-block w-4 h-4 bg-white border border-gray-200"></span>Outside top 100 / unranked</span>
+    <span class="inline-flex items-center gap-2"><span class="inline-block w-4 h-4 bg-green-300 border border-gray-200"></span>Centroid weight (stronger shade = higher share)</span>
+  </div>
+
+  <div class="space-y-10">
+    {% for cluster in historicClusters.clusters %}
+    <section class="border border-gray-200 rounded-lg overflow-hidden">
+      <header class="bg-gray-50 border-b border-gray-200 px-4 py-3 flex flex-wrap items-baseline justify-between gap-2">
+        <h2 class="text-xl font-bold text-gray-900">
+          Cluster {{ cluster.index + 1 }}
+          <span class="ml-2 text-sm font-normal text-gray-600">({{ cluster.label }})</span>
+        </h2>
+        <span class="text-sm text-gray-600">{{ cluster.count | formatNumber }} names</span>
+      </header>
+
+      <div class="px-4 py-3 border-b border-gray-200 bg-white">
+        <div class="text-xs uppercase tracking-wider font-semibold text-gray-500 mb-2">Centroid</div>
+        <table class="border-collapse">
+          <thead>
+            <tr>
+              {% for decade in historicClusters.decades %}
+              <th class="px-1 py-1 text-[10px] font-semibold text-gray-600">{{ decade }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              {% for value in cluster.centroid %}
+              <td class="centroid-cell" style="background: rgba(22, 163, 74, {{ value }});" title="{{ historicClusters.decades[loop.index0] }}: {{ (value * 100) | round }}%"></td>
+              {% endfor %}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="px-4 py-3 bg-white">
+        <div class="text-xs uppercase tracking-wider font-semibold text-gray-500 mb-2">Members</div>
+        {% if cluster.count == 0 %}
+        <p class="text-sm text-gray-500 italic">No names assigned to this cluster.</p>
+        {% else %}
+        <div class="overflow-x-auto">
+          <table class="border-collapse w-full">
+            <thead>
+              <tr>
+                <th class="sticky left-0 bg-white text-left px-3 py-1 text-[11px] font-semibold text-gray-600 uppercase tracking-wider border-b border-r border-gray-200">Name</th>
+                {% for decade in historicClusters.decades %}
+                <th class="px-1 py-1 text-[10px] font-semibold text-gray-600 border-b border-gray-200">{{ decade }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for member in cluster.members %}
+              <tr class="hover:bg-gray-50">
+                <td class="sticky left-0 bg-white hover:bg-gray-50 px-3 py-1 text-sm whitespace-nowrap border-r border-gray-200">
+                  <a href="/names/{{ 'boy' if member.gender == 'Boy' else 'girl' }}/{{ member.uniqueSlug }}/" class="text-blue-600 hover:underline font-medium">{{ member.name }}</a>
+                  <span class="ml-1 text-[10px] text-gray-400">{{ 'M' if member.gender == 'Boy' else 'F' }}</span>
+                </td>
+                {% for bit in member.vector %}
+                <td class="heatmap-cell {{ 'bg-green-600' if bit == 1 else 'bg-white' }}"
+                    title="{{ member.name }} — {{ historicClusters.decades[loop.index0] }}: {{ 'top 100' if bit == 1 else 'outside top 100' }}"></td>
+                {% endfor %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+    {% endfor %}
+  </div>
+</article>
+
+<style>
+  .heatmap-cell {
+    width: 20px;
+    min-width: 20px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid #e5e7eb;
+  }
+  .centroid-cell {
+    width: 28px;
+    min-width: 28px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid #e5e7eb;
+  }
+</style>
+{% endblock %}
