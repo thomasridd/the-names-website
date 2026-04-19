@@ -450,13 +450,12 @@ module.exports = function(eleventyConfig) {
     const decades = ['1904', '1914', '1924', '1934', '1944', '1954', '1964', '1974', '1984', '1994', '2004', '2014', '2024'];
     const D = decades.length;
 
-    const LABELS = ['Classics', 'Modern classics', 'Shooting stars', 'Vintage revival', 'Pendulums'];
+    const LABELS = ['Classics', 'Modern classics', 'Shooting stars', 'Vintage revival'];
     const LABEL_DESCRIPTIONS = {
       'Classics': 'Consistently popular across the century.',
       'Modern classics': 'Consistently popular in recent decades.',
       'Shooting stars': 'New arrivals to the top 100.',
-      'Vintage revival': 'Popular early, disappeared, back again.',
-      'Pendulums': 'Swinging in and out of the top 50.'
+      'Vintage revival': 'Popular early, disappeared, back again.'
     };
 
     // ---------- Load and featurise entries ----------
@@ -541,8 +540,6 @@ module.exports = function(eleventyConfig) {
       if (earlyHit && !midHit && recentHit) return 'Vintage revival';
       // Classic: top 100 in ≥10 of 13 decades
       if (f.sumTop100 >= 10) return 'Classics';
-      // Pendulum: ≥3 top-50 crossings
-      if (f.top50Crossings >= 3) return 'Pendulums';
       // Fallback: modern classic
       return 'Modern classics';
     };
@@ -552,8 +549,7 @@ module.exports = function(eleventyConfig) {
       'Classics':         [2,2,2,2,2,2,2,2,2,2,2,2,2],
       'Modern classics':  [0,0,0,0,0,0,0,0,1,1,2,2,2],
       'Shooting stars':   [0,0,0,0,0,0,0,0,0,0,0,0,2],
-      'Vintage revival':  [2,2,2,1,0,0,0,0,0,0,1,2,2],
-      'Pendulums':        [2,0,2,0,2,0,2,0,2,0,2,0,2]
+      'Vintage revival':  [2,2,2,1,0,0,0,0,0,0,1,2,2]
     };
     const sqDist = (a, b) => {
       let s = 0; for (let i = 0; i < a.length; i++) { const d = a[i] - b[i]; s += d * d; } return s;
@@ -568,7 +564,7 @@ module.exports = function(eleventyConfig) {
     };
 
     // ---------- Method C: k-means in engineered feature space, prototype-seeded ----------
-    // Feature vector per name: [sumTop100/13, sumTop50/13, firstTop100/12 (or 1), lastTop100/12 (or 0), longestGap/13, top50Crossings/12]
+    // Feature vector per name: [sumTop100/13, sumTop50/13, firstTop100/12 (or 1), lastTop100/12 (or 0), longestGap/13]
     const toFeature = (e) => {
       const f = e.features;
       return [
@@ -576,17 +572,15 @@ module.exports = function(eleventyConfig) {
         f.sumTop50 / 13,
         (f.firstTop100 === -1) ? 1 : f.firstTop100 / 12,
         (f.lastTop100 === -1) ? 0 : f.lastTop100 / 12,
-        f.longestGap / 13,
-        f.top50Crossings / 12
+        f.longestGap / 13
       ];
     };
     const featureVectors = entries.map(toFeature);
     const initialCentroidsC = {
-      'Classics':         [1.00, 0.70, 0.00, 1.00, 0.00, 0.10],
-      'Modern classics':  [0.40, 0.30, 0.60, 1.00, 0.00, 0.10],
-      'Shooting stars':   [0.10, 0.00, 1.00, 1.00, 0.00, 0.00],
-      'Vintage revival':  [0.30, 0.15, 0.00, 1.00, 0.60, 0.20],
-      'Pendulums':        [0.50, 0.30, 0.10, 1.00, 0.25, 0.60]
+      'Classics':         [1.00, 0.70, 0.00, 1.00, 0.00],
+      'Modern classics':  [0.40, 0.30, 0.60, 1.00, 0.00],
+      'Shooting stars':   [0.10, 0.00, 1.00, 1.00, 0.00],
+      'Vintage revival':  [0.30, 0.15, 0.00, 1.00, 0.60]
     };
     const orderedLabels = LABELS;
     const centroidsC = orderedLabels.map(l => initialCentroidsC[l].slice());
@@ -648,7 +642,7 @@ module.exports = function(eleventyConfig) {
     const methods = [
       buildMethod(
         'Method 1 — Priority-ordered rules',
-        'A decision list evaluated top to bottom. Each name takes the first rule it matches: only-recent → Shooting star; early + recent with a mid-century gap → Vintage revival; ≥10 of 13 decades in the top 100 → Classic; ≥3 crossings of the top-50 boundary → Pendulum; everything else → Modern classic.',
+        'A decision list evaluated top to bottom. Each name takes the first rule it matches: only-recent → Shooting star; early + recent with a mid-century gap → Vintage revival; ≥10 of 13 decades in the top 100 → Classic; everything else → Modern classic.',
         assignmentsA
       ),
       buildMethod(
@@ -658,7 +652,7 @@ module.exports = function(eleventyConfig) {
       ),
       buildMethod(
         'Method 3 — Feature-space k-means (prototype-seeded)',
-        'Six summary features per name (share in top 100, share in top 50, first/last top-100 decade, longest gap, number of top-50 crossings). K-means is run with k=5 using labelled prototype centroids as the initial seeds, so each converged cluster keeps its intended label.',
+        'Five summary features per name (share in top 100, share in top 50, first top-100 decade, last top-100 decade, longest gap between top-100 decades). K-means is run with k=4 using labelled prototype centroids as the initial seeds, so each converged cluster keeps its intended label.',
         assignmentsC_labels
       )
     ];
