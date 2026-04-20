@@ -128,12 +128,6 @@ permalink: /analyses/heatmap/
 
     const wrapper = host.append('div').attr('class', 'heatmap-scroll');
     const tooltip = host.append('div').attr('class', 'heatmap-tooltip').style('opacity', 0);
-    let hostRect = host.node().getBoundingClientRect();
-    const updateHostRect = () => {
-      hostRect = host.node().getBoundingClientRect();
-    };
-    window.addEventListener('resize', updateHostRect);
-    wrapper.on('scroll', updateHostRect);
 
     const svg = wrapper.append('svg')
       .attr('width', svgWidth)
@@ -179,13 +173,12 @@ permalink: /analyses/heatmap/
         .attr('stroke', '#d1d5db')
         .attr('stroke-width', 0.4)
         .on('mousemove', function(event, d) {
-          const tooltipX = event.clientX - hostRect.left + 16;
-          const tooltipY = event.clientY - hostRect.top + 16;
+          const [pointerX, pointerY] = d3.pointer(event, host.node());
           tooltip
             .style('opacity', 1)
-            .html(`<strong>${row.name}</strong> · ${d.decade}: ${rankLabel(d.rank)}`)
-            .style('left', `${tooltipX}px`)
-            .style('top', `${tooltipY}px`);
+            .text(`${row.name} · ${d.decade}: ${rankLabel(d.rank)}`)
+            .style('left', `${pointerX + 16}px`)
+            .style('top', `${pointerY + 16}px`);
         })
         .on('mouseleave', function() {
           tooltip.style('opacity', 0);
