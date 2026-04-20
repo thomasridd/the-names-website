@@ -382,6 +382,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 
     // Set up dimensions
     const container = document.getElementById('historic-chart');
+    // Smaller left margin because decade axis labels are intentionally removed.
     const margin = {top: 20, right: 40, bottom: 60, left: 30};
 
     function drawChart() {
@@ -450,10 +451,8 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           }
         });
 
-      bars.selectAll('title')
-        .data(d => [d.rank ? `${d.decade}: #${d.rank}` : `${d.decade}: Not in Top 100`])
-        .join('title')
-        .text(d => d);
+      bars.append('title')
+        .text(d => d.rank ? `${d.decade}: #${d.rank}` : `${d.decade}: Not in Top 100`);
 
       // Add rank labels on bars
       svg.selectAll('.label')
