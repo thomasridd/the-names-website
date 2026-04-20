@@ -1,0 +1,40 @@
+---
+permalink: /analyses/
+---
+
+{% extends "base.njk" %}
+
+{% block title %}Analyses - {{ siteConfig.title }}{% endblock %}
+{% block description %}Visual analyses of name trends and popularity patterns{% endblock %}
+
+{% block content %}
+<article class="bg-white rounded-lg p-8 shadow-sm">
+  <h1 class="text-4xl font-bold mb-4 text-gray-900">Analyses</h1>
+  <p class="text-lg text-gray-600 mb-8">
+    Visual explorations of the name datasets. Each analysis offers a different lens on how names have risen, fallen, and endured over time.
+  </p>
+
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <a href="/analyses/heatmap/"
+       class="block p-6 bg-green-50 hover:bg-green-100 rounded-lg border-l-4 border-green-500 transition-colors">
+      <h2 class="font-bold text-green-900 text-xl mb-2">Historic Heatmap</h2>
+      <p class="text-sm text-gray-600">GitHub-style heatmap of the current top 100 boys' and girls' names across the last 13 decades.</p>
+    </a>
+    <a href="/analyses/clusters/"
+       class="block p-6 bg-green-50 hover:bg-green-100 rounded-lg border-l-4 border-green-500 transition-colors">
+      <h2 class="font-bold text-green-900 text-xl mb-2">Historic Clusters</h2>
+      <p class="text-sm text-gray-600">K-means grouping of 2024's top 100 boys' and girls' names into 4 clusters from binary vectors of historic top-100 presence.</p>
+    </a>
+    <a href="/analyses/labelled-clusters/"
+       class="block p-6 bg-green-50 hover:bg-green-100 rounded-lg border-l-4 border-green-500 transition-colors">
+      <h2 class="font-bold text-green-900 text-xl mb-2">Labelled Clusters</h2>
+      <p class="text-sm text-gray-600">Three different methods partition 2024's top 100 names into four named categories: Classics, Modern classics, Shooting stars and Vintage revival.</p>
+    </a>
+    <a href="/analyses/faded-names/"
+       class="block p-6 bg-green-50 hover:bg-green-100 rounded-lg border-l-4 border-green-500 transition-colors">
+      <h2 class="font-bold text-green-900 text-xl mb-2">Faded Names</h2>
+      <p class="text-sm text-gray-600">Heatmaps and three clustering methods for historic top-100 names that are no longer ranked in 2024: Past classics, Lost generation, Past stars, Of a time and Past revival.</p>
+    </a>
+  </div>
+</article>
+{% endblock %}
