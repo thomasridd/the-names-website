@@ -137,6 +137,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
       <div id="modern-chart" class="w-full" style="height: 400px;"></div>
+      <p class="text-xs text-gray-500 mt-3">Hover points to see year and count.</p>
     </div>
   </div>
   {% endif %}
@@ -449,10 +450,12 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           }
         });
 
-      bars.selectAll('title')
-        .data(d => [d])
-        .join('title')
-        .text(d => d.rank ? `${d.decade}: #${d.rank}` : `${d.decade}: Not in Top 100`);
+      bars.each(function(d) {
+        const bar = d3.select(this);
+        bar.select('title').remove();
+        bar.append('title')
+          .text(d.rank ? `${d.decade}: #${d.rank}` : `${d.decade}: Not in Top 100`);
+      });
 
       // Add rank labels on bars
       svg.selectAll('.label')
