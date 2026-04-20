@@ -249,7 +249,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     const maxCount = allCounts.length > 0 ? Math.max(...allCounts) : 0;
 
     const container = document.getElementById('modern-chart');
-    const margin = {top: 20, right: 40, bottom: 60, left: 30};
+    const margin = {top: 20, right: 40, bottom: 60, left: 60};
 
     function drawChart() {
       d3.select('#modern-chart').selectAll('*').remove();
@@ -382,7 +382,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 
     // Set up dimensions
     const container = document.getElementById('historic-chart');
-    const margin = {top: 20, right: 40, bottom: 60, left: 60};
+    const margin = {top: 20, right: 40, bottom: 60, left: 30};
 
     function drawChart() {
       // Clear previous chart
@@ -450,12 +450,10 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           }
         });
 
-      bars.each(function(d) {
-        const bar = d3.select(this);
-        bar.select('title').remove();
-        bar.append('title')
-          .text(d.rank ? `${d.decade}: #${d.rank}` : `${d.decade}: Not in Top 100`);
-      });
+      bars.selectAll('title')
+        .data(d => [d.rank ? `${d.decade}: #${d.rank}` : `${d.decade}: Not in Top 100`])
+        .join('title')
+        .text(d => d);
 
       // Add rank labels on bars
       svg.selectAll('.label')
