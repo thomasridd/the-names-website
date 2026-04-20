@@ -1,0 +1,252 @@
+---
+permalink: /analyses/heatmap/
+---
+
+{% extends "base.njk" %}
+
+{% block title %}Historic Heatmap - Analyses - {{ siteConfig.title }}{% endblock %}
+{% block description %}GitHub-style heatmap showing the historic decade rankings for the current top 100 boys' and girls' names{% endblock %}
+
+{% set decades = ['1904', '1914', '1924', '1934', '1944', '1954', '1964', '1974', '1984', '1994', '2004', '2014', '2024'] %}
+{% set boysTop100 = allNames | filterByGender('Boy') | sort(false, false, 'rank') %}
+{% set girlsTop100 = allNames | filterByGender('Girl') | sort(false, false, 'rank') %}
+
+{% block content %}
+<article class="bg-white rounded-lg p-6 sm:p-8 shadow-sm">
+  <div class="mb-6">
+    <div class="mb-2">
+      <a href="/analyses/" class="text-green-600 hover:text-green-700 text-sm">&larr; All Analyses</a>
+    </div>
+    <h1 class="text-4xl font-bold mb-2 text-gray-900">Historic Heatmap</h1>
+    <p class="text-lg text-gray-600">
+      A GitHub-style activity visualization of the current top 100 names in 2024, mapped across decades from 1904 to 2024.
+    </p>
+  </div>
+
+  <div class="mb-8 flex flex-wrap gap-4 items-center text-sm text-gray-700">
+    <span class="font-semibold">Legend:</span>
+    <div class="inline-flex items-center gap-2">
+      <span class="text-xs text-gray-500">Less</span>
+      <span class="legend-swatch level-0" title="Outside top 100"></span>
+      <span class="legend-swatch level-1" title="#61-100"></span>
+      <span class="legend-swatch level-2" title="#31-60"></span>
+      <span class="legend-swatch level-3" title="#11-30"></span>
+      <span class="legend-swatch level-4" title="#1-10"></span>
+      <span class="text-xs text-gray-500">More</span>
+    </div>
+  </div>
+
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold mb-4 text-blue-900 border-b-2 border-blue-500 pb-2">Boys — Top 100 (2024)</h2>
+    <div id="boys-heatmap" class="heatmap-host" aria-label="Historic heatmap for top 100 boys names"></div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold mb-4 text-pink-900 border-b-2 border-pink-500 pb-2">Girls — Top 100 (2024)</h2>
+    <div id="girls-heatmap" class="heatmap-host" aria-label="Historic heatmap for top 100 girls names"></div>
+  </section>
+</article>
+
+<script>
+  const decades = {{ decades | dump | safe }};
+  const boysTop100 = ({{ boysTop100 | dump | safe }}).filter(n => n.rank && n.rank <= 100);
+  const girlsTop100 = ({{ girlsTop100 | dump | safe }}).filter(n => n.rank && n.rank <= 100);
+
+  const groups = [
+    { id: 'boys-heatmap', slugPrefix: 'boy', names: boysTop100 },
+    { id: 'girls-heatmap', slugPrefix: 'girl', names: girlsTop100 }
+  ];
+
+  const CELL_SIZE = 12;
+  const CELL_GAP = 3;
+  const TOP_OFFSET = 24;
+  const RIGHT_PAD = 8;
+  const BOTTOM_PAD = 12;
+  function getPalette() {
+    const rootStyles = getComputedStyle(document.documentElement);
+    return [
+      rootStyles.getPropertyValue('--heatmap-level-0').trim(),
+      rootStyles.getPropertyValue('--heatmap-level-1').trim(),
+      rootStyles.getPropertyValue('--heatmap-level-2').trim(),
+      rootStyles.getPropertyValue('--heatmap-level-3').trim(),
+      rootStyles.getPropertyValue('--heatmap-level-4').trim()
+    ];
+  }
+
+  function rankToLevel(rank) {
+    if (rank === null || rank === undefined) return 0;
+    const n = Number(rank);
+    if (!Number.isFinite(n) || n <= 0 || n > 100) return 0;
+    if (n <= 10) return 4;
+    if (n <= 30) return 3;
+    if (n <= 60) return 2;
+    return 1;
+  }
+
+  function rankLabel(rank) {
+    if (!Number.isFinite(rank) || rank <= 0 || rank > 100) return 'outside top 100';
+    return `rank ${rank}`;
+  }
+
+  function buildRows(names) {
+    return names.map(name => {
+      const ranks = Array.isArray(name.rankHistoric) ? name.rankHistoric : [];
+      const cells = decades.map((decade, i) => {
+        const raw = ranks[i];
+        const rank = raw === 'x' || raw === null || raw === undefined || raw === '' ? null : Number(raw);
+        return {
+          decade,
+          rank,
+          level: rankToLevel(rank)
+        };
+      });
+
+      return {
+        ...name,
+        cells
+      };
+    });
+  }
+
+  function renderHeatmap(hostId, slugPrefix, names, palette) {
+    const host = d3.select(`#${hostId}`);
+    host.selectAll('*').remove();
+
+    if (!names.length) {
+      host.append('p')
+        .attr('class', 'text-sm text-gray-500 italic')
+        .text('No data available.');
+      return;
+    }
+
+    const rows = buildRows(names);
+    const labelWidth = 140;
+    const chartWidth = decades.length * (CELL_SIZE + CELL_GAP) - CELL_GAP;
+    const chartHeight = rows.length * (CELL_SIZE + CELL_GAP) - CELL_GAP;
+    const svgWidth = labelWidth + chartWidth + RIGHT_PAD;
+    const svgHeight = TOP_OFFSET + chartHeight + BOTTOM_PAD;
+
+    const wrapper = host.append('div').attr('class', 'heatmap-scroll');
+    const tooltip = host.append('div').attr('class', 'heatmap-tooltip').style('opacity', 0);
+
+    const svg = wrapper.append('svg')
+      .attr('width', svgWidth)
+      .attr('height', svgHeight)
+      .attr('role', 'img')
+      .attr('aria-label', 'Historic rank activity heatmap');
+
+    svg.append('g')
+      .attr('transform', `translate(${labelWidth}, 0)`)
+      .selectAll('text')
+      .data(decades)
+      .join('text')
+      .attr('x', (_, i) => i * (CELL_SIZE + CELL_GAP) + CELL_SIZE / 2)
+      .attr('y', 14)
+      .attr('text-anchor', 'middle')
+      .attr('class', 'decade-label')
+      .text(d => d);
+
+    const rowGroup = svg.append('g').attr('transform', `translate(0, ${TOP_OFFSET})`);
+
+    rows.forEach((row, rowIndex) => {
+      const y = rowIndex * (CELL_SIZE + CELL_GAP);
+
+      rowGroup.append('a')
+        .attr('href', `/names/${slugPrefix}/${row.uniqueSlug}/`)
+        .append('text')
+        .attr('x', labelWidth - 8)
+        .attr('y', y + CELL_SIZE / 2)
+        .attr('dominant-baseline', 'middle')
+        .attr('text-anchor', 'end')
+        .attr('class', 'name-label')
+        .text(row.name);
+
+      rowGroup.selectAll(`.cell-${rowIndex}`)
+        .data(row.cells)
+        .join('rect')
+        .attr('x', (_, i) => labelWidth + i * (CELL_SIZE + CELL_GAP))
+        .attr('y', y)
+        .attr('width', CELL_SIZE)
+        .attr('height', CELL_SIZE)
+        .attr('rx', 2)
+        .attr('fill', d => palette[d.level])
+        .attr('stroke', '#d1d5db')
+        .attr('stroke-width', 0.4)
+        .on('mousemove', function(event, d) {
+          const [pointerX, pointerY] = d3.pointer(event, host.node());
+          tooltip
+            .style('opacity', 1)
+            .text(`${row.name} · ${d.decade}: ${rankLabel(d.rank)}`)
+            .style('left', `${pointerX + 16}px`)
+            .style('top', `${pointerY + 16}px`);
+        })
+        .on('mouseleave', function() {
+          tooltip.style('opacity', 0);
+        });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const palette = getPalette();
+    groups.forEach(group => renderHeatmap(group.id, group.slugPrefix, group.names, palette));
+  });
+</script>
+
+<style>
+  :root {
+    --heatmap-level-0: #ebedf0;
+    --heatmap-level-1: #9be9a8;
+    --heatmap-level-2: #40c463;
+    --heatmap-level-3: #30a14e;
+    --heatmap-level-4: #216e39;
+  }
+  .heatmap-host {
+    position: relative;
+  }
+  .heatmap-scroll {
+    overflow-x: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    background: #ffffff;
+  }
+  .heatmap-tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: #111827;
+    color: #f9fafb;
+    font-size: 12px;
+    line-height: 1.3;
+    padding: 0.375rem 0.5rem;
+    border-radius: 0.375rem;
+    white-space: nowrap;
+    z-index: 20;
+    transition: opacity 120ms ease;
+  }
+  .decade-label {
+    font-size: 10px;
+    fill: #6b7280;
+    font-weight: 600;
+  }
+  .name-label {
+    font-size: 11px;
+    fill: #2563eb;
+    font-weight: 500;
+  }
+  .name-label:hover {
+    text-decoration: underline;
+  }
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+    border-radius: 2px;
+    border: 1px solid rgba(27, 31, 35, 0.12);
+  }
+  .legend-swatch.level-0 { background: var(--heatmap-level-0); }
+  .legend-swatch.level-1 { background: var(--heatmap-level-1); }
+  .legend-swatch.level-2 { background: var(--heatmap-level-2); }
+  .legend-swatch.level-3 { background: var(--heatmap-level-3); }
+  .legend-swatch.level-4 { background: var(--heatmap-level-4); }
+</style>
+{% endblock %}
