@@ -429,8 +429,13 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       // Add bars
       const bars = svg.selectAll('.bar')
         .data(decades)
-        .join('rect')
-        .attr('class', 'bar')
+        .join(
+          enter => enter.append('rect')
+            .attr('class', 'bar')
+            .call(selection => selection.append('title')),
+          update => update,
+          exit => exit.remove()
+        )
         .attr('x', 0)
         .attr('y', d => yScale(d.decade))
         .attr('width', d => d.rank ? xScale(d.rank) : 0)
@@ -451,7 +456,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           }
         });
 
-      bars.append('title')
+      bars.select('title')
         .text(d => d.rank ? `${d.decade}: #${d.rank}` : `${d.decade}: Not in Top 100`);
 
       // Add rank labels on bars
