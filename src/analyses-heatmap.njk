@@ -85,7 +85,7 @@ permalink: /analyses/heatmap/
 
   function rankLabel(rank) {
     if (!Number.isFinite(rank) || rank <= 0 || rank > 100) return 'outside top 100';
-    return `#${rank}`;
+    return `rank ${rank}`;
   }
 
   function buildRows(names) {
@@ -108,9 +108,8 @@ permalink: /analyses/heatmap/
     });
   }
 
-  function renderHeatmap(hostId, slugPrefix, names) {
+  function renderHeatmap(hostId, slugPrefix, names, palette) {
     const host = d3.select(`#${hostId}`);
-    const palette = getPalette();
     host.selectAll('*').remove();
 
     if (!names.length) {
@@ -129,6 +128,12 @@ permalink: /analyses/heatmap/
 
     const wrapper = host.append('div').attr('class', 'heatmap-scroll');
     const tooltip = host.append('div').attr('class', 'heatmap-tooltip').style('opacity', 0);
+    let hostRect = host.node().getBoundingClientRect();
+    const updateHostRect = () => {
+      hostRect = host.node().getBoundingClientRect();
+    };
+    window.addEventListener('resize', updateHostRect);
+    wrapper.on('scroll', updateHostRect);
 
     const svg = wrapper.append('svg')
       .attr('width', svgWidth)
@@ -174,7 +179,6 @@ permalink: /analyses/heatmap/
         .attr('stroke', '#d1d5db')
         .attr('stroke-width', 0.4)
         .on('mousemove', function(event, d) {
-          const hostRect = host.node().getBoundingClientRect();
           const tooltipX = event.clientX - hostRect.left + 16;
           const tooltipY = event.clientY - hostRect.top + 16;
           tooltip
@@ -190,7 +194,8 @@ permalink: /analyses/heatmap/
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    groups.forEach(group => renderHeatmap(group.id, group.slugPrefix, group.names));
+    const palette = getPalette();
+    groups.forEach(group => renderHeatmap(group.id, group.slugPrefix, group.names, palette));
   });
 </script>
 
