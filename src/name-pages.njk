@@ -114,36 +114,8 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
       <div id="historic-chart" class="w-full" style="height: 300px;"></div>
+      <p class="text-xs text-gray-500 mt-3">Hover bars to see decade and rank.</p>
     </div>
-
-    <details class="mt-4">
-      <summary class="cursor-pointer bg-white rounded-lg p-4 hover:bg-gray-50 font-semibold text-gray-700 select-none border border-gray-200">
-        View Data Table
-      </summary>
-      <div class="mt-2 bg-white rounded-lg overflow-hidden border border-gray-200">
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Decade</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              {% for rank in nameData.rankHistoric %}
-              {% set decade = 1900 + (loop.index0 * 10) %}
-              <tr class="{% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-gray-50{% endif %} hover:bg-amber-50">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ decade }}s</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm {% if rank != 'x' %}text-amber-600 font-semibold{% else %}text-gray-400{% endif %}">
-                  {% if rank != 'x' %}#{{ rank }}{% else %}Not in Top 100{% endif %}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </details>
   </div>
   {% endif %}
 
@@ -166,40 +138,6 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
       <div id="modern-chart" class="w-full" style="height: 400px;"></div>
     </div>
-
-    <details class="mt-4">
-      <summary class="cursor-pointer bg-white rounded-lg p-4 hover:bg-gray-50 font-semibold text-gray-700 select-none border border-gray-200">
-        View Data Table
-      </summary>
-      <div class="mt-2 bg-white rounded-lg overflow-hidden border border-gray-200">
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Count</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              {% set startYear = 1996 %}
-              {% for rank in nameData.rankFrom1996 %}
-              {% set count = nameData.countFrom1996[loop.index0] %}
-              <tr class="{% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-gray-50{% endif %} hover:bg-blue-50">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ startYear + loop.index0 }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {% if count != 'x' %}{{ count }}{% else %}—{% endif %}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm {% if rank != 'x' %}text-blue-600 font-semibold{% else %}text-gray-400{% endif %}">
-                  {% if rank != 'x' %}#{{ rank }}{% else %}Unranked{% endif %}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </details>
   </div>
   {% endif %}
 
@@ -441,11 +379,6 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       index: i
     }));
 
-    // Color scale for bars (darker amber for better ranks)
-    const colorScale = d3.scaleSequential()
-      .domain([100, 1])  // Reversed: 100 to 1, so lower ranks get darker colors
-      .interpolator(d3.interpolateOranges);
-
     // Set up dimensions
     const container = document.getElementById('historic-chart');
     const margin = {top: 20, right: 40, bottom: 60, left: 60};
@@ -491,23 +424,8 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .style('fill', '#6b7280')
         .text('Rank (1 = Most Popular)');
 
-      // Add Y axis
-      svg.append('g')
-        .call(d3.axisLeft(yScale))
-        .style('font-size', '12px');
-
-      // Add Y axis label
-      svg.append('text')
-        .attr('transform', 'rotate(-90)')
-        .attr('x', -height / 2)
-        .attr('y', -45)
-        .attr('text-anchor', 'middle')
-        .style('font-size', '14px')
-        .style('fill', '#6b7280')
-        .text('Decade');
-
       // Add bars
-      svg.selectAll('.bar')
+      const bars = svg.selectAll('.bar')
         .data(decades)
         .join('rect')
         .attr('class', 'bar')
@@ -530,6 +448,9 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
             d3.select(this).attr('opacity', 1);
           }
         });
+
+      bars.append('title')
+        .text(d => d.rank ? `${d.decade}: #${d.rank}` : `${d.decade}: Not in Top 100`);
 
       // Add rank labels on bars
       svg.selectAll('.label')
