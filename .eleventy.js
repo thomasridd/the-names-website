@@ -669,13 +669,13 @@ module.exports = function(eleventyConfig) {
     const decades = ['1904', '1914', '1924', '1934', '1944', '1954', '1964', '1974', '1984', '1994', '2004', '2014', '2024'];
     const D = decades.length;
 
-    const LABELS = ['Past classics', 'Lost generation', 'Past stars', 'Of a time', 'Past revival'];
+    const LABELS = ['Past classics', 'Golden generation', 'Past stars', 'Of a time', 'Past revival'];
     const LABEL_DESCRIPTIONS = {
-      'Past classics':   'Consistently popular for decades, now fallen out of the top 100.',
-      'Lost generation': 'Only popular in the early twentieth century.',
-      'Past stars':      'A short spell in the top 100; now gone.',
-      'Of a time':       'Several consecutive decades in the top 100.',
-      'Past revival':    'Popular early, came back for a revival, out of favour now.'
+      'Past classics':     'Consistently popular for decades, now fallen out of the top 100.',
+      'Golden generation': 'Only popular in the first decades of the twentieth century.',
+      'Past stars':        'A short spell in the top 100; now gone.',
+      'Of a time':         'Several consecutive decades in the top 100.',
+      'Past revival':      'Popular early, came back for a revival, out of favour now.'
     };
 
     // ---------- Load, filter, featurise ----------
@@ -759,8 +759,8 @@ module.exports = function(eleventyConfig) {
       if (earlyHit && lateHit && f.longestGap >= 3) return 'Past revival';
       // 2. Past classics: many decades in top 100, with small gaps
       if (f.sumTop100 >= 6 && f.longestGap <= 2) return 'Past classics';
-      // 3. Lost generation: only popular in the early twentieth century (1904–1944)
-      if (!postEarly && earlyHit) return 'Lost generation';
+      // 3. Golden generation: only popular in the first decades of the twentieth century (1904–1944)
+      if (!postEarly && earlyHit) return 'Golden generation';
       // 4. Of a time: 3+ decades in top 100 but not matching the above
       if (f.sumTop100 >= 3) return 'Of a time';
       // 5. Past stars: short burst
@@ -771,7 +771,7 @@ module.exports = function(eleventyConfig) {
     //                    1904 1914 1924 1934 1944 1954 1964 1974 1984 1994 2004 2014 2024
     const prototypesB = {
       'Past classics':    [2,   2,   2,   2,   2,   2,   2,   1,   1,   1,   0,   0,   0],
-      'Lost generation':  [2,   2,   2,   2,   1,   0,   0,   0,   0,   0,   0,   0,   0],
+      'Golden generation':[2,   2,   2,   2,   1,   0,   0,   0,   0,   0,   0,   0,   0],
       'Past stars':       [0,   0,   0,   0,   0,   0,   0,   0,   1,   2,   1,   0,   0],
       'Of a time':        [0,   0,   0,   1,   2,   2,   2,   1,   0,   0,   0,   0,   0],
       'Past revival':     [2,   2,   1,   0,   0,   0,   0,   0,   1,   2,   2,   0,   0]
@@ -803,7 +803,7 @@ module.exports = function(eleventyConfig) {
     const featureVectors = entries.map(toFeature);
     const initialCentroidsC = {
       'Past classics':    [0.70, 0.00, 0.85, 0.10, 0.80],
-      'Lost generation':  [0.30, 0.00, 0.30, 0.00, 0.30],
+      'Golden generation':[0.30, 0.00, 0.30, 0.00, 0.30],
       'Past stars':       [0.12, 0.70, 0.75, 0.00, 0.05],
       'Of a time':        [0.30, 0.35, 0.60, 0.00, 0.30],
       'Past revival':     [0.55, 0.05, 0.90, 0.40, 0.85]
@@ -865,10 +865,78 @@ module.exports = function(eleventyConfig) {
     const assignmentsB = entries.map(assignB);
     const assignmentsC_labels = assignmentsC.map(i => orderedLabels[i]);
 
+    // ---------- Hybrid rules shared by Methods 4 and 5 ----------
+    const hybridRule = (e) => {
+      const bin = e.bin100;
+      const f = e.features;
+      const anyAfter1934 = bin.slice(4).some(b => b === 1);
+      if (!anyAfter1934) return 'Golden generation';
+      if (f.sumTop100 === 1) return 'Past stars';
+      if (f.sumTop100 === 2 && (f.lastTop100 - f.firstTop100) === 1) return 'Past stars';
+      return null;
+    };
+
+    // ---------- Method D: hybrid rules + nearest prototype for the remainder ----------
+    const remainingLabels = ['Past classics', 'Of a time', 'Past revival'];
+    const assignD = (e) => {
+      const ruled = hybridRule(e);
+      if (ruled) return ruled;
+      let bestLabel = remainingLabels[0], bestD = Infinity;
+      for (const label of remainingLabels) {
+        const d = sqDist(e.ternary, prototypesB[label]);
+        if (d < bestD) { bestD = d; bestLabel = label; }
+      }
+      return bestLabel;
+    };
+    const assignmentsD = entries.map(assignD);
+
+    // ---------- Method E: hybrid rules + k-means on remainder in feature space ----------
+    const remainingIndices = [];
+    const assignmentsE = new Array(entries.length);
+    entries.forEach((e, i) => {
+      const ruled = hybridRule(e);
+      if (ruled) assignmentsE[i] = ruled;
+      else remainingIndices.push(i);
+    });
+    if (remainingIndices.length > 0) {
+      const Ke = remainingLabels.length;
+      const centroidsE = remainingLabels.map(l => initialCentroidsC[l].slice());
+      const subAssign = new Array(remainingIndices.length).fill(-1);
+      for (let iter = 0; iter < 100; iter++) {
+        let changed = false;
+        for (let k = 0; k < remainingIndices.length; k++) {
+          const fv = featureVectors[remainingIndices[k]];
+          let best = 0, bestD = sqDist(fv, centroidsE[0]);
+          for (let c = 1; c < Ke; c++) {
+            const d = sqDist(fv, centroidsE[c]);
+            if (d < bestD) { bestD = d; best = c; }
+          }
+          if (subAssign[k] !== best) { subAssign[k] = best; changed = true; }
+        }
+        if (!changed && iter > 0) break;
+        for (let c = 0; c < Ke; c++) {
+          const sum = new Array(featureVectors[0].length).fill(0);
+          let count = 0;
+          for (let k = 0; k < remainingIndices.length; k++) {
+            if (subAssign[k] !== c) continue;
+            const fv = featureVectors[remainingIndices[k]];
+            for (let j = 0; j < sum.length; j++) sum[j] += fv[j];
+            count++;
+          }
+          if (count === 0) continue;
+          for (let j = 0; j < sum.length; j++) sum[j] /= count;
+          centroidsE[c] = sum;
+        }
+      }
+      for (let k = 0; k < remainingIndices.length; k++) {
+        assignmentsE[remainingIndices[k]] = remainingLabels[subAssign[k]];
+      }
+    }
+
     const methods = [
       buildMethod(
         'Method 1 — Priority-ordered rules',
-        'A decision list evaluated top to bottom on each name: early + late top-100 presence with a gap of 3+ empty decades → Past revival; ≥6 decades in the top 100 with gaps no longer than 1 decade → Past classic; only ever top 100 in the first five decades (1904–1944) → Lost generation; 3+ decades in the top 100 otherwise → Of a time; everything else → Past star.',
+        'A decision list evaluated top to bottom on each name: early + late top-100 presence with a gap of 3+ empty decades → Past revival; ≥6 decades in the top 100 with gaps no longer than 1 decade → Past classic; only ever top 100 in the first five decades (1904–1944) → Golden generation; 3+ decades in the top 100 otherwise → Of a time; everything else → Past star.',
         assignmentsA
       ),
       buildMethod(
@@ -880,6 +948,16 @@ module.exports = function(eleventyConfig) {
         'Method 3 — Feature-space k-means (prototype-seeded)',
         'Five features per name (share in top 100, first/last top-100 decade, longest gap between top-100 decades, span from first to last). K-means with k=5 is seeded by labelled prototype centroids, so each converged cluster keeps its intended label.',
         assignmentsC_labels
+      ),
+      buildMethod(
+        'Method 4 — Hybrid rules + nearest prototype',
+        'Two priority rules run first: (1) if a name is never in the top 100 after 1934 it is Golden generation; (2) if it has just one top-100 decade, or two consecutive decades, it is a Past star. Every remaining name is assigned to its closest ternary-decade prototype among Past classics, Of a time and Past revival.',
+        assignmentsD
+      ),
+      buildMethod(
+        'Method 5 — Hybrid rules + k-means on remainder',
+        'The same two priority rules assign the clear-cut Golden generation and Past star cases. The remaining names are clustered with k-means (k=3) in the same 5-feature space as Method 3, seeded by the Past classics / Of a time / Past revival prototypes so each converged cluster keeps its intended label.',
+        assignmentsE
       )
     ];
 
