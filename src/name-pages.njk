@@ -137,7 +137,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
       <div id="modern-chart" class="w-full" style="height: 400px;"></div>
-      <p class="text-xs text-gray-500 mt-3">Hover points to see year and count.</p>
+      <p class="text-xs text-gray-500 mt-3">Hover points to see year and count. Dashed lines show the count needed each year to reach ranks #10, #50, #100, #500, #1,000 and #5,000.</p>
     </div>
   </div>
   {% endif %}
@@ -235,6 +235,9 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
   {% if nameData.countFrom1996 and nameData.countFrom1996.length > 0 %}
   (function() {
     const countData = {{ nameData.countFrom1996 | dump | safe }};
+    const guidelinesAll = {{ rankCountGuidelines | dump | safe }};
+    const guidelineYears = guidelinesAll[{{ nameData.gender | dump | safe }}] || [];
+    const thresholds = guidelinesAll.thresholds || [];
     const startYear = 1996;
 
     // Prepare main data (name's own count)
@@ -248,8 +251,30 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     const minCount = allCounts.length > 0 ? Math.min(...allCounts) : 0;
     const maxCount = allCounts.length > 0 ? Math.max(...allCounts) : 0;
 
+    // Build a series per threshold: [{year, count}, ...] where the count is
+    // the value at that rank in that year.
+    const guidelineSeries = thresholds.map(t => {
+      const points = guidelineYears
+        .map(g => ({ year: g.year, count: g.counts[t] }))
+        .filter(p => typeof p.count === 'number');
+      const peak = points.length ? Math.max(...points.map(p => p.count)) : 0;
+      return { rank: t, points, peak };
+    }).filter(s => s.points.length > 0);
+
+    // Extend the y-axis just enough to include the first guideline above the
+    // name's own peak, so readers can see the nearest rank milestone without
+    // squashing the name's own line.
+    const higher = guidelineSeries
+      .map(s => s.peak)
+      .filter(p => p > maxCount)
+      .sort((a, b) => a - b);
+    const yMax = Math.max(maxCount, higher[0] || 0);
+
+    // Only draw guidelines that fit within the y-axis range.
+    const visibleGuidelines = guidelineSeries.filter(s => s.peak <= yMax);
+
     const container = document.getElementById('modern-chart');
-    const margin = {top: 20, right: 40, bottom: 60, left: 60};
+    const margin = {top: 20, right: 70, bottom: 60, left: 60};
 
     function drawChart() {
       d3.select('#modern-chart').selectAll('*').remove();
@@ -272,7 +297,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 
       // Y scale for count (vertical)
       const yScale = d3.scaleLinear()
-        .domain([0, maxCount])
+        .domain([0, yMax || 1])
         .range([height, 0]);
 
       // Add X axis
@@ -308,6 +333,33 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .style('font-size', '14px')
         .style('fill', '#6b7280')
         .text('Number of Babies');
+
+      // Draw rank guideline lines behind the dots so they act as a backdrop.
+      const lineGen = d3.line()
+        .x(d => xScale(d.year))
+        .y(d => yScale(d.count));
+
+      const guidelineGroup = svg.append('g').attr('class', 'rank-guidelines');
+      visibleGuidelines.forEach(g => {
+        guidelineGroup.append('path')
+          .datum(g.points)
+          .attr('fill', 'none')
+          .attr('stroke', '#9ca3af')
+          .attr('stroke-width', 1)
+          .attr('stroke-dasharray', '4 3')
+          .attr('d', lineGen);
+
+        // Label the line at the right-hand edge.
+        const lastPoint = g.points[g.points.length - 1];
+        guidelineGroup.append('text')
+          .attr('x', xScale(lastPoint.year) + 4)
+          .attr('y', yScale(lastPoint.count))
+          .attr('dy', '0.35em')
+          .attr('text-anchor', 'start')
+          .style('font-size', '10px')
+          .style('fill', '#6b7280')
+          .text(`#${g.rank}`);
+      });
 
       // Add main series dots
       svg.selectAll('.dot')

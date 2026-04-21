@@ -245,6 +245,41 @@ module.exports = function(eleventyConfig) {
   // Format large numbers with comma separators
   eleventyConfig.addFilter('formatNumber', n => n == null ? '-' : n.toLocaleString('en-GB'));
 
+  // Per-gender, per-year count thresholds for rank guideline lines on the
+  // modern rankings chart. For each year 1996–2024 we sort all annual counts
+  // descending and read off the value at positions 10, 50, 100, 500, 1000 and
+  // 5000 — that count is what a name at that rank had that year.
+  eleventyConfig.addGlobalData('rankCountGuidelines', () => {
+    const thresholds = [10, 50, 100, 500, 1000, 5000];
+    const startYear = 1996;
+    const numYears = 29;
+    const result = { Boy: [], Girl: [], thresholds };
+
+    const buildFor = (filename, gender) => {
+      const filePath = path.join(__dirname, 'data', `${filename}${dataSuffix}`);
+      if (!fs.existsSync(filePath)) return;
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      for (let y = 0; y < numYears; y++) {
+        const counts = [];
+        for (const n of data) {
+          if (!n.countFrom1996) continue;
+          const c = parseInt(n.countFrom1996[y], 10);
+          if (!isNaN(c)) counts.push(c);
+        }
+        counts.sort((a, b) => b - a);
+        const yearEntry = { year: startYear + y, counts: {} };
+        for (const t of thresholds) {
+          if (t <= counts.length) yearEntry.counts[t] = counts[t - 1];
+        }
+        result[gender].push(yearEntry);
+      }
+    };
+
+    buildFor('boys', 'Boy');
+    buildFor('girls', 'Girl');
+    return result;
+  });
+
   // Load experiment classification data
   function loadExperimentsData() {
     const experimentsDir = path.join(__dirname, 'experiment-data');
