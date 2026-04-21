@@ -218,7 +218,8 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
             tabindex="-1"
             aria-selected="false"
             aria-controls="modern-count-chart-wrapper"
-            class="modern-tab border-b-2 border-transparent py-3 px-1 text-sm font-semibold text-gray-500 hover:border-gray-300 hover:text-gray-700"
+            {% if not hasModernCountData %}disabled="disabled" aria-disabled="true"{% endif %}
+            class="modern-tab border-b-2 border-transparent py-3 px-1 text-sm font-semibold {% if hasModernCountData %}text-gray-500 hover:border-gray-300 hover:text-gray-700{% else %}text-gray-300 cursor-not-allowed{% endif %}"
           >
             By count
           </button>
@@ -425,6 +426,9 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           nextIndex = 0;
         } else if (event.key === 'End') {
           nextIndex = tabs.length - 1;
+        } else if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          setActiveTab(tab.dataset.historicTab);
         }
         if (nextIndex !== -1) {
           event.preventDefault();
@@ -446,6 +450,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     if (!tabContainer) return;
 
     const tabs = Array.from(tabContainer.querySelectorAll('[data-modern-tab]'));
+    const interactiveTabs = tabs.filter(tab => !tab.hasAttribute('disabled'));
     const views = {
       count: document.getElementById('modern-count-chart-wrapper'),
       rank: document.getElementById('modern-rank-chart-wrapper'),
@@ -479,30 +484,36 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       }
     }
 
-    tabs.forEach(tab => {
+    interactiveTabs.forEach(tab => {
       tab.addEventListener('click', () => setActiveTab(tab.dataset.modernTab));
       tab.addEventListener('keydown', event => {
-        const currentIndex = tabs.indexOf(tab);
+        const currentIndex = interactiveTabs.indexOf(tab);
         let nextIndex = -1;
         if (event.key === 'ArrowRight') {
-          nextIndex = (currentIndex + 1) % tabs.length;
+          nextIndex = (currentIndex + 1) % interactiveTabs.length;
         } else if (event.key === 'ArrowLeft') {
-          nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+          nextIndex = (currentIndex - 1 + interactiveTabs.length) % interactiveTabs.length;
         } else if (event.key === 'Home') {
           nextIndex = 0;
         } else if (event.key === 'End') {
-          nextIndex = tabs.length - 1;
+          nextIndex = interactiveTabs.length - 1;
+        } else if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          setActiveTab(tab.dataset.modernTab);
         }
         if (nextIndex !== -1) {
           event.preventDefault();
-          const nextTab = tabs[nextIndex];
+          const nextTab = interactiveTabs[nextIndex];
           nextTab.focus();
           setActiveTab(nextTab.dataset.modernTab);
         }
       });
     });
 
-    setActiveTab(defaultTab);
+    const initialTab = interactiveTabs.some(tab => tab.dataset.modernTab === defaultTab)
+      ? defaultTab
+      : interactiveTabs[0].dataset.modernTab;
+    setActiveTab(initialTab);
   })();
   {% endif %}
 </script>
