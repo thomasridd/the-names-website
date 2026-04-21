@@ -127,7 +127,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           <tbody class="bg-white divide-y divide-gray-200">
             {% for historicRank in nameData.rankHistoric %}
             <tr class="{% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-gray-50{% endif %}">
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ 1900 + (loop.index0 * 10) }}s</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ 1910 + (loop.index0 * 10) }}s</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {% if historicRank and historicRank != 'x' %}#{{ historicRank }}{% else %}Not in top 100{% endif %}
               </td>
