@@ -140,17 +140,25 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     {% if hasModernCountData %}
     <div class="mb-4">
       <div class="border-b border-gray-200">
-        <nav id="modern-chart-tabs" class="-mb-px flex gap-6" aria-label="Modern chart tabs" data-default-tab="{{ defaultModernTab }}">
+        <nav id="modern-chart-tabs" class="-mb-px flex gap-6" aria-label="Modern chart tabs" role="tablist" data-default-tab="{{ defaultModernTab }}">
           <button
             type="button"
+            id="modern-chart-tab-count"
             data-modern-chart-tab="count"
+            role="tab"
+            aria-selected="true"
+            aria-controls="modern-count-chart-wrapper"
             class="modern-chart-tab border-b-2 border-blue-600 py-3 px-1 text-sm font-semibold text-blue-600"
           >
             Number of Babies
           </button>
           <button
             type="button"
+            id="modern-chart-tab-rank"
             data-modern-chart-tab="rank"
+            role="tab"
+            aria-selected="false"
+            aria-controls="modern-rank-chart-wrapper"
             class="modern-chart-tab border-b-2 border-transparent py-3 px-1 text-sm font-semibold text-gray-500 hover:border-gray-300 hover:text-gray-700"
           >
             Rank
@@ -161,11 +169,11 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     {% endif %}
 
     {% if hasModernCountData %}
-    <div id="modern-count-chart-wrapper" class="w-full mb-4">
+    <div id="modern-count-chart-wrapper" class="w-full mb-4" role="tabpanel" aria-labelledby="modern-chart-tab-count">
       <div id="modern-count-chart" class="w-full" style="height: 400px;"></div>
     </div>
     {% endif %}
-    <div id="modern-rank-chart-wrapper" class="w-full mb-4 {% if hasModernCountData %}hidden{% endif %}">
+    <div id="modern-rank-chart-wrapper" class="w-full mb-4 {% if hasModernCountData %}hidden{% endif %}" role="tabpanel" aria-labelledby="modern-chart-tab-rank">
       <div id="modern-rank-chart" class="w-full" style="height: 400px;"></div>
     </div>
   </div>
@@ -280,11 +288,15 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         tab.classList.toggle('text-blue-600', isActive);
         tab.classList.toggle('border-transparent', !isActive);
         tab.classList.toggle('text-gray-500', !isActive);
+        tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        tab.setAttribute('tabindex', isActive ? '0' : '-1');
       });
 
       Object.entries(views).forEach(([name, el]) => {
         if (!el) return;
-        el.classList.toggle('hidden', name !== tabName);
+        const isVisible = name === tabName;
+        el.classList.toggle('hidden', !isVisible);
+        el.setAttribute('aria-hidden', isVisible ? 'false' : 'true');
       });
     }
 
@@ -539,7 +551,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .range([0, width]);
 
       const yScale = d3.scaleLinear()
-        .domain([maxRank, Math.min(1, minRank)])
+        .domain([maxRank, minRank])
         .range([height, 0]);
 
       svg.append('g')
