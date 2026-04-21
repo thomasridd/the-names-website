@@ -140,7 +140,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     {% if hasModernCountData %}
     <div class="mb-4">
       <div class="border-b border-gray-200">
-        <nav id="modern-chart-tabs" class="-mb-px flex gap-6" aria-label="Switch between Number of Babies and Rank charts" role="tablist" data-default-tab="{{ defaultModernTab }}">
+        <nav id="modern-chart-tabs" class="-mb-px flex gap-6" aria-label="Modern chart type selection" role="tablist" data-default-tab="{{ defaultModernTab }}">
           <button
             type="button"
             id="modern-chart-tab-count"
@@ -313,7 +313,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       tab.addEventListener('click', () => setActiveTab(tab.dataset.modernChartTab));
       tab.addEventListener('keydown', event => {
         const currentIndex = tabs.indexOf(tab);
-        let nextIndex = null;
+        let nextIndex = -1;
         if (event.key === 'ArrowRight') {
           nextIndex = (currentIndex + 1) % tabs.length;
         } else if (event.key === 'ArrowLeft') {
@@ -323,7 +323,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         } else if (event.key === 'End') {
           nextIndex = tabs.length - 1;
         }
-        if (nextIndex !== null) {
+        if (nextIndex !== -1) {
           event.preventDefault();
           const nextTab = tabs[nextIndex];
           nextTab.focus();
@@ -570,6 +570,14 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 
     function drawChart() {
       d3.select('#modern-rank-chart').selectAll('*').remove();
+
+      if (chartData.length === 0) {
+        d3.select('#modern-rank-chart')
+          .append('p')
+          .attr('class', 'text-sm text-gray-500 pt-2')
+          .text('No modern rank data available.');
+        return;
+      }
 
       const containerWidth = container.clientWidth;
       const width = containerWidth - margin.left - margin.right;
