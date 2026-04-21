@@ -112,29 +112,65 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     </div>
     {% endif %}
 
-    <h3 class="text-lg font-semibold mb-2 text-gray-900">Historic popularity chart</h3>
-    <div id="historic-chart" class="w-full mb-4" style="height: 300px;"></div>
+    {% set defaultHistoricTab = 'rank' %}
+    <div class="mb-4">
+      <div class="border-b border-gray-200">
+        <nav id="historic-tabs" class="-mb-px flex gap-6" aria-label="Historic data selection" role="tablist" data-default-tab="{{ defaultHistoricTab }}">
+          <button
+            type="button"
+            id="historic-tab-rank"
+            data-historic-tab="rank"
+            role="tab"
+            tabindex="0"
+            aria-selected="true"
+            aria-controls="historic-rank-wrapper"
+            class="historic-tab border-b-2 border-amber-600 py-3 px-1 text-sm font-semibold text-amber-600"
+          >
+            By rank
+          </button>
+          <button
+            type="button"
+            id="historic-tab-data"
+            data-historic-tab="data"
+            role="tab"
+            tabindex="-1"
+            aria-selected="false"
+            aria-controls="historic-data-wrapper"
+            class="historic-tab border-b-2 border-transparent py-3 px-1 text-sm font-semibold text-gray-500 hover:border-gray-300 hover:text-gray-700"
+          >
+            Data
+          </button>
+        </nav>
+      </div>
+    </div>
 
-    <div class="mb-4 bg-white rounded-lg overflow-hidden border border-gray-200">
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Decade</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            {% for historicRank in nameData.rankHistoric %}
-            <tr class="{% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-gray-50{% endif %}">
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ 1910 + (loop.index0 * 10) }}s</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {% if historicRank and historicRank != 'x' %}#{{ historicRank }}{% else %}Not in top 100{% endif %}
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+    <div id="historic-rank-wrapper" class="w-full mb-4 {% if defaultHistoricTab != 'rank' %}hidden{% endif %}" role="tabpanel" aria-labelledby="historic-tab-rank" aria-hidden="{% if defaultHistoricTab == 'rank' %}false{% else %}true{% endif %}">
+      <h3 class="text-lg font-semibold mb-2 text-gray-900">Historic popularity by rank</h3>
+      <div id="historic-chart" class="w-full" style="height: 300px;"></div>
+    </div>
+
+    <div id="historic-data-wrapper" class="w-full mb-4 {% if defaultHistoricTab != 'data' %}hidden{% endif %}" role="tabpanel" aria-labelledby="historic-tab-data" aria-hidden="{% if defaultHistoricTab == 'data' %}false{% else %}true{% endif %}">
+      <div class="bg-white rounded-lg overflow-hidden border border-gray-200">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Decade</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              {% for historicRank in nameData.rankHistoric %}
+              <tr class="{% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-gray-50{% endif %}">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ 1910 + (loop.index0 * 10) }}s</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {% if historicRank and historicRank != 'x' %}#{{ historicRank }}{% else %}Not in top 100{% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -159,79 +195,93 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     </div>
     {% endif %}
 
-    {% if hasModernCountData %}
     <div class="mb-4">
       <div class="border-b border-gray-200">
-        <nav id="modern-chart-tabs" class="-mb-px flex gap-6" aria-label="Modern chart type selection" role="tablist" data-default-tab="{{ defaultModernTab }}">
+        <nav id="modern-tabs" class="-mb-px flex gap-6" aria-label="Modern data selection" role="tablist" data-default-tab="{{ defaultModernTab }}">
           <button
             type="button"
-            id="modern-chart-tab-count"
-            data-modern-chart-tab="count"
-            role="tab"
-            tabindex="-1"
-            aria-selected="false"
-            aria-controls="modern-count-chart-wrapper"
-            class="modern-chart-tab border-b-2 border-transparent py-3 px-1 text-sm font-semibold text-gray-500 hover:border-gray-300 hover:text-gray-700"
-          >
-            Number of Babies
-          </button>
-          <button
-            type="button"
-            id="modern-chart-tab-rank"
-            data-modern-chart-tab="rank"
+            id="modern-tab-rank"
+            data-modern-tab="rank"
             role="tab"
             tabindex="0"
             aria-selected="true"
             aria-controls="modern-rank-chart-wrapper"
-            class="modern-chart-tab border-b-2 border-blue-600 py-3 px-1 text-sm font-semibold text-blue-600"
+            class="modern-tab border-b-2 border-blue-600 py-3 px-1 text-sm font-semibold text-blue-600"
           >
-            Rank
+            By rank
+          </button>
+          <button
+            type="button"
+            id="modern-tab-count"
+            data-modern-tab="count"
+            role="tab"
+            tabindex="-1"
+            aria-selected="false"
+            aria-controls="modern-count-chart-wrapper"
+            class="modern-tab border-b-2 border-transparent py-3 px-1 text-sm font-semibold text-gray-500 hover:border-gray-300 hover:text-gray-700"
+          >
+            By count
+          </button>
+          <button
+            type="button"
+            id="modern-tab-data"
+            data-modern-tab="data"
+            role="tab"
+            tabindex="-1"
+            aria-selected="false"
+            aria-controls="modern-data-wrapper"
+            class="modern-tab border-b-2 border-transparent py-3 px-1 text-sm font-semibold text-gray-500 hover:border-gray-300 hover:text-gray-700"
+          >
+            Data
           </button>
         </nav>
       </div>
     </div>
-    {% endif %}
 
-    {% if hasModernCountData %}
-    <div id="modern-count-chart-wrapper" class="w-full mb-4 {% if defaultModernTab != 'count' %}hidden{% endif %}" role="tabpanel" aria-labelledby="modern-chart-tab-count" aria-hidden="{% if defaultModernTab == 'count' %}false{% else %}true{% endif %}">
+    <div id="modern-count-chart-wrapper" class="w-full mb-4 {% if defaultModernTab != 'count' %}hidden{% endif %}" role="tabpanel" aria-labelledby="modern-tab-count" aria-hidden="{% if defaultModernTab == 'count' %}false{% else %}true{% endif %}">
       <h3 class="text-lg font-semibold mb-2 text-gray-900">Modern popularity by number of babies</h3>
+      {% if hasModernCountData %}
       <div id="modern-count-chart" class="w-full" style="height: 400px;"></div>
+      {% else %}
+      <p class="text-sm text-gray-500 pt-2">No modern count data available.</p>
+      {% endif %}
     </div>
-    {% endif %}
-    <div id="modern-rank-chart-wrapper" class="w-full mb-4 {% if defaultModernTab != 'rank' %}hidden{% endif %}" role="tabpanel" aria-labelledby="modern-chart-tab-rank" aria-hidden="{% if defaultModernTab == 'rank' %}false{% else %}true{% endif %}">
+    <div id="modern-rank-chart-wrapper" class="w-full mb-4 {% if defaultModernTab != 'rank' %}hidden{% endif %}" role="tabpanel" aria-labelledby="modern-tab-rank" aria-hidden="{% if defaultModernTab == 'rank' %}false{% else %}true{% endif %}">
       <h3 class="text-lg font-semibold mb-2 text-gray-900">Modern popularity by rank</h3>
       <div id="modern-rank-chart" class="w-full" style="height: 400px;"></div>
     </div>
 
-    <div class="mb-4 bg-white rounded-lg overflow-hidden border border-gray-200">
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Babies Named</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            {% for modernRank in nameData.rankFrom1996 %}
-            {% set modernYear = 1996 + loop.index0 %}
-            {% set modernCount = null %}
-            {% if hasModernCountData %}
-              {% set modernCount = nameData.countFrom1996[loop.index0] %}
-            {% endif %}
-            <tr class="{% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-gray-50{% endif %}">
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ modernYear }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {% if modernRank and modernRank != 'x' %}#{{ modernRank }}{% else %}Unranked{% endif %}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {% if modernCount and modernCount != 'x' %}{{ modernCount }}{% else %}—{% endif %}
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+    <div id="modern-data-wrapper" class="w-full mb-4 {% if defaultModernTab != 'data' %}hidden{% endif %}" role="tabpanel" aria-labelledby="modern-tab-data" aria-hidden="{% if defaultModernTab == 'data' %}false{% else %}true{% endif %}">
+      <div class="bg-white rounded-lg overflow-hidden border border-gray-200">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Babies Named</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              {% for modernRank in nameData.rankFrom1996 %}
+              {% set modernYear = 1996 + loop.index0 %}
+              {% set modernCount = null %}
+              {% if hasModernCountData %}
+                {% set modernCount = nameData.countFrom1996[loop.index0] %}
+              {% endif %}
+              <tr class="{% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-gray-50{% endif %}">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ modernYear }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {% if modernRank and modernRank != 'x' %}#{{ modernRank }}{% else %}Unranked{% endif %}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {% if modernCount and modernCount != 'x' %}{{ modernCount }}{% else %}—{% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -326,22 +376,86 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 </article>
 
 <script>
-  // Tabs for modern charts
-  {% if nameData.rankFrom1996 and nameData.rankFrom1996.length > 0 %}
+  // Tabs for historic chart/data
+  {% if hasHistoricRankData %}
   (function() {
-    const tabContainer = document.getElementById('modern-chart-tabs');
+    const tabContainer = document.getElementById('historic-tabs');
     if (!tabContainer) return;
 
-    const tabs = Array.from(tabContainer.querySelectorAll('[data-modern-chart-tab]'));
+    const tabs = Array.from(tabContainer.querySelectorAll('[data-historic-tab]'));
     const views = {
-      count: document.getElementById('modern-count-chart-wrapper'),
-      rank: document.getElementById('modern-rank-chart-wrapper')
+      rank: document.getElementById('historic-rank-wrapper'),
+      data: document.getElementById('historic-data-wrapper')
     };
     const defaultTab = tabContainer.dataset.defaultTab || 'rank';
 
     function setActiveTab(tabName) {
       tabs.forEach(tab => {
-        const isActive = tab.dataset.modernChartTab === tabName;
+        const isActive = tab.dataset.historicTab === tabName;
+        tab.classList.toggle('border-amber-600', isActive);
+        tab.classList.toggle('text-amber-600', isActive);
+        tab.classList.toggle('border-transparent', !isActive);
+        tab.classList.toggle('text-gray-500', !isActive);
+        tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        tab.setAttribute('tabindex', isActive ? '0' : '-1');
+      });
+
+      Object.entries(views).forEach(([name, el]) => {
+        if (!el) return;
+        const isVisible = name === tabName;
+        el.classList.toggle('hidden', !isVisible);
+        el.setAttribute('aria-hidden', isVisible ? 'false' : 'true');
+      });
+
+      if (tabName === 'rank' && typeof window.renderHistoricChart === 'function') {
+        window.renderHistoricChart();
+      }
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => setActiveTab(tab.dataset.historicTab));
+      tab.addEventListener('keydown', event => {
+        const currentIndex = tabs.indexOf(tab);
+        let nextIndex = -1;
+        if (event.key === 'ArrowRight') {
+          nextIndex = (currentIndex + 1) % tabs.length;
+        } else if (event.key === 'ArrowLeft') {
+          nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+        } else if (event.key === 'Home') {
+          nextIndex = 0;
+        } else if (event.key === 'End') {
+          nextIndex = tabs.length - 1;
+        }
+        if (nextIndex !== -1) {
+          event.preventDefault();
+          const nextTab = tabs[nextIndex];
+          nextTab.focus();
+          setActiveTab(nextTab.dataset.historicTab);
+        }
+      });
+    });
+
+    setActiveTab(defaultTab);
+  })();
+  {% endif %}
+
+  // Tabs for modern rank/count/data
+  {% if nameData.rankFrom1996 and nameData.rankFrom1996.length > 0 %}
+  (function() {
+    const tabContainer = document.getElementById('modern-tabs');
+    if (!tabContainer) return;
+
+    const tabs = Array.from(tabContainer.querySelectorAll('[data-modern-tab]'));
+    const views = {
+      count: document.getElementById('modern-count-chart-wrapper'),
+      rank: document.getElementById('modern-rank-chart-wrapper'),
+      data: document.getElementById('modern-data-wrapper')
+    };
+    const defaultTab = tabContainer.dataset.defaultTab || 'rank';
+
+    function setActiveTab(tabName) {
+      tabs.forEach(tab => {
+        const isActive = tab.dataset.modernTab === tabName;
         tab.classList.toggle('border-blue-600', isActive);
         tab.classList.toggle('text-blue-600', isActive);
         tab.classList.toggle('border-transparent', !isActive);
@@ -366,7 +480,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     }
 
     tabs.forEach(tab => {
-      tab.addEventListener('click', () => setActiveTab(tab.dataset.modernChartTab));
+      tab.addEventListener('click', () => setActiveTab(tab.dataset.modernTab));
       tab.addEventListener('keydown', event => {
         const currentIndex = tabs.indexOf(tab);
         let nextIndex = -1;
@@ -383,7 +497,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           event.preventDefault();
           const nextTab = tabs[nextIndex];
           nextTab.focus();
-          setActiveTab(nextTab.dataset.modernChartTab);
+          setActiveTab(nextTab.dataset.modernTab);
         }
       });
     });
@@ -792,14 +906,21 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .text(d => `#${d.rank}`);
     }
 
-    // Initial draw
-    drawChart();
+    const chartWrapper = document.getElementById('historic-rank-wrapper');
+    window.renderHistoricChart = drawChart;
+    if (!chartWrapper || !chartWrapper.classList.contains('hidden')) {
+      drawChart();
+    }
 
     // Redraw on window resize
     let resizeTimeout;
     window.addEventListener('resize', function() {
       clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(drawChart, 250);
+      resizeTimeout = setTimeout(() => {
+        if (!chartWrapper || !chartWrapper.classList.contains('hidden')) {
+          drawChart();
+        }
+      }, 250);
     });
   })();
   {% endif %}
