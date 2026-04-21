@@ -169,11 +169,11 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     {% endif %}
 
     {% if hasModernCountData %}
-    <div id="modern-count-chart-wrapper" class="w-full mb-4" role="tabpanel" aria-labelledby="modern-chart-tab-count">
+    <div id="modern-count-chart-wrapper" class="w-full mb-4 {% if defaultModernTab != 'count' %}hidden{% endif %}" role="tabpanel" aria-labelledby="modern-chart-tab-count" aria-hidden="{% if defaultModernTab == 'count' %}false{% else %}true{% endif %}">
       <div id="modern-count-chart" class="w-full" style="height: 400px;"></div>
     </div>
     {% endif %}
-    <div id="modern-rank-chart-wrapper" class="w-full mb-4 {% if hasModernCountData %}hidden{% endif %}" role="tabpanel" aria-labelledby="modern-chart-tab-rank">
+    <div id="modern-rank-chart-wrapper" class="w-full mb-4 {% if defaultModernTab != 'rank' %}hidden{% endif %}" role="tabpanel" aria-labelledby="modern-chart-tab-rank" aria-hidden="{% if defaultModernTab == 'rank' %}false{% else %}true{% endif %}">
       <div id="modern-rank-chart" class="w-full" style="height: 400px;"></div>
     </div>
   </div>
@@ -298,10 +298,31 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         el.classList.toggle('hidden', !isVisible);
         el.setAttribute('aria-hidden', isVisible ? 'false' : 'true');
       });
+
+      if (tabName === 'count' && typeof window.renderModernCountChart === 'function') {
+        window.renderModernCountChart();
+      }
+      if (tabName === 'rank' && typeof window.renderModernRankChart === 'function') {
+        window.renderModernRankChart();
+      }
     }
 
     tabs.forEach(tab => {
       tab.addEventListener('click', () => setActiveTab(tab.dataset.modernChartTab));
+      tab.addEventListener('keydown', event => {
+        const currentIndex = tabs.indexOf(tab);
+        let nextIndex = null;
+        if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabs.length;
+        if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+        if (event.key === 'Home') nextIndex = 0;
+        if (event.key === 'End') nextIndex = tabs.length - 1;
+        if (nextIndex !== null) {
+          event.preventDefault();
+          const nextTab = tabs[nextIndex];
+          nextTab.focus();
+          setActiveTab(nextTab.dataset.modernChartTab);
+        }
+      });
     });
 
     setActiveTab(defaultTab);
@@ -502,13 +523,21 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         });
     }
 
-    drawChart();
+    const chartWrapper = document.getElementById('modern-count-chart-wrapper');
+    window.renderModernCountChart = drawChart;
+    if (!chartWrapper || !chartWrapper.classList.contains('hidden')) {
+      drawChart();
+    }
 
     // Redraw on window resize
     let resizeTimeout;
     window.addEventListener('resize', function() {
       clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(drawChart, 250);
+      resizeTimeout = setTimeout(() => {
+        if (!chartWrapper || !chartWrapper.classList.contains('hidden')) {
+          drawChart();
+        }
+      }, 250);
     });
   })();
   {% endif %}
@@ -628,12 +657,20 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         });
     }
 
-    drawChart();
+    const chartWrapper = document.getElementById('modern-rank-chart-wrapper');
+    window.renderModernRankChart = drawChart;
+    if (!chartWrapper || !chartWrapper.classList.contains('hidden')) {
+      drawChart();
+    }
 
     let resizeTimeout;
     window.addEventListener('resize', function() {
       clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(drawChart, 250);
+      resizeTimeout = setTimeout(() => {
+        if (!chartWrapper || !chartWrapper.classList.contains('hidden')) {
+          drawChart();
+        }
+      }, 250);
     });
   })();
   {% endif %}
