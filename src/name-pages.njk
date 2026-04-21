@@ -140,12 +140,13 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     {% if hasModernCountData %}
     <div class="mb-4">
       <div class="border-b border-gray-200">
-        <nav id="modern-chart-tabs" class="-mb-px flex gap-6" aria-label="Modern chart tabs" role="tablist" data-default-tab="{{ defaultModernTab }}">
+        <nav id="modern-chart-tabs" class="-mb-px flex gap-6" aria-label="Switch between Number of Babies and Rank charts" role="tablist" data-default-tab="{{ defaultModernTab }}">
           <button
             type="button"
             id="modern-chart-tab-count"
             data-modern-chart-tab="count"
             role="tab"
+            tabindex="0"
             aria-selected="true"
             aria-controls="modern-count-chart-wrapper"
             class="modern-chart-tab border-b-2 border-blue-600 py-3 px-1 text-sm font-semibold text-blue-600"
@@ -157,6 +158,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
             id="modern-chart-tab-rank"
             data-modern-chart-tab="rank"
             role="tab"
+            tabindex="-1"
             aria-selected="false"
             aria-controls="modern-rank-chart-wrapper"
             class="modern-chart-tab border-b-2 border-transparent py-3 px-1 text-sm font-semibold text-gray-500 hover:border-gray-300 hover:text-gray-700"
@@ -312,10 +314,15 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       tab.addEventListener('keydown', event => {
         const currentIndex = tabs.indexOf(tab);
         let nextIndex = null;
-        if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabs.length;
-        if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
-        if (event.key === 'Home') nextIndex = 0;
-        if (event.key === 'End') nextIndex = tabs.length - 1;
+        if (event.key === 'ArrowRight') {
+          nextIndex = (currentIndex + 1) % tabs.length;
+        } else if (event.key === 'ArrowLeft') {
+          nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+        } else if (event.key === 'Home') {
+          nextIndex = 0;
+        } else if (event.key === 'End') {
+          nextIndex = tabs.length - 1;
+        }
         if (nextIndex !== null) {
           event.preventDefault();
           const nextTab = tabs[nextIndex];
@@ -580,6 +587,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .range([0, width]);
 
       const yScale = d3.scaleLinear()
+        // Inverted domain ensures lower numeric ranks (e.g., #1) render higher.
         .domain([maxRank, minRank])
         .range([height, 0]);
 
