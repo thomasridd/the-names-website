@@ -30,19 +30,9 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           <th scope="row" class="py-3 pr-4 text-left font-normal text-gray-900">Babies named {{ nameData.name }}</th>
           <td class="py-3 text-right font-bold text-gray-900">{{ nameData.count }}</td>
         </tr>
-        {% if nameData.classifications and nameData.classifications.five_year %}
-        <tr class="border-b border-gray-300">
-          <th scope="row" class="py-3 pr-4 text-left font-normal text-gray-900">Current trend (2020-2024)</th>
-          <td class="py-3 text-right">
-            <a href="/classifications/five_year/{{ nameData.classifications.five_year | lower | replace(' ', '-') | replace('(', '') | replace(')', '') }}/" class="inline-block px-3 py-1 bg-green-50 text-green-700 rounded-md hover:bg-green-100 transition-colors font-medium text-sm border border-green-200">
-              {{ nameData.classifications.five_year }}
-            </a>
-          </td>
-        </tr>
-        {% endif %}
         {% if nameData.classifications and nameData.classifications.recent %}
         <tr class="border-b border-gray-300">
-          <th scope="row" class="py-3 pr-4 text-left font-normal text-gray-900">Recent trend (1996-2024)</th>
+          <th scope="row" class="py-3 pr-4 text-left font-normal text-gray-900">Modern (1996-2024)</th>
           <td class="py-3 text-right">
             <a href="/classifications/recent/{{ nameData.classifications.recent | lower | replace(' ', '-') | replace('(', '') | replace(')', '') }}/" class="inline-block px-3 py-1 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100 transition-colors font-medium text-sm border border-blue-200">
               {{ nameData.classifications.recent }}
@@ -52,7 +42,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         {% endif %}
         {% if nameData.classifications and nameData.classifications.historic %}
         <tr class="border-b border-gray-300">
-          <th scope="row" class="py-3 pr-4 text-left font-normal text-gray-900">Historic trend (1904-2024)</th>
+          <th scope="row" class="py-3 pr-4 text-left font-normal text-gray-900">Historic (1904-2024)</th>
           <td class="py-3 text-right">
             <a href="/classifications/historic/{{ nameData.classifications.historic | lower | replace(' ', '-') | replace('(', '') | replace(')', '') }}/" class="inline-block px-3 py-1 bg-amber-50 text-amber-700 rounded-md hover:bg-amber-100 transition-colors font-medium text-sm border border-amber-200">
               {{ nameData.classifications.historic }}
@@ -96,7 +86,16 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
   </div>
   {% endif %}
 
+  {% set hasHistoricRankData = false %}
   {% if nameData.rankHistoric and nameData.rankHistoric.length > 0 %}
+    {% for historicRank in nameData.rankHistoric %}
+      {% if historicRank and historicRank != 'x' %}
+        {% set hasHistoricRankData = true %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  {% if hasHistoricRankData %}
   <div class="mb-8">
     <h2 class="text-2xl font-bold mb-2 text-gray-900">Historic Rankings</h2>
     <p class="text-gray-700 mb-4">Top 100 rankings from 1904 to 2024</p>
@@ -122,9 +121,6 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     <p class="text-gray-700 mb-4">Rankings from 1996 to 2024 (29 years)</p>
     {% set hasModernCountData = nameData.countFrom1996 and nameData.countFrom1996.length > 0 %}
     {% set defaultModernTab = 'rank' %}
-    {% if hasModernCountData %}
-      {% set defaultModernTab = 'count' %}
-    {% endif %}
 
     {% if nameData.classifications and nameData.classifications.recent %}
     <div class="mb-4 bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
@@ -146,10 +142,10 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
             id="modern-chart-tab-count"
             data-modern-chart-tab="count"
             role="tab"
-            tabindex="0"
-            aria-selected="true"
+            tabindex="-1"
+            aria-selected="false"
             aria-controls="modern-count-chart-wrapper"
-            class="modern-chart-tab border-b-2 border-blue-600 py-3 px-1 text-sm font-semibold text-blue-600"
+            class="modern-chart-tab border-b-2 border-transparent py-3 px-1 text-sm font-semibold text-gray-500 hover:border-gray-300 hover:text-gray-700"
           >
             Number of Babies
           </button>
@@ -158,10 +154,10 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
             id="modern-chart-tab-rank"
             data-modern-chart-tab="rank"
             role="tab"
-            tabindex="-1"
-            aria-selected="false"
+            tabindex="0"
+            aria-selected="true"
             aria-controls="modern-rank-chart-wrapper"
-            class="modern-chart-tab border-b-2 border-transparent py-3 px-1 text-sm font-semibold text-gray-500 hover:border-gray-300 hover:text-gray-700"
+            class="modern-chart-tab border-b-2 border-blue-600 py-3 px-1 text-sm font-semibold text-blue-600"
           >
             Rank
           </button>
@@ -281,7 +277,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       count: document.getElementById('modern-count-chart-wrapper'),
       rank: document.getElementById('modern-rank-chart-wrapper')
     };
-    const defaultTab = tabContainer.dataset.defaultTab || 'count';
+    const defaultTab = tabContainer.dataset.defaultTab || 'rank';
 
     function setActiveTab(tabName) {
       tabs.forEach(tab => {
@@ -694,7 +690,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 
 <script>
   // Historic rankings chart
-  {% if nameData.rankHistoric and nameData.rankHistoric.length > 0 %}
+  {% if hasHistoricRankData %}
   (function() {
     const data = {{ nameData.rankHistoric | dump | safe }};
     const decades = data.map((rank, i) => ({
