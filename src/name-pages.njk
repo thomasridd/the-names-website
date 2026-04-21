@@ -112,10 +112,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     </div>
     {% endif %}
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-      <div id="historic-chart" class="w-full" style="height: 300px;"></div>
-      <p class="text-xs text-gray-500 mt-3">Hover bars to see decade and rank.</p>
-    </div>
+    <div id="historic-chart" class="w-full mb-4" style="height: 300px;"></div>
   </div>
   {% endif %}
 
@@ -135,10 +132,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     </div>
     {% endif %}
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-      <div id="modern-chart" class="w-full" style="height: 400px;"></div>
-      <p class="text-xs text-gray-500 mt-3">Hover points to see year and count. Dashed lines show the count needed each year to reach ranks #10, #50, #100, #500, #1,000 and #5,000.</p>
-    </div>
+    <div id="modern-chart" class="w-full mb-4" style="height: 400px;"></div>
   </div>
   {% endif %}
 
