@@ -112,10 +112,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     </div>
     {% endif %}
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-      <div id="historic-chart" class="w-full" style="height: 300px;"></div>
-      <p class="text-xs text-gray-500 mt-3">Hover bars to see decade and rank.</p>
-    </div>
+    <div id="historic-chart" class="w-full mb-4" style="height: 300px;"></div>
   </div>
   {% endif %}
 
@@ -135,10 +132,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     </div>
     {% endif %}
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-      <div id="modern-chart" class="w-full" style="height: 400px;"></div>
-      <p class="text-xs text-gray-500 mt-3">Hover points to see year and count. Dashed lines show the count needed each year to reach ranks #10, #50, #100, #500, #1,000 and #5,000.</p>
-    </div>
+    <div id="modern-chart" class="w-full mb-4" style="height: 400px;"></div>
   </div>
   {% endif %}
 
@@ -257,21 +251,18 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
       const points = guidelineYears
         .map(g => ({ year: g.year, count: g.counts[t] }))
         .filter(p => typeof p.count === 'number');
-      const peak = points.length ? Math.max(...points.map(p => p.count)) : 0;
-      return { rank: t, points, peak };
+      const trough = points.length ? Math.min(...points.map(p => p.count)) : Infinity;
+      return { rank: t, points, trough };
     }).filter(s => s.points.length > 0);
 
-    // Extend the y-axis just enough to include the first guideline above the
-    // name's own peak, so readers can see the nearest rank milestone without
-    // squashing the name's own line.
-    const higher = guidelineSeries
-      .map(s => s.peak)
-      .filter(p => p > maxCount)
-      .sort((a, b) => a - b);
-    const yMax = Math.max(maxCount, higher[0] || 0);
+    // Keep the y-axis scaled to the name's own counts only — the guideline
+    // lines must not change the chart scale. Guidelines that fall outside
+    // the visible range are clipped.
+    const yMax = maxCount;
 
-    // Only draw guidelines that fit within the y-axis range.
-    const visibleGuidelines = guidelineSeries.filter(s => s.peak <= yMax);
+    // Skip guidelines whose lowest point is already above the y-axis max,
+    // because none of their line would be visible anyway.
+    const visibleGuidelines = guidelineSeries.filter(s => s.trough <= yMax);
 
     const container = document.getElementById('modern-chart');
     const margin = {top: 20, right: 70, bottom: 60, left: 60};
@@ -289,6 +280,17 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .attr('height', 400)
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
+
+      // Clip path so guideline lines that go above the chart area are cut off
+      // at the plot edge instead of stretching the axis.
+      const clipId = 'modern-chart-clip-' + Math.random().toString(36).slice(2, 9);
+      svg.append('defs').append('clipPath')
+        .attr('id', clipId)
+        .append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', width)
+        .attr('height', height);
 
       // X scale for years (horizontal)
       const xScale = d3.scaleLinear()
@@ -340,8 +342,10 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .y(d => yScale(d.count));
 
       const guidelineGroup = svg.append('g').attr('class', 'rank-guidelines');
+      const guidelinePaths = guidelineGroup.append('g')
+        .attr('clip-path', `url(#${clipId})`);
       visibleGuidelines.forEach(g => {
-        guidelineGroup.append('path')
+        guidelinePaths.append('path')
           .datum(g.points)
           .attr('fill', 'none')
           .attr('stroke', '#9ca3af')
@@ -349,16 +353,20 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
           .attr('stroke-dasharray', '4 3')
           .attr('d', lineGen);
 
-        // Label the line at the right-hand edge.
-        const lastPoint = g.points[g.points.length - 1];
-        guidelineGroup.append('text')
-          .attr('x', xScale(lastPoint.year) + 4)
-          .attr('y', yScale(lastPoint.count))
-          .attr('dy', '0.35em')
-          .attr('text-anchor', 'start')
-          .style('font-size', '10px')
-          .style('fill', '#6b7280')
-          .text(`#${g.rank}`);
+        // Label the line at the last point that falls within the visible
+        // range. Labels sit outside the clip-path so they can render in the
+        // right-hand margin.
+        const labelPoint = [...g.points].reverse().find(p => p.count <= yMax);
+        if (labelPoint) {
+          guidelineGroup.append('text')
+            .attr('x', xScale(labelPoint.year) + 4)
+            .attr('y', yScale(labelPoint.count))
+            .attr('dy', '0.35em')
+            .attr('text-anchor', 'start')
+            .style('font-size', '10px')
+            .style('fill', '#6b7280')
+            .text(`#${g.rank}`);
+        }
       });
 
       // Add main series dots
@@ -434,8 +442,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 
     // Set up dimensions
     const container = document.getElementById('historic-chart');
-    // Smaller left margin because decade axis labels are intentionally removed.
-    const margin = {top: 20, right: 40, bottom: 60, left: 30};
+    const margin = {top: 20, right: 40, bottom: 60, left: 60};
 
     function drawChart() {
       // Clear previous chart
@@ -477,6 +484,11 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .style('font-size', '14px')
         .style('fill', '#6b7280')
         .text('Rank (1 = Most Popular)');
+
+      // Add Y axis with decade labels
+      svg.append('g')
+        .call(d3.axisLeft(yScale))
+        .style('font-size', '12px');
 
       // Add bars
       const bars = svg.selectAll('.bar')
