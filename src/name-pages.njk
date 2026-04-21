@@ -448,8 +448,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 
     // Set up dimensions
     const container = document.getElementById('historic-chart');
-    // Smaller left margin because decade axis labels are intentionally removed.
-    const margin = {top: 20, right: 40, bottom: 60, left: 30};
+    const margin = {top: 20, right: 40, bottom: 60, left: 60};
 
     function drawChart() {
       // Clear previous chart
@@ -491,6 +490,11 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
         .style('font-size', '14px')
         .style('fill', '#6b7280')
         .text('Rank (1 = Most Popular)');
+
+      // Add Y axis with decade labels
+      svg.append('g')
+        .call(d3.axisLeft(yScale))
+        .style('font-size', '12px');
 
       // Add bars
       const bars = svg.selectAll('.bar')
