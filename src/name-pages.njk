@@ -120,6 +120,11 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
   <div class="mb-8">
     <h2 class="text-2xl font-bold mb-2 text-gray-900">Modern Rankings</h2>
     <p class="text-gray-700 mb-4">Rankings from 1996 to 2024 (29 years)</p>
+    {% set hasModernCountData = nameData.countFrom1996 and nameData.countFrom1996.length > 0 %}
+    {% set defaultModernTab = 'rank' %}
+    {% if hasModernCountData %}
+      {% set defaultModernTab = 'count' %}
+    {% endif %}
 
     {% if nameData.classifications and nameData.classifications.recent %}
     <div class="mb-4 bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
@@ -132,7 +137,37 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     </div>
     {% endif %}
 
-    <div id="modern-chart" class="w-full mb-4" style="height: 400px;"></div>
+    {% if hasModernCountData %}
+    <div class="mb-4">
+      <div class="border-b border-gray-200">
+        <nav id="modern-chart-tabs" class="-mb-px flex gap-6" aria-label="Modern chart tabs" data-default-tab="{{ defaultModernTab }}">
+          <button
+            type="button"
+            data-modern-chart-tab="count"
+            class="modern-chart-tab border-b-2 border-blue-600 py-3 px-1 text-sm font-semibold text-blue-600"
+          >
+            Number of Babies
+          </button>
+          <button
+            type="button"
+            data-modern-chart-tab="rank"
+            class="modern-chart-tab border-b-2 border-transparent py-3 px-1 text-sm font-semibold text-gray-500 hover:border-gray-300 hover:text-gray-700"
+          >
+            Rank
+          </button>
+        </nav>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if hasModernCountData %}
+    <div id="modern-count-chart-wrapper" class="w-full mb-4">
+      <div id="modern-count-chart" class="w-full" style="height: 400px;"></div>
+    </div>
+    {% endif %}
+    <div id="modern-rank-chart-wrapper" class="w-full mb-4 {% if hasModernCountData %}hidden{% endif %}">
+      <div id="modern-rank-chart" class="w-full" style="height: 400px;"></div>
+    </div>
   </div>
   {% endif %}
 
@@ -225,6 +260,44 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 </article>
 
 <script>
+  // Tabs for modern charts
+  {% if nameData.rankFrom1996 and nameData.rankFrom1996.length > 0 %}
+  (function() {
+    const tabContainer = document.getElementById('modern-chart-tabs');
+    if (!tabContainer) return;
+
+    const tabs = Array.from(tabContainer.querySelectorAll('[data-modern-chart-tab]'));
+    const views = {
+      count: document.getElementById('modern-count-chart-wrapper'),
+      rank: document.getElementById('modern-rank-chart-wrapper')
+    };
+    const defaultTab = tabContainer.dataset.defaultTab || 'count';
+
+    function setActiveTab(tabName) {
+      tabs.forEach(tab => {
+        const isActive = tab.dataset.modernChartTab === tabName;
+        tab.classList.toggle('border-blue-600', isActive);
+        tab.classList.toggle('text-blue-600', isActive);
+        tab.classList.toggle('border-transparent', !isActive);
+        tab.classList.toggle('text-gray-500', !isActive);
+      });
+
+      Object.entries(views).forEach(([name, el]) => {
+        if (!el) return;
+        el.classList.toggle('hidden', name !== tabName);
+      });
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => setActiveTab(tab.dataset.modernChartTab));
+    });
+
+    setActiveTab(defaultTab);
+  })();
+  {% endif %}
+</script>
+
+<script>
   // Modern rankings dot plot with count on y-axis
   {% if nameData.countFrom1996 and nameData.countFrom1996.length > 0 %}
   (function() {
@@ -264,17 +337,17 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     // because none of their line would be visible anyway.
     const visibleGuidelines = guidelineSeries.filter(s => s.trough <= yMax);
 
-    const container = document.getElementById('modern-chart');
+    const container = document.getElementById('modern-count-chart');
     const margin = {top: 20, right: 70, bottom: 60, left: 60};
 
     function drawChart() {
-      d3.select('#modern-chart').selectAll('*').remove();
+      d3.select('#modern-count-chart').selectAll('*').remove();
 
       const containerWidth = container.clientWidth;
       const width = containerWidth - margin.left - margin.right;
       const height = 400 - margin.top - margin.bottom;
 
-      const svg = d3.select('#modern-chart')
+      const svg = d3.select('#modern-count-chart')
         .append('svg')
         .attr('width', containerWidth)
         .attr('height', 400)
@@ -283,7 +356,7 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
 
       // Clip path so guideline lines that go above the chart area are cut off
       // at the plot edge instead of stretching the axis.
-      const clipId = 'modern-chart-clip-' + Math.random().toString(36).slice(2, 9);
+      const clipId = 'modern-count-chart-clip-' + Math.random().toString(36).slice(2, 9);
       svg.append('defs').append('clipPath')
         .attr('id', clipId)
         .append('rect')
@@ -420,6 +493,131 @@ permalink: /names/{{ nameData.gender | lower }}/{{ nameData.uniqueSlug }}/
     drawChart();
 
     // Redraw on window resize
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(drawChart, 250);
+    });
+  })();
+  {% endif %}
+</script>
+
+<script>
+  // Modern rankings dot plot with rank on y-axis
+  {% if nameData.rankFrom1996 and nameData.rankFrom1996.length > 0 %}
+  (function() {
+    const rankDataRaw = {{ nameData.rankFrom1996 | dump | safe }};
+    const startYear = 1996;
+    const chartData = rankDataRaw.map((rank, i) => ({
+      year: startYear + i,
+      rank: rank === 'x' ? null : parseInt(rank)
+    })).filter(d => d.rank !== null && !Number.isNaN(d.rank));
+
+    const allRanks = chartData.map(d => d.rank);
+    const maxRank = allRanks.length > 0 ? Math.max(...allRanks) : 1;
+    const minRank = allRanks.length > 0 ? Math.min(...allRanks) : 1;
+
+    const container = document.getElementById('modern-rank-chart');
+    const margin = {top: 20, right: 40, bottom: 60, left: 60};
+
+    function drawChart() {
+      d3.select('#modern-rank-chart').selectAll('*').remove();
+
+      const containerWidth = container.clientWidth;
+      const width = containerWidth - margin.left - margin.right;
+      const height = 400 - margin.top - margin.bottom;
+
+      const svg = d3.select('#modern-rank-chart')
+        .append('svg')
+        .attr('width', containerWidth)
+        .attr('height', 400)
+        .append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+
+      const xScale = d3.scaleLinear()
+        .domain([1996, 2024])
+        .range([0, width]);
+
+      const yScale = d3.scaleLinear()
+        .domain([maxRank, Math.min(1, minRank)])
+        .range([height, 0]);
+
+      svg.append('g')
+        .attr('transform', `translate(0,${height})`)
+        .call(d3.axisBottom(xScale)
+          .ticks(7)
+          .tickFormat(d3.format('d')))
+        .style('font-size', '12px');
+
+      svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', height + 50)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '14px')
+        .style('fill', '#6b7280')
+        .text('Year');
+
+      svg.append('g')
+        .call(d3.axisLeft(yScale).ticks(5).tickFormat(d3.format('d')))
+        .style('font-size', '12px');
+
+      svg.append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('x', -height / 2)
+        .attr('y', -45)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '14px')
+        .style('fill', '#6b7280')
+        .text('Rank (1 = Most Popular)');
+
+      svg.selectAll('.dot')
+        .data(chartData)
+        .join('circle')
+        .attr('class', 'dot')
+        .attr('cx', d => xScale(d.year))
+        .attr('cy', d => yScale(d.rank))
+        .attr('r', 4)
+        .attr('fill', '#dc2626')
+        .attr('opacity', 0.8)
+        .on('mouseover', function(event, d) {
+          d3.select(this)
+            .attr('r', 6)
+            .attr('opacity', 1);
+
+          const tooltip = svg.append('g')
+            .attr('class', 'tooltip')
+            .attr('transform', `translate(${xScale(d.year) + 10},${yScale(d.rank)})`);
+
+          const text = tooltip.append('text')
+            .attr('text-anchor', 'start')
+            .style('font-size', '11px')
+            .style('font-weight', '600')
+            .style('fill', '#991b1b')
+            .text(`${d.year}: #${d.rank}`);
+
+          const bbox = text.node().getBBox();
+          tooltip.insert('rect', 'text')
+            .attr('x', bbox.x - 4)
+            .attr('y', bbox.y - 2)
+            .attr('width', bbox.width + 8)
+            .attr('height', bbox.height + 4)
+            .attr('fill', 'white')
+            .attr('stroke', '#dc2626')
+            .attr('stroke-width', 1)
+            .attr('rx', 3);
+
+          text.raise();
+        })
+        .on('mouseout', function() {
+          d3.select(this)
+            .attr('r', 4)
+            .attr('opacity', 0.8);
+          svg.selectAll('.tooltip').remove();
+        });
+    }
+
+    drawChart();
+
     let resizeTimeout;
     window.addEventListener('resize', function() {
       clearTimeout(resizeTimeout);
