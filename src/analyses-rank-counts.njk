@@ -1,0 +1,56 @@
+---
+permalink: /analyses/rank-counts/
+---
+
+{% extends "base.njk" %}
+
+{% block title %}Rank vs Baby Count - Analyses - {{ siteConfig.title }}{% endblock %}
+{% block description %}Count of babies needed to reach selected ranks for 1996, 2010 and 2024{% endblock %}
+
+{% block content %}
+<article class="bg-white rounded-lg p-6 sm:p-8 shadow-sm">
+  <div class="mb-6">
+    <div class="mb-2">
+      <a href="/analyses/" class="text-green-600 hover:text-green-700 text-sm">&larr; All Analyses</a>
+    </div>
+    <h1 class="text-4xl font-bold mb-2 text-gray-900">Rank vs Baby Count</h1>
+    <p class="text-lg text-gray-600">
+      For each selected year, the table shows the baby count needed to reach each rank threshold.
+    </p>
+  </div>
+
+  {% set genders = ['Boy', 'Girl'] %}
+  {% for gender in genders %}
+  <section class="{{ 'mb-10' if not loop.last else '' }}">
+    <h2 class="text-2xl font-bold mb-4 {{ 'text-blue-900 border-blue-500' if gender == 'Boy' else 'text-pink-900 border-pink-500' }} border-b-2 pb-2">
+      {{ 'Boys' if gender == 'Boy' else 'Girls' }}
+    </h2>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full border border-gray-200 rounded-lg text-sm">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="text-left px-4 py-2 border-b border-gray-200 font-semibold text-gray-700">Year</th>
+            {% for rank in rankCountAnalysis.ranks %}
+            <th class="text-right px-4 py-2 border-b border-gray-200 font-semibold text-gray-700">Rank {{ rank }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rankCountAnalysis[gender] %}
+          <tr class="{{ 'bg-white' if loop.index0 % 2 == 0 else 'bg-gray-50' }}">
+            <td class="px-4 py-2 border-b border-gray-100 font-medium text-gray-900">{{ row.year }}</td>
+            {% for rank in rankCountAnalysis.ranks %}
+            <td class="px-4 py-2 border-b border-gray-100 text-right text-gray-700">
+              {{ row.counts[rank] | formatNumber }}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endfor %}
+</article>
+{% endblock %}
