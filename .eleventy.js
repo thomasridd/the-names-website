@@ -280,6 +280,47 @@ module.exports = function(eleventyConfig) {
     return result;
   });
 
+  // Count thresholds needed to reach selected ranks for selected years.
+  // For each gender/year, this computes the count at exact rank positions.
+  eleventyConfig.addGlobalData('rankCountAnalysis', () => {
+    const startYear = 1996;
+    const targetYears = [1996, 2010, 2024];
+    const targetRanks = [1, 10, 50, 100, 250, 500, 750, 1000, 2000, 5000];
+    const result = { years: targetYears, ranks: targetRanks, Boy: [], Girl: [] };
+
+    const buildFor = (filename, gender) => {
+      const filePath = path.join(__dirname, 'data', `${filename}${dataSuffix}`);
+      if (!fs.existsSync(filePath)) return;
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+
+      for (const year of targetYears) {
+        const yearIndex = year - startYear;
+        const counts = [];
+
+        if (yearIndex >= 0) {
+          for (const n of data) {
+            if (!Array.isArray(n.countFrom1996) || yearIndex >= n.countFrom1996.length) continue;
+            const c = parseInt(n.countFrom1996[yearIndex], 10);
+            if (!isNaN(c)) counts.push(c);
+          }
+        }
+
+        counts.sort((a, b) => b - a);
+        const yearEntry = { year, counts: {} };
+
+        for (const rank of targetRanks) {
+          yearEntry.counts[rank] = rank <= counts.length ? counts[rank - 1] : null;
+        }
+
+        result[gender].push(yearEntry);
+      }
+    };
+
+    buildFor('boys', 'Boy');
+    buildFor('girls', 'Girl');
+    return result;
+  });
+
   // Load experiment classification data
   function loadExperimentsData() {
     const experimentsDir = path.join(__dirname, 'experiment-data');
