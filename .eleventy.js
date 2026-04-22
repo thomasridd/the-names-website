@@ -333,13 +333,16 @@ module.exports = function(eleventyConfig) {
       const filePath = path.join(__dirname, 'data', `${filename}${dataSuffix}`);
       if (!fs.existsSync(filePath)) return;
       const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      const validSeries = data
+        .map(n => n.countFrom1996)
+        .filter(series => Array.isArray(series) && series.length > 0);
 
       for (let y = 0; y < numYears; y++) {
         const counts = [];
 
-        for (const n of data) {
-          if (!Array.isArray(n.countFrom1996) || y >= n.countFrom1996.length) continue;
-          const c = parseInt(n.countFrom1996[y], 10);
+        for (const series of validSeries) {
+          if (y >= series.length) continue;
+          const c = parseInt(series[y], 10);
           if (!isNaN(c)) counts.push(c);
         }
 
