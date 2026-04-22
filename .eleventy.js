@@ -321,6 +321,51 @@ module.exports = function(eleventyConfig) {
     return result;
   });
 
+  // For each modern year (1996-2024), compute the rank a hypothetical name
+  // would achieve for selected baby-count values.
+  eleventyConfig.addGlobalData('countToRankAnalysis', () => {
+    const startYear = 1996;
+    const numYears = 29;
+    const targetCounts = [1000, 500, 200, 100, 50, 20];
+    const result = { counts: targetCounts, Boy: [], Girl: [] };
+
+    const buildFor = (filename, gender) => {
+      const filePath = path.join(__dirname, 'data', `${filename}${dataSuffix}`);
+      if (!fs.existsSync(filePath)) return;
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      const validSeries = data
+        .map(n => n.countFrom1996)
+        .filter(series => Array.isArray(series) && series.length > 0);
+
+      for (let y = 0; y < numYears; y++) {
+        const counts = [];
+
+        for (const series of validSeries) {
+          if (y >= series.length) continue;
+          const c = parseInt(series[y], 10);
+          if (!isNaN(c)) counts.push(c);
+        }
+
+        counts.sort((a, b) => b - a);
+        const row = { year: startYear + y, ranks: {} };
+
+        for (const targetCount of targetCounts) {
+          let higherCounts = 0;
+          while (higherCounts < counts.length && counts[higherCounts] > targetCount) {
+            higherCounts++;
+          }
+          row.ranks[targetCount] = higherCounts + 1;
+        }
+
+        result[gender].push(row);
+      }
+    };
+
+    buildFor('boys', 'Boy');
+    buildFor('girls', 'Girl');
+    return result;
+  });
+
   // Load experiment classification data
   function loadExperimentsData() {
     const experimentsDir = path.join(__dirname, 'experiment-data');

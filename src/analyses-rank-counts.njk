@@ -5,7 +5,7 @@ permalink: /analyses/rank-counts/
 {% extends "base.njk" %}
 
 {% block title %}Rank vs Baby Count - Analyses - {{ siteConfig.title }}{% endblock %}
-{% block description %}Count of babies needed to reach selected ranks for 1996, 2010 and 2024{% endblock %}
+{% block description %}For each year, see the rank achieved at selected baby-count levels{% endblock %}
 
 {% block content %}
 <article class="bg-white rounded-lg p-6 sm:p-8 shadow-sm">
@@ -15,7 +15,7 @@ permalink: /analyses/rank-counts/
     </div>
     <h1 class="text-4xl font-bold mb-2 text-gray-900">Rank vs Baby Count</h1>
     <p class="text-lg text-gray-600">
-      For each selected year, the table shows the baby count needed to reach each rank threshold.
+      For each year, the table shows the rank achieved at selected baby-count values.
     </p>
   </div>
 
@@ -31,18 +31,18 @@ permalink: /analyses/rank-counts/
         <thead class="bg-gray-50">
           <tr>
             <th class="text-left px-4 py-2 border-b border-gray-200 font-semibold text-gray-700">Year</th>
-            {% for rank in rankCountAnalysis.ranks %}
-            <th class="text-right px-4 py-2 border-b border-gray-200 font-semibold text-gray-700">Rank {{ rank }}</th>
+            {% for count in countToRankAnalysis.counts %}
+            <th class="text-right px-4 py-2 border-b border-gray-200 font-semibold text-gray-700">Count {{ count | formatNumber }}</th>
             {% endfor %}
           </tr>
         </thead>
         <tbody>
-          {% for row in rankCountAnalysis[gender] %}
+          {% for row in countToRankAnalysis[gender] %}
           <tr class="{{ 'bg-white' if loop.index0 % 2 == 0 else 'bg-gray-50' }}">
             <td class="px-4 py-2 border-b border-gray-100 font-medium text-gray-900">{{ row.year }}</td>
-            {% for rank in rankCountAnalysis.ranks %}
+            {% for count in countToRankAnalysis.counts %}
             <td class="px-4 py-2 border-b border-gray-100 text-right text-gray-700">
-              {{ row.counts[rank] | formatNumber }}
+              {{ row.ranks[count] | formatNumber }}
             </td>
             {% endfor %}
           </tr>
