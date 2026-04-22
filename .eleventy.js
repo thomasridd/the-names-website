@@ -326,7 +326,7 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.addGlobalData('countToRankAnalysis', () => {
     const startYear = 1996;
     const numYears = 29;
-    const targetCounts = [1000, 500, 200, 100, 50, 20];
+    const targetCounts = [105, 100, 95, 55, 50, 45, 25, 20, 15];
     const result = { counts: targetCounts, Boy: [], Girl: [] };
 
     const buildFor = (filename, gender) => {
