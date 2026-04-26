@@ -1,6 +1,6 @@
 # CLAUDE.md - AI Assistant Guide for the-names-website
 
-**Last Updated:** December 12, 2025
+**Last Updated:** April 26, 2026
 **Project:** the-names-website
 **Description:** A website for thinking about names
 **Owner:** thomasridd
@@ -25,34 +25,28 @@
 ## Project Overview
 
 ### Purpose
-The-names-website is a **static website generator** for exploring baby name trends and popularity over time. It:
+The-names-website is a **static website generator** for exploring 120+ years of baby name trends (1904–2024) across 40,000+ names. It:
 - Generates thousands of individual name pages from JSON data sources
-- Classifies names by popularity trends (recent and historic patterns)
-- Provides a browsable classification system
-- Outputs a fully static website optimized for deployment
+- Classifies names by popularity trend patterns (three classification dimensions)
+- Provides browsable classification pages, analysis pages, and a fuzzy search
+- Outputs a fully static website optimised for Netlify deployment
 
 ### Project Type
-**Static Site Generator (SSG)** - Data-driven static website with:
-- ✅ JSON-based page generation (one page per name)
-- ✅ Template-based rendering with Nunjucks
-- ✅ Classification system (31 unique pattern types)
-- ✅ Clean URL structure with unique slugs
-- ✅ Thousands of generated pages
+**Static Site Generator (SSG)** — Data-driven static website with:
+- JSON-based page generation (one page per name)
+- Template-based rendering with Nunjucks
+- Classification system (three dimensions: five-year, recent, historic)
+- Clean URL structure with unique slugs
+- Thousands of generated pages including analyses and experiments
 
 ### Current Status
-✅ **PRODUCTION READY** - Full-featured static site with:
-- Production name data (thousands of boys' and girls' names)
-- Complete classification system (15 recent + 16 historic patterns)
-- Clean URL structure with unique slug handling
-- Responsive Tailwind CSS design
-- Multiple page types (homepage, listings, individual pages)
-- Working build system generating thousands of static pages
-
-### Repository Information
-- **Repository:** thomasridd/the-names-website
-- **Git Remote:** Local Git proxy
-- **Primary Contact:** Tom Ridd (twridd@gmail.com)
-- **Initial Commit:** December 7, 2025
+**PRODUCTION READY** — Full-featured static site with:
+- Production name data (~40,000 boys' and girls' names)
+- Three-dimensional classification system (five_year, recent, historic)
+- Fuzzy client-side search (Fuse.js + pre-built search index)
+- Netlify deployment configured (netlify.toml)
+- Analysis pages: clusters, faded names, heatmaps, rank-count tables
+- Responsive Tailwind CSS design with D3.js chart visualisations
 
 ---
 
@@ -61,611 +55,420 @@ The-names-website is a **static website generator** for exploring baby name tren
 ### What Exists
 
 #### Core Infrastructure
-- ✅ Git repository initialized with remote connection
-- ✅ 11ty static site generator configured (.eleventy.js)
-- ✅ Tailwind CSS v4 integrated with PostCSS build pipeline
-- ✅ npm scripts for development and production builds
-- ✅ .gitignore file configured
+- Git repository with Netlify CI/CD (`netlify.toml`)
+- 11ty static site generator (`.eleventy.js`, 1,100+ lines)
+- Tailwind CSS v4 with PostCSS build pipeline
+- npm scripts for development and production builds
+- `.gitignore` excluding `_site/`, `node_modules/`, and dev data files
 
 #### Data
-- ✅ Production JSON data files (data/boys.json, data/girls.json) - ~18.7MB total
-- ✅ Classification descriptions (data/classification-descriptions.json)
-- ✅ Sample CSV data (data/names.csv) - used for homepage features
-- ✅ Each name includes:
-  - Basic info: name, rank, count, gender
-  - 29 years of recent rankings (1996-2024)
-  - 13 decades of historic rankings (1904-2024)
-  - Recent and historic classifications
-  - Unique slug for clean URLs
+- Production JSON: `data/boys.json` and `data/girls.json` (~18.7 MB total, ~40,000 names)
+- Dev JSON: `data/boys-dev.json` and `data/girls-dev.json` (top 500 each — gitignored)
+- `data/classification-descriptions.json` — human-readable labels for all classifications
+- `data/source/` — raw CSV files (source of truth for name rankings)
+- `data/all_ranks.csv`, `data/countTimeSeries.csv`, `data/rankHistoricTimeSeries.csv` — intermediate analytics CSVs
+- `analysis_output/` — pre-computed clustering results consumed by `add-five-year-classifications.js`
 
 #### Templates & Pages
-- ✅ Base layout template (src/templates/base.njk)
-- ✅ Homepage (src/index.njk)
-- ✅ All names listing (src/names.njk)
-- ✅ Individual name pages (src/name-pages.njk) - thousands generated
-- ✅ Classifications overview (src/classifications.njk)
-- ✅ Individual classification pages (src/classification-pages.njk)
-- ✅ Responsive design with Tailwind utility classes
+- `src/templates/base.njk` — master HTML layout with header nav and embedded Fuse.js search
+- `src/index.njk` — homepage with classification showcases and featured name journeys
+- `src/names.njk` — all names listing
+- `src/name-pages.njk` — individual name pages (thousands generated via 11ty pagination)
+- `src/classifications.njk` — classification overview page
+- `src/classification-pages.njk` — individual classification pages
+- `src/top-100.njk` — current top-100 names page
+- `src/analyses.njk` — analyses hub page
+- `src/analyses-clusters.njk` — historic cluster visualisation
+- `src/analyses-faded-names.njk` — faded names analysis
+- `src/analyses-heatmap.njk` — historic presence heatmap
+- `src/analyses-labelled-clusters.njk` — labelled cluster breakdown
+- `src/analyses-rank-counts.njk` — rank vs baby count analysis tables
+- `src/experiments.njk` — experimental clustering approaches hub
+- `src/experiment-index-pages.njk` — individual experiment pages
 
 #### Scripts
-- ✅ Python data generators (scripts/generate_boys_json.py, scripts/generate_girls_json.py)
-- ✅ Classification processors (scripts/add-recent-classifications.js, scripts/add-historic-classifications.js)
-- ✅ Unique slug generator (scripts/generate-unique-slugs.js)
+**Data Generation:**
+- `scripts/generate_boys_json.py`, `scripts/generate_girls_json.py` — CSV → initial JSON
+- `scripts/create-dev-data.js` — generates top-500 dev subset
+
+**Enrichment (run in order after generation):**
+- `scripts/generate-unique-slugs.js` → `uniqueSlug`
+- `scripts/add-historic-profiles.js` → `historic-profile`
+- `scripts/add-synonyms.js` → `relatedNames`
+- `scripts/add-related-totals.js` → `relatedTotalCountFrom1996`
+- `scripts/add-related-ranks.js` → `relatedNamesWithRank`
+- `scripts/add-all-bullet-points.js` (orchestrates `add-bullet-point-1.js` through `add-bullet-point-4.js`) → `bulletPoint1`–`bulletPoint4`
+
+**Classification Assignment:**
+- `scripts/add-five-year-classifications.js` → `classifications.five_year` (reads `analysis_output/since_2020/features_with_clusters.csv`)
+- `scripts/add-recent-classifications.js` → `classifications.recent`
+- `scripts/add-historic-classifications.js` → `classifications.historic`
+- `scripts/refine-historic-classifications.js` — post-processes historic labels
+- `scripts/reorganize-classifications.js` — one-off structural migration (dead code, do not re-run)
+- `scripts/update-cluster-classifications.js` — syncs from cluster analysis output
+- `scripts/update-historic-classifications-from-archetypes.js` — syncs from archetype CSV
+
+**Analysis (Python, output goes to `analysis_output/`):**
+- `scripts/analyze_all_ranks.py`, `scripts/analyze_recent_5yr.py`, `scripts/analyze_historic_features.py`
+- `scripts/analyze_name_features.py`, `scripts/analyze_unpopular_names.py`, `scripts/timeseries_clustering.py`
+
+**Intermediate CSV Extractors:**
+- `scripts/create-all-ranks-csv.js`, `scripts/extract-count-timeseries.js`, `scripts/extract-rank-historic-timeseries.js`
 
 #### Features
-- ✅ Clean URL structure: `/names/boy/unique-slug/` and `/names/girl/unique-slug/`
-- ✅ Gender-separated name organization
-- ✅ Popularity trend visualization (grid display of rankings)
-- ✅ Classification badges on name pages
-- ✅ Browse by classification pages
-- ✅ Basic search placeholder (ready for enhancement)
+- Clean URL structure: `/names/boy/unique-slug/` and `/names/girl/unique-slug/`
+- Gender-separated name organisation
+- D3.js charts for historic (decade-by-decade) and modern (1996–2024) rankings
+- Tabbed chart/data-table view on name pages
+- Classification badges with links on name pages
+- Fuzzy search via Fuse.js (threshold 0.3, 10 results, keyboard-navigable)
+- Search index generated at build time: `_site/search-index.json`
+- Related names section with current ranks
+- Four narrative bullet points per name
+- Analysis pages: clusters, heatmaps, faded names, rank-count analysis
 
 ### What Doesn't Exist Yet
-- ❌ Advanced search (Fuse.js, Lunr.js, or Pagefind)
-- ❌ Search index generation
-- ❌ CI/CD pipelines
-- ❌ Deployment configuration
-- ❌ Performance optimizations (minification, lazy loading)
-
-### Next Steps for Development
-1. **Enhance Search** - Integrate Fuse.js or Pagefind for client-side search
-2. **Generate Search Index** - Build JSON index during compilation
-3. **Set Up CI/CD** - GitHub Actions for automated builds
-4. **Configure Deployment** - Deploy to Netlify, Vercel, or Cloudflare Pages
-5. **Optimize Performance** - Minify CSS/JS, optimize build time
-6. **Add Analytics** - Track popular names and classifications
+- Single `npm run build:data` command (pipeline is a hand-ordered sequence of scripts — see `docs/DATA-PIPELINE.md`)
+- Year-agnostic CSV parsing (year range is hardcoded as `range(1996, 2025)` in Python scripts)
+- CI/CD for data regeneration (Netlify builds the site; data must be updated manually)
 
 ---
 
 ## Repository Structure
 
-### Current Structure
-
 ```
 the-names-website/
-├── .git/                           # Git version control
-├── .claude/                        # Claude Code configuration
-│   └── settings.local.json
-├── data/                           # Data source files
-│   ├── boys.json                   # Boys names (~9.3MB, thousands of entries)
-│   ├── girls.json                  # Girls names (~9.4MB, thousands of entries)
-│   ├── classification-descriptions.json  # Descriptions for all classifications
-│   └── names.csv                   # Sample data for homepage
-├── scripts/                        # Data processing scripts
-│   ├── generate_boys_json.py       # Python script to generate boys.json
-│   ├── generate_girls_json.py      # Python script to generate girls.json
-│   ├── add-recent-classifications.js    # Add recent (1996-2024) classifications
-│   ├── add-historic-classifications.js  # Add historic (1904-2024) classifications
-│   └── generate-unique-slugs.js    # Generate unique slugs for duplicate names
-├── src/                            # Source templates and assets
-│   ├── templates/                  # Page templates
-│   │   └── base.njk                # Base layout template
-│   ├── styles/                     # CSS/styling files
-│   │   └── main.css                # Tailwind CSS entry point
-│   ├── scripts/                    # JavaScript files
-│   │   └── search.js               # Client-side search (placeholder)
-│   ├── index.njk                   # Homepage template
-│   ├── names.njk                   # All names listing template
-│   ├── name-pages.njk              # Individual name page template (pagination)
-│   ├── classifications.njk         # Classifications overview page
-│   └── classification-pages.njk    # Individual classification page template
-├── _site/                          # Generated static output (gitignored)
-│   ├── index.html
-│   ├── names/
-│   │   ├── boy/                    # Boys name pages
-│   │   │   ├── muhammad/
-│   │   │   ├── noah/
-│   │   │   └── ... (thousands more)
-│   │   ├── girl/                   # Girls name pages
-│   │   │   ├── olivia/
-│   │   │   ├── amelia/
-│   │   │   └── ... (thousands more)
-│   │   └── index.html
-│   ├── classifications/
-│   │   ├── recent/                 # Recent classification pages
-│   │   │   ├── timeless/
-│   │   │   ├── shooting-star/
-│   │   │   └── ...
-│   │   ├── historic/               # Historic classification pages
-│   │   │   ├── century-classic/
-│   │   │   ├── golden-age/
-│   │   │   └── ...
-│   │   └── index.html
+├── .git/
+├── .claude/
+│   └── settings.local.json          # Claude Code permissions allowlist
+├── data/
+│   ├── boys.json                    # ~9.3 MB production data
+│   ├── girls.json                   # ~9.4 MB production data
+│   ├── boys-dev.json                # top-500 subset (gitignored, generated)
+│   ├── girls-dev.json               # top-500 subset (gitignored, generated)
+│   ├── classification-descriptions.json
+│   ├── names.csv                    # small sample for homepage fallback
+│   ├── all_ranks.csv                # intermediate analytics
+│   ├── countTimeSeries.csv
+│   ├── rankHistoricTimeSeries.csv
+│   └── source/                      # raw source CSVs
+│       ├── Boys-from-1996.csv
+│       ├── Girls-from-1996.csv
+│       ├── Boys-Historic-Top-100.csv
+│       └── Girls-Historic-Top-100.csv
+├── scripts/                         # data processing and analysis scripts
+├── src/
+│   ├── templates/
+│   │   └── base.njk                 # master layout (nav, search, footer)
 │   ├── styles/
-│   │   └── main.css                # Compiled Tailwind CSS
-│   └── scripts/
-│       └── search.js
-├── .gitignore                      # Git ignore rules
-├── .eleventy.js                    # 11ty configuration
-├── package.json                    # Node.js dependencies and scripts
+│   │   └── main.css                 # Tailwind CSS entry point
+│   ├── scripts/
+│   │   └── search.js                # Fuse.js client-side search (161 lines)
+│   ├── index.njk
+│   ├── names.njk
+│   ├── name-pages.njk
+│   ├── classifications.njk
+│   ├── classification-pages.njk
+│   ├── top-100.njk
+│   ├── analyses.njk
+│   ├── analyses-clusters.njk
+│   ├── analyses-faded-names.njk
+│   ├── analyses-heatmap.njk
+│   ├── analyses-labelled-clusters.njk
+│   ├── analyses-rank-counts.njk
+│   ├── experiments.njk
+│   └── experiment-index-pages.njk
+├── docs/
+│   ├── CLASSIFICATIONS.md           # classifier contract and label definitions
+│   ├── DATA-PIPELINE.md             # full data pipeline documentation
+│   ├── FEATURES.md                  # site surface contract
+│   └── README.md
+├── analysis_output/                 # pre-computed clustering results
+│   ├── since_2020/
+│   │   └── features_with_clusters.csv  # INPUT to add-five-year-classifications.js
+│   ├── all_ranks/
+│   ├── historic/
+│   ├── popular_names_500/
+│   └── unpopular_names_below_500/
+├── experiment-data/                 # alternative clustering experiments
+├── _site/                           # generated output (gitignored)
+├── .eleventy.js                     # 11ty configuration (~1,100 lines)
+├── package.json
 ├── package-lock.json
-├── postcss.config.js               # PostCSS configuration
-├── tailwind.config.js              # Tailwind CSS configuration
-├── README.md                       # Project documentation
-└── CLAUDE.md                       # This file - AI assistant guide
+├── postcss.config.js
+├── tailwind.config.js
+├── netlify.toml                     # Netlify deployment config
+├── README.md
+└── CLAUDE.md                        # this file
 ```
 
 ---
 
 ## Data Sources
 
-### JSON Data Files
+### Per-Name JSON Schema
 
-The primary data source is **JSON files** containing comprehensive name information:
+Each entry in `data/boys.json` and `data/girls.json` contains:
 
-**Files:**
-- `data/boys.json` - ~9.3MB, thousands of boys' names
-- `data/girls.json` - ~9.4MB, thousands of girls' names
-
-**Data Structure:**
-Each name object contains:
 ```json
 {
   "name": "Muhammad",
   "rank": 1,
   "count": 5721,
-  "rankFrom1996": ["108", "95", "89", ...],  // 29 values (1996-2024)
-  "rankHistoric": ["x", "x", "46", ...],      // 13 values (1910s-2020s by decade)
-  "recentClassification": "Shooting Star",
-  "historicClassification": "Modern Era",
+  "rankFrom1996": ["108", "95", ..., "1"],     // 29 values (1996–2024), "x" = unranked
+  "countFrom1996": ["441", "552", ..., "5721"], // 29 values (1996–2024)
+  "rankHistoric": ["x", "x", ..., "51", "14", "1"], // 13 values (1910s–2020s per decade)
   "uniqueSlug": "muhammad",
-  "gender": "Boy"  // Added during processing
-}
-```
-
-**Rank Data:**
-- `rankFrom1996`: Array of 29 values (1996-2024), one per year
-- `rankHistoric`: Array of 13 values (1910s-2020s), one per decade
-- Values: Numeric rank (1-999+) or "x" (unranked)
-
-**Classifications:**
-- `recentClassification`: One of 15 pattern types (1996-2024)
-- `historicClassification`: One of 16 pattern types (1904-2024)
-
-**URL Structure:**
-- Gender-separated: `/names/boy/unique-slug/` or `/names/girl/unique-slug/`
-- `uniqueSlug` handles duplicate names across genders (e.g., "jordan-1", "jordan-2")
-
-### Classification Descriptions
-
-**File:** `data/classification-descriptions.json`
-
-Contains human-readable descriptions for each classification type:
-```json
-{
-  "recent": {
-    "Timeless": "Maintains high popularity...",
-    "Shooting Star": "Dramatic rise of 300+ positions...",
-    ...
+  "historic-profile": {
+    "1-early-century": { "best-rank": null, "best-decade": null, "popularity": 0 },
+    "2-mid-century":   { "best-rank": null, "best-decade": null, "popularity": 0 },
+    "3-end-century":   { "best-rank": null, "best-decade": null, "popularity": 0 },
+    "4-recent":        { "best-rank": 1, "best-decade": "2020s", "popularity": 5 }
   },
-  "historic": {
-    "Century Classic": "Appears in top 100 in 10+ decades...",
-    "Golden Age": "Dominated (top 20) for 3-5 consecutive decades...",
-    ...
+  "relatedNames": ["Mohamed", "Mohammed", ...],
+  "relatedTotalCountFrom1996": ["3092", ..., "3481"],
+  "relatedNamesWithRank": [
+    { "name": "Mohammed", "rank": 21, "gender": "Boy" }
+  ],
+  "bulletPoint1": "In 2024 5,721 boy babies were named Muhammad...",
+  "bulletPoint2": "Since 2020 Muhammad has rapidly gained popularity...",
+  "bulletPoint3": "Over the past 20 years Muhammad dropped to #52...",
+  "bulletPoint4": "Historically Muhammad has only made it to the top 100 list...",
+  "classifications": {
+    "five_year": "Top Tier Stable",
+    "recent":    "Modern Hit",
+    "historic":  "Recent Entrant"
   }
 }
 ```
 
-### Sample CSV Data
+**Important:** The `gender` field (`"Boy"` or `"Girl"`) is **not stored on disk** — it is injected by `.eleventy.js` at build time. `relatedNamesWithRank` is also enriched at build time with `count` and `uniqueSlug` from a cross-gender lookup map.
 
-**File:** `data/names.csv`
+### Source CSVs
 
-Small sample dataset used for homepage featured names. Kept for compatibility but main data is in JSON files.
+Located in `data/source/`:
+- `Boys-from-1996.csv` / `Girls-from-1996.csv` — yearly rank and count per name (1996–2024)
+- `Boys-Historic-Top-100.csv` / `Girls-Historic-Top-100.csv` — top-100 per decade (13 decade columns, 1904–2024)
 
-### Data Generation Process
+### Classification Descriptions
 
-1. **Python Scripts** (scripts/generate_*_json.py) - Generate initial JSON files from source data
-2. **Classification Scripts** (scripts/add-*-classifications.js) - Add classification properties
-3. **Slug Generator** (scripts/generate-unique-slugs.js) - Add unique slugs for URL generation
-
-**Important:** Data files are large (~18.7MB total) but version controlled for reproducibility.
+`data/classification-descriptions.json` — human-readable descriptions keyed by `{five_year, recent, historic}` → classification name. This is the source of truth for classification labels displayed on the site.
 
 ---
 
 ## Classification System
 
-### Overview
+Names are classified along **three independent dimensions**:
 
-Names are classified into 31 distinct pattern types based on popularity trends over time:
-- **15 Recent Classifications** - Based on 29 years (1996-2024)
-- **16 Historic Classifications** - Based on 120+ years (1904-2024)
+### 1. Five-Year Classifications (2020–2024)
+Derived from `analysis_output/since_2020/features_with_clusters.csv` (pre-computed Python clustering). Added by `scripts/add-five-year-classifications.js`.
 
-### Recent Classifications (1996-2024)
+Examples: `Top Tier Stable`, `Rapid Climber`, `Stable Mid-Tier`, `Declining`, etc.
 
-Analyze 29 years of annual ranking data to identify modern trends:
+### 2. Recent Classifications (1996–2024)
+Algorithmic, from `rankFrom1996` (29 yearly ranks). Added by `scripts/add-recent-classifications.js`.
 
-1. **Timeless** - Maintains high popularity (top 100) consistently with minimal variation (±20 positions)
-2. **Steady Classic** - Remains in top 200 throughout, never dropping below top 300
-3. **Comeback** - Dropped significantly (fell out of top 500) mid-period, returned to top 200 recently
-4. **Shooting Star** - Dramatic rise of 300+ positions over past 5-7 years, currently in top 200
-5. **Slow Burn** - Gradual, consistent upward trajectory over 20+ years, gaining 200+ positions
-6. **Fading Glory** - Was top 100 for 10+ years, now ranked 500+ or unranked
-7. **Flash Trend** - Sudden spike to popularity (top 100) for 3-5 years, then declined rapidly
-8. **Cultural Moment** - Sharp popularity spike correlating with specific cultural events, followed by decline
-9. **Generational** - Peaked in specific decade, clearly associated with one generation
-10. **Sleeper** - Remained in 200-500 range consistently for 25+ years, never breaking through
-11. **Volatile** - Multiple significant swings (150+ position changes) with no clear pattern
-12. **New Entrant** - First appeared in rankings within past 10 years, currently gaining momentum
-13. **Vintage Revival** - Was unranked for 15+ years, recently re-entered top 500
-14. **Declining Classic** - Started in top 50, experiencing steady decline but still ranked in top 300
-15. **Uncategorized** - Does not fit clearly into any defined classification pattern
+Examples: `Modern Hit`, `Timeless`, `Steady Classic`, `Shooting Star`, `Vintage Revival`, `Uncategorized`, etc.
 
-### Historic Classifications (1904-2024)
+### 3. Historic Classifications (1904–2024)
+Algorithmic, from `rankHistoric` (13 decade ranks). Added by `scripts/add-historic-classifications.js`, refined by `scripts/refine-historic-classifications.js`.
 
-Analyze 13 decades of top 100 data to identify long-term patterns:
+Examples: `Century Classic`, `Recent Entrant`, `Lost Generation`, `Pendulum`, `Steady Rise`, `Uncategorized`, etc.
 
-1. **Century Classic** - Appears in top 100 in 10+ decades, never absent for more than one consecutive decade
-2. **Golden Age** - Dominated (top 20) for 3-5 consecutive decades, then faded from top 100
-3. **Early Century** - Top 100 from 1910s-1950s, largely disappeared by 1970s onwards
-4. **Mid-Century** - Peak popularity 1940s-1970s, minimal presence before or after
-5. **Late Century** - Emerged in top 100 during 1970s-1990s, maintaining or growing since
-6. **Modern Era** - First entered top 100 in 2000s or later
-7. **Pendulum** - Popular early (1910s-1930s), disappeared mid-century, returned in 2000s+
-8. **Lost Generation** - Top 100 in early decades (pre-1950s), hasn't returned since
-9. **Steady Decline** - Started in top 100 in 1910s, gradually declining each decade
-10. **Steady Rise** - Started outside/barely in top 100 early, consistently climbing, now firmly established
-11. **Peak and Fade** - Reached top 10 in at least one decade, then dropped out of top 100 within 3-4 decades
-12. **Brief Moment** - Appeared in top 100 for only 1-3 non-consecutive decades
-13. **Resilient** - Consistently appears in top 100 across 7-9 decades but never reaches top 20
-14. **Intermittent** - Appears in top 100 for 4-6 decades with significant gaps (2+ consecutive decades missing)
-15. **Revolutionary** - Sharp entry into top 100 coinciding with major cultural shifts (1960s, 1990s)
-16. **Uncategorized** - Does not fit clearly into any defined classification pattern
-
-### Classification Processing
-
-**Scripts:**
-- `scripts/add-recent-classifications.js` - Implements logic for 15 recent patterns
-- `scripts/add-historic-classifications.js` - Implements logic for 16 historic patterns
-
-**Usage:**
-```bash
-# Add recent classifications
-node scripts/add-recent-classifications.js
-
-# Add historic classifications
-node scripts/add-historic-classifications.js
-```
-
-Both scripts:
-- Read boys.json and girls.json
-- Apply classification algorithms
-- Add `recentClassification` or `historicClassification` properties
-- Write updated JSON back to files
-- Print statistics about classification distribution
+**For full label definitions and classification logic, see `docs/CLASSIFICATIONS.md`.**
 
 ### Classification Pages
 
-Each classification gets its own page at:
-- `/classifications/recent/{slug}/` - Recent classification pages
-- `/classifications/historic/{slug}/` - Historic classification pages
+Each classification generates a page at:
+- `/classifications/five_year/{slug}/` — 2020–2024 trends
+- `/classifications/recent/{slug}/` — 1996–2024 trends
+- `/classifications/historic/{slug}/` — 1904–2024 historic patterns
 
-Pages display:
-- Classification name and description
-- Time period covered
-- All names matching that pattern (separated by gender)
-- Count of matching names
+Pages show the classification description, time period, and all matching names separated by gender.
 
 ---
 
 ## Development Workflows
 
+### Data Mode Selection
+
+**Branch-based auto-detection** (`.eleventy.js:9–26`):
+- On branch `main` → uses `boys.json` / `girls.json` (full ~40,000 names)
+- On any other branch → uses `boys-dev.json` / `girls-dev.json` (top 500 names)
+- Override with `USE_DEV_DATA=true|false` environment variable
+
+**Production build on Netlify** (via `netlify.toml`):
+- Main branch deploys: `npm run build` with `USE_DEV_DATA=false`
+- Deploy previews and branch deploys: `npm run dev:data && npm run build` with `USE_DEV_DATA=true`
+
 ### Feature Development Workflow
 
-When implementing new features:
-
-1. **Understand Requirements**
-   - Read the user's request carefully
-   - Ask clarifying questions if needed
-   - Identify affected files and components
-
-2. **Plan Implementation**
-   - Use TodoWrite tool to create task list
-   - Break down complex features into steps
-   - Identify dependencies
-
-3. **Read Before Writing**
-   - Always read existing files before modifying
-   - Understand current patterns and conventions
-   - Maintain consistency with existing code
-
-4. **Implement Changes**
-   - Follow established patterns
-   - Write clear, maintainable code
-   - Add comments only where logic isn't self-evident
-   - Avoid over-engineering
-
-5. **Test Changes**
-   - Run the development server (`npm run dev`)
-   - Test new functionality manually
-   - Check generated output in `_site/` directory
-   - Fix any issues found
-
-6. **Commit and Push**
-   - Write clear commit messages
-   - Follow git workflow (see below)
-   - Push to feature branch
+1. **Understand Requirements** — read the request; check `docs/` for relevant contracts
+2. **Read Before Writing** — read affected files before modifying; understand existing patterns
+3. **Implement Changes** — follow established patterns; keep templates focused
+4. **Test with Dev Data** — use `npm run build:dev` or `npm run dev`; check `_site/` output
+5. **Commit and Push** — clear commit message; push to feature branch
 
 ### Data Processing Workflow
 
-When updating or regenerating data:
+When updating or regenerating production data, run scripts in this order:
 
-1. **Generate Base JSON** (if needed)
-   ```bash
-   python scripts/generate_boys_json.py
-   python scripts/generate_girls_json.py
-   ```
+```bash
+# 1. Generate base JSON from source CSVs
+python scripts/generate_boys_json.py
+python scripts/generate_girls_json.py
 
-2. **Add Classifications**
-   ```bash
-   node scripts/add-recent-classifications.js
-   node scripts/add-historic-classifications.js
-   ```
+# 2. Enrichment (order matters)
+node scripts/generate-unique-slugs.js
+node scripts/add-historic-profiles.js
+node scripts/add-synonyms.js
+node scripts/add-related-totals.js
+node scripts/add-related-ranks.js
+node scripts/add-all-bullet-points.js
 
-3. **Generate Unique Slugs**
-   ```bash
-   node scripts/generate-unique-slugs.js
-   ```
+# 3. Classification assignment
+node scripts/add-five-year-classifications.js  # requires analysis_output/since_2020/features_with_clusters.csv
+node scripts/add-recent-classifications.js
+node scripts/add-historic-classifications.js
+node scripts/refine-historic-classifications.js
 
-4. **Build Site**
-   ```bash
-   npm run build
-   ```
+# 4. Build and verify
+npm run build:dev
+```
 
-5. **Verify Output**
-   - Check `_site/` directory for generated pages
-   - Test navigation and links
-   - Verify classification pages
+**Do not re-run** `scripts/reorganize-classifications.js` — it was a one-off structural migration.
 
 ---
 
 ## Key Conventions
 
-### Code Style Conventions
+### Code Style
 
-#### General Principles
-- **Simplicity Over Complexity** - Don't over-engineer solutions
-- **Consistency** - Follow established patterns in the codebase
-- **Clarity** - Write self-documenting code with clear naming
-- **Minimal Comments** - Only comment non-obvious logic
+- **Simplicity over complexity** — don't over-engineer
+- **Consistency** — follow established patterns
+- **No unnecessary comments** — only comment non-obvious WHY, not WHAT
+- **No extra abstractions** — three similar lines beats a premature helper
 
-#### File Naming
-- Use kebab-case for files: `name-pages.njk`, `add-recent-classifications.js`
-- Template files use `.njk` extension (Nunjucks)
-- Scripts use `.js` extension (Node.js) or `.py` (Python)
+### File Naming
+- kebab-case for all files: `name-pages.njk`, `add-recent-classifications.js`
+- Templates: `.njk` extension
+- Node.js scripts: `.js`
+- Python scripts: `.py`
 
-#### Code Organization
-- One template per file
-- Group related functionality together
-- Keep files focused and single-purpose
-- Scripts in `scripts/` directory
-- Templates in `src/` or `src/templates/`
+### Template Guidelines
+- Keep templates single-purpose
+- Complex logic belongs in `.eleventy.js` or scripts, not templates
+- Use `{{ nameData.classifications.recent }}`, `{{ nameData.classifications.historic }}`, `{{ nameData.classifications.five_year }}` — **not** the old `recentClassification` / `historicClassification` fields
 
-#### Template Guidelines
-- Keep templates focused and single-purpose
-- Use Nunjucks template syntax
-- Use meaningful variable names in templates
-- Separate layout templates from content templates
-- Keep template logic simple (complex logic in .eleventy.js or scripts)
+### Data Conventions
+- Never manually create slugs — always use `scripts/generate-unique-slugs.js`
+- Never commit `data/boys-dev.json` or `data/girls-dev.json` — they are gitignored
+- `gender` is added by `.eleventy.js` at build time; it is not in the JSON files on disk
+- `classifications` is an object `{five_year, recent, historic}` — not three top-level fields
 
-#### Data Processing
-- Handle JSON parsing during build time (in .eleventy.js)
-- Classification logic in dedicated scripts
-- Use Node.js for JavaScript scripts
-- Use Python for data generation scripts
-- Always preserve data structure when adding properties
-
-#### Error Handling
-- Only validate at system boundaries (data input, file reading)
-- Trust internal code and framework guarantees
-- Handle missing/malformed data gracefully
-- Provide clear error messages during build
-
-### Security Conventions
+### Security
 - Never commit secrets, API keys, or credentials
-- Validate data structure during processing
-- Be aware of XSS risks in template rendering
-- Sanitize any user-generated content (if added in future)
-
-### Documentation Conventions
-- Keep README.md up-to-date with setup instructions
-- Document classification logic in script comments
-- Update this CLAUDE.md as the project evolves
-- Don't create unnecessary documentation files
+- Validate data structure at system boundaries (file reading, CSV parsing)
+- Template XSS: Nunjucks auto-escapes by default; use `| safe` only for trusted content
 
 ---
 
 ## Technology Stack
 
-### Status: ✅ PRODUCTION STACK CONFIGURED
-
-**Current Stack:**
-- **SSG:** 11ty (Eleventy) v3.1.2
-- **Templates:** Nunjucks
-- **Data Format:** JSON (migrated from CSV)
-- **Styling:** Tailwind CSS v4.1.17 with PostCSS
-- **CSS Processing:** @tailwindcss/postcss + autoprefixer
-- **Build Tools:** npm-run-all for parallel builds
-- **Data Processing:** Node.js + Python scripts
-- **Search:** Basic JavaScript placeholder (ready for Fuse.js/Pagefind)
+**SSG:** 11ty (Eleventy) v3.1.2
+**Templates:** Nunjucks
+**Data Format:** JSON (from CSV source files)
+**Styling:** Tailwind CSS v4.1.17 with PostCSS + autoprefixer
+**Charts:** D3.js (loaded via CDN in templates)
+**Search:** Fuse.js v7.1.0 (client-side fuzzy search, search index generated at build time)
+**Build Tools:** npm-run-all for parallel builds
+**Deployment:** Netlify (netlify.toml configured)
+**Data Processing:** Node.js + Python 3
 
 ### Key Dependencies
 
-**DevDependencies:**
 ```json
 {
-  "@11ty/eleventy": "^3.1.2",
-  "@tailwindcss/postcss": "^4.1.17",
-  "autoprefixer": "^10.4.22",
-  "csv-parse": "^6.1.0",
-  "npm-run-all": "^4.1.5",
-  "postcss": "^8.5.6",
-  "postcss-cli": "^11.0.1",
-  "tailwindcss": "^4.1.17"
+  "dependencies": {
+    "fuse.js": "^7.1.0"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^3.1.2",
+    "@tailwindcss/postcss": "^4.1.17",
+    "autoprefixer": "^10.4.22",
+    "csv-parse": "^6.1.0",
+    "npm-run-all": "^4.1.5",
+    "postcss": "^8.5.6",
+    "postcss-cli": "^11.0.1",
+    "tailwindcss": "^4.1.17"
+  }
 }
 ```
-
-### Why This Stack?
-
-**11ty (Eleventy):**
-- Excellent for data-driven sites with thousands of pages
-- Flexible data sources (JSON, CSV, YAML)
-- Multiple template language support
-- Fast builds even with large datasets
-- Simple configuration
-
-**Nunjucks Templates:**
-- Powerful templating with filters and macros
-- Similar to Jinja2/Django templates
-- Good documentation and community support
-- Easy to learn and maintain
-
-**Tailwind CSS v4:**
-- Utility-first CSS for rapid development
-- Responsive design made easy
-- Minimal CSS output (only used utilities)
-- PostCSS integration for processing
-
-**JSON Data Format:**
-- Easier to work with in JavaScript than CSV
-- Preserves data types and structure
-- Supports nested arrays (rankings)
-- Efficient parsing in 11ty
 
 ---
 
 ## Common Tasks
 
-### Starting Development Server
+### Development Server (Dev Data)
 
 ```bash
 npm run dev
 ```
 
-This command:
-1. Builds CSS once with Tailwind/PostCSS
-2. Starts 11ty dev server with live reload
-3. Watches CSS files for changes
-4. Runs both in parallel with npm-run-all
+This:
+1. Regenerates dev data (`scripts/create-dev-data.js` → `data/boys-dev.json` + `data/girls-dev.json`)
+2. Builds CSS once
+3. Starts 11ty dev server with live reload (watching for changes)
+4. Runs CSS watch in parallel
 
-### Testing with Development Data
+**Always use this for development** — production data requires 8 GB heap and takes minutes.
 
-**IMPORTANT:** Always use dev data for testing and development to avoid memory issues!
+### Build with Dev Data
 
-The production dataset contains 41,570 names which requires significant memory (8GB heap) and takes several minutes to build. For testing changes, **always use the development data subset** which contains only 1,000 names (500 boys + 500 girls).
+```bash
+npm run build:dev
+```
 
-**Generate dev data files (first time only):**
+Equivalent to `USE_DEV_DATA=true npm run build`. Use to verify a full build quickly.
+
+### Build for Production
+
+```bash
+npm run build:prod
+# or
+npm run build   # on main branch, auto-detects as production
+```
+
+Uses full dataset. Requires significant memory (8 GB heap configured in `package.json`).
+
+### Regenerate Dev Data Only
+
 ```bash
 npm run dev:data
 ```
 
-This creates `data/boys-dev.json` and `data/girls-dev.json` with the top 500 names from each gender.
+Runs `scripts/create-dev-data.js` to generate `data/boys-dev.json` and `data/girls-dev.json`.
 
-**Start dev server with dev data:**
-```bash
-npm run dev:fast
-```
-
-This command:
-1. Generates dev data files if they don't exist
-2. Builds CSS once
-3. Starts 11ty dev server with `USE_DEV_DATA=true` (uses dev data files)
-4. Watches for changes with live reload
-
-**Build with dev data:**
-```bash
-npm run build:dev
-# or manually:
-USE_DEV_DATA=true npm run build
-```
-
-**When to use dev vs production data:**
-- ✅ **Use DEV data** - For all testing, development, and verification of changes
-- ✅ **Use DEV data** - When testing template changes, styling, or new features
-- ✅ **Use DEV data** - Before committing changes
-- ⚠️ **Use PRODUCTION data** - Only for final builds or when testing with full dataset is required
-- ⚠️ **Use PRODUCTION data** - For deployment builds
-
-**Memory Configuration:**
-- Production builds use `NODE_OPTIONS='--max-old-space-size=8192'` (8GB heap)
-- This is configured in package.json for `build:eleventy` and `watch:eleventy`
-- Dev data builds work fine with default Node.js memory settings
-
-### Building for Production
+### Verify Build Output
 
 ```bash
-npm run build
-```
-
-This command:
-1. Runs `npm run build:eleventy` - Generates all HTML pages from templates and data
-2. Runs `npm run build:css` - Processes CSS with Tailwind/PostCSS
-
-**Output:** `_site/` directory with thousands of HTML files + compiled CSS
-
-### Processing Data
-
-**Generate initial JSON files:**
-```bash
-python scripts/generate_boys_json.py
-python scripts/generate_girls_json.py
-```
-
-**Add recent classifications (1996-2024):**
-```bash
-node scripts/add-recent-classifications.js
-```
-
-**Add historic classifications (1904-2024):**
-```bash
-node scripts/add-historic-classifications.js
-```
-
-**Generate unique slugs:**
-```bash
-node scripts/generate-unique-slugs.js
-```
-
-**Complete data processing pipeline:**
-```bash
-# Run all processing steps in sequence
-python scripts/generate_boys_json.py && \
-python scripts/generate_girls_json.py && \
-node scripts/add-recent-classifications.js && \
-node scripts/add-historic-classifications.js && \
-node scripts/generate-unique-slugs.js
-```
-
-### Previewing Production Build
-
-```bash
-# Install serve if needed
-npm install -g serve
-
-# Serve the _site directory
-npx serve _site
-```
-
-Then visit http://localhost:3000
-
-### Installing Dependencies
-
-```bash
-npm install <package-name>
-```
-
-### Validating Build
-
-```bash
-# Build the site
-npm run build
-
-# Check for errors in output
-# Verify key pages exist
 ls _site/
 ls _site/names/boy/
-ls _site/names/girl/
 ls _site/classifications/recent/
 ls _site/classifications/historic/
+ls _site/classifications/five_year/
+ls _site/analyses/
+```
+
+### Process Data (Full Pipeline)
+
+See the Data Processing Workflow section above. Refer to `docs/DATA-PIPELINE.md` for the full schema and script inventory.
+
+### Preview Production Build
+
+```bash
+npx serve _site
+# Visit http://localhost:3000
 ```
 
 ---
@@ -674,209 +477,84 @@ ls _site/classifications/historic/
 
 ### Branch Strategy
 
-**Feature Branches** - All development happens on feature branches:
-- Branch naming: `claude/claude-md-<session-id>` or `claude/<feature-name>-<session-id>`
-- Never push directly to main/master
+All development happens on feature branches:
+- Branch naming: `claude/<feature-name>-<session-id>` or `claude/claude-md-<session-id>`
+- Never push directly to `main`
 - Create pull requests for code review
 
-### Making Commits
+### Commit Message Format
 
-**When to Commit:**
-- Only create commits when explicitly requested by the user
-- Commit logically related changes together
-- Don't commit secrets or sensitive data
-
-**Commit Message Format:**
 ```
 <type>: <concise description>
-
-<optional detailed explanation>
 ```
 
-**Types:**
-- `feat:` - New feature
-- `fix:` - Bug fix
-- `refactor:` - Code refactoring
-- `docs:` - Documentation changes
-- `style:` - Code style/formatting changes
-- `data:` - Data updates or processing changes
-- `chore:` - Maintenance tasks
-
-**Examples:**
-```bash
-git commit -m "feat: add classification list pages"
-git commit -m "data: add historic classifications to name datasets"
-git commit -m "docs: update CLAUDE.md with current project state"
-```
+Types: `feat`, `fix`, `refactor`, `docs`, `style`, `data`, `chore`, `perf`
 
 ### Pushing Changes
-
-Always push to the designated feature branch:
 
 ```bash
 git push -u origin <branch-name>
 ```
 
-**Retry Logic:**
-- If push fails due to network errors, retry up to 4 times
-- Use exponential backoff: 2s, 4s, 8s, 16s
-- For other errors, investigate before retrying
-
-### Pull Requests
-
-When creating a pull request:
-
-1. Ensure all changes are committed and pushed
-2. Use `gh pr create` with descriptive title and body
-3. Include summary of changes (2-3 bullet points)
-4. Add test plan/checklist
-5. Reference any related issues
-
-**Example:**
-```bash
-gh pr create --title "Add classification system for name trends" --body "$(cat <<'EOF'
-## Summary
-- Implemented 31 classification types (15 recent + 16 historic)
-- Added classification processing scripts
-- Created classification listing and detail pages
-
-## Test plan
-- [ ] Build completes successfully
-- [ ] All classification pages generate correctly
-- [ ] Name pages display classification badges
-- [ ] Classification links work properly
-EOF
-)"
-```
+On network failure, retry up to 4 times with exponential backoff (2s, 4s, 8s, 16s).
 
 ---
 
 ## AI Assistant Guidelines
 
-### General Principles
+### Always
 
-1. **Read Before Writing**
-   - Always read files before modifying them
-   - Understand existing patterns before making changes
-   - Never propose changes to code you haven't read
+1. **Read before writing** — never modify code you haven't read
+2. **Use dev data for testing** — `npm run build:dev` or `npm run dev`; never test with production data unless specifically required
+3. **Preserve the data schema** — fields like `classifications` (object), `uniqueSlug`, `historic-profile` have specific shapes; check `docs/DATA-PIPELINE.md` before modifying data scripts
+4. **Check `docs/` first** — `CLASSIFICATIONS.md`, `DATA-PIPELINE.md`, and `FEATURES.md` contain contracts that must be preserved
+5. **Test the golden path** — after template changes, verify an individual name page, a classification page, and the homepage all render correctly
 
-2. **Use TodoWrite Tool**
-   - Create task lists for multi-step operations
-   - Track progress and mark items complete
-   - One task in_progress at a time
+### Working with Large Data Files
 
-3. **Ask When Uncertain**
-   - If requirements are unclear, ask the user
-   - Don't make assumptions about data structure
-   - Clarify before making major changes
+- `boys.json` and `girls.json` are ~9 MB each — use `offset`/`limit` when reading; don't load entire files
+- Use `grep` for searching inside large JSON files
+- Data files are version-controlled despite their size
 
-4. **Keep It Simple**
-   - Don't over-engineer solutions
-   - Only make requested changes
-   - Avoid unnecessary abstractions
-   - Three similar lines > premature abstraction
+### Working with Classifications
 
-5. **Be Consistent**
-   - Follow established patterns in the codebase
-   - Match existing code style
-   - Use consistent naming conventions
+- **Three dimensions**: `classifications.five_year`, `classifications.recent`, `classifications.historic`
+- `five_year` comes from pre-computed CSV (`analysis_output/since_2020/features_with_clusters.csv`) — re-running requires re-running the Python analysis first
+- `recent` and `historic` are algorithmic from ranking arrays — scripts can be re-run independently
+- `classification-descriptions.json` is the source of truth for human-readable labels
 
-6. **Security First**
-   - Never commit secrets or credentials
-   - Validate data structure during processing
-   - Fix security issues immediately
+### Common Pitfalls
 
-7. **Test Your Changes**
-   - **ALWAYS use dev data for testing** - Use `npm run dev:fast` or `npm run build:dev`
-   - Run the dev server after changes
-   - Verify functionality works
-   - Check generated output in _site/
-   - Fix any errors before committing
-   - **NEVER** test with production data unless specifically required
-
-### Project-Specific Guidelines
-
-#### Testing and Development Data
-- **CRITICAL:** Always use development data (`USE_DEV_DATA=true`) for testing
-- Production dataset (41,570 names) requires 8GB heap and takes several minutes to build
-- Development dataset (1,000 names) builds in seconds with default memory
-- Use `npm run dev:fast` for development with live reload
-- Use `npm run build:dev` to test a full build with dev data
-- Only use production data for final deployment builds or when full dataset testing is required
-- If you encounter memory errors, you're probably using production data by mistake
-
-#### Working with Large Data Files
-- **boys.json and girls.json are ~18.7MB total** - Be mindful when reading
-- Use offset/limit parameters when reading large files
-- Don't try to read entire files in one operation
-- Use Grep for searching within large JSON files
-- Data files are version controlled despite size
-
-#### Working with Classifications
-- **31 classification types total** - 15 recent + 16 historic
-- Classifications are added by separate scripts, not during build
-- Classification logic is complex - read the scripts before modifying
-- Each classification has a description in classification-descriptions.json
-- Uncategorized is a valid classification for names that don't fit patterns
-
-#### Static Site Generator Specific
-- **Data Processing** - Handle JSON parsing during build in .eleventy.js
-- **Template Reuse** - Base template in src/templates/base.njk
-- **Build Performance** - Build generates thousands of pages, can take time
-- **Pagination** - Name pages use 11ty pagination (size: 1)
-- **Static Output** - All pages are pre-generated, no server-side logic
-- **URL Structure** - Clean URLs with gender separation: `/names/boy/slug/` or `/names/girl/slug/`
-
-#### URL and Slug Handling
-- **Unique slugs** - Names can be duplicated across genders (e.g., Jordan)
-- Gender-separated URLs prevent conflicts
-- Slugs are generated by scripts/generate-unique-slugs.js
-- Never manually create slugs - use the script
-- Permalinks in templates use `{{ nameData.uniqueSlug }}`
-
-#### When Reading Code
-- Use Read tool for specific files
-- **For large data files** - Use Grep or read with offset/limit
-- Use Task tool with Explore agent for broader exploration
-- Read in parallel when files are independent
-- Understand context before suggesting changes
-
-#### When Writing Code
-- Use Edit tool for existing files
-- Use Write tool only for new files
-- Preserve exact indentation
-- Match existing code style
-- Follow Nunjucks template syntax
-
-#### When Using Tools
-- Glob for finding files by pattern
-- Grep for searching code content (especially in large JSON files)
-- Bash for terminal operations only (not file operations)
-- Task tool for complex multi-step operations
-
-### Communication Style
-- Be concise and direct
-- No emojis unless requested
-- Focus on technical accuracy
-- Output text for communication, not bash echo
-
-### Error Handling
-- If you encounter errors, fix them immediately
-- Don't ignore warnings that indicate problems
-- Report issues clearly to the user
-- Suggest solutions when problems occur
+- **Memory errors** = you're probably building with production data; switch to `npm run build:dev`
+- **Missing `gender` field in JSON** = normal; it's injected at build time by `.eleventy.js`
+- **`classifications` as separate fields** = old schema; current schema uses `classifications: {five_year, recent, historic}`
+- **`dev:fast` script** = does not exist; use `npm run dev` instead
+- **Manually creating slugs** = never do this; always run `scripts/generate-unique-slugs.js`
 
 ### Before Completing Tasks
-- ✅ All requested changes implemented
-- ✅ Code follows project conventions
-- ✅ No security vulnerabilities introduced
-- ✅ **Tested with dev data** - Used `npm run dev:fast` or `npm run build:dev`
-- ✅ Build completes successfully (with dev data)
-- ✅ Generated pages look correct in _site/ output
-- ✅ Links and navigation work properly
-- ✅ Data structure preserved
-- ✅ Changes committed with clear message
-- ✅ Pushed to correct branch
+
+- All requested changes implemented
+- Code follows project conventions
+- No security vulnerabilities introduced
+- Tested with dev data (`npm run build:dev` or `npm run dev`)
+- Build completes without errors
+- Generated pages look correct in `_site/`
+- Classification and name page links work
+- Data structure preserved (check `docs/DATA-PIPELINE.md` schema)
+- Changes committed with clear message
+- Pushed to correct feature branch
+
+---
+
+## Documentation in `docs/`
+
+Refer to these files for deeper detail:
+
+| File | Purpose |
+|---|---|
+| `docs/CLASSIFICATIONS.md` | Classifier contract: label definitions, logic, what must be preserved |
+| `docs/DATA-PIPELINE.md` | Full schema per-field, script inventory, build-time loading, known issues |
+| `docs/FEATURES.md` | Site surface contract: what pages and features must remain intact |
 
 ---
 
@@ -884,34 +562,20 @@ EOF
 
 ### Updating This Document
 
-This CLAUDE.md should be updated when:
-- New features are added
-- Data structure changes
+Update CLAUDE.md when:
+- New page types are added
+- Data schema changes (fields added/removed/renamed)
 - Build processes change
-- New scripts are added
+- New scripts are added or old ones deprecated
 - Classification system is modified
-- New page types are created
+- Deployment configuration changes
 
 ### Version History
 
-- **v2.1** - December 12, 2025 - Added dev data testing guidelines, increased heap memory to 8GB for production builds, added Related Names hyperlinks and gender indicators
-- **v2.0** - December 8, 2025 - Complete refresh: production data, classification system, unique slugs, thousands of pages
-- **v1.3** - December 7, 2025 - Integrated Tailwind CSS v4 with PostCSS build pipeline
-- **v1.2** - December 7, 2025 - Updated with selected technology stack (11ty + Nunjucks + csv-parse)
-- **v1.1** - December 7, 2025 - Updated with SSG-specific guidance, CSV data handling, and search functionality
-- **v1.0** - December 7, 2025 - Initial creation for early-stage project
-
----
-
-## Questions?
-
-If you're an AI assistant working on this project and encounter situations not covered in this guide:
-1. Review the existing codebase for patterns
-2. Consult the user for clarification
-3. Check data/classification-descriptions.json for classification details
-4. Review scripts/ directory for data processing logic
-5. Update this document with new learnings
-
----
-
-**Remember:** This project has production data (41,570 names) and a complete classification system. **Always use dev data (`npm run dev:fast` or `npm run build:dev`) for testing** to avoid memory issues and long build times. Only use production builds for final deployment. The data files are large - use appropriate tools and techniques when working with them.
+- **v3.0** — April 26, 2026 — Full rewrite: three-dimensional classification system, Fuse.js search, analysis pages, Netlify deployment, complete script inventory, updated data schema, branch-based data auto-detection
+- **v2.1** — December 12, 2025 — Added dev data testing guidelines, increased heap memory to 8 GB, added related names hyperlinks and gender indicators
+- **v2.0** — December 8, 2025 — Complete refresh: production data, classification system, unique slugs, thousands of pages
+- **v1.3** — December 7, 2025 — Integrated Tailwind CSS v4 with PostCSS build pipeline
+- **v1.2** — December 7, 2025 — Updated with selected technology stack (11ty + Nunjucks + csv-parse)
+- **v1.1** — December 7, 2025 — Updated with SSG-specific guidance, CSV data handling, and search functionality
+- **v1.0** — December 7, 2025 — Initial creation
